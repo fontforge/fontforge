@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-06-24 16:52+0300\n"
+"PO-Revision-Date: 2026-06-24 06:08\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt_PT\n"
@@ -87,6 +87,9 @@ msgstr "Tem certeza que não deseja utilizar o cidmap que eu encontrei?"
 
 msgid "Armenian"
 msgstr "Arménio"
+
+msgid "Arrows"
+msgstr "Setas"
 
 msgid "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
 msgstr "Pelo menos um ponto de ancoragem foi perdido ao colar de uma fonte para outra porque nenhuma classe ancoradora correspondente pôde ser encontrada na nova fonte."
@@ -226,6 +229,9 @@ msgstr "Marcas diacríticas estendidas para combinar"
 msgid "Combining Diacritical Marks Supplement"
 msgstr "Suplemento de marcas diacríticas para combinar"
 
+msgid "Combining Diacritical Marks for Symbols"
+msgstr "Combinando notas diacríticas para símbolos"
+
 msgid "Coordinate along which to space"
 msgstr "Coordenar ao longo da qual o espaço"
 
@@ -253,6 +259,9 @@ msgstr "Não foi possível abrir o arquivo %.200s"
 
 msgid "Croatian"
 msgstr "Croata"
+
+msgid "Currency Symbols"
+msgstr "Símbolos de Moeda"
 
 msgid "Cyrillic"
 msgstr "Cirílico"
@@ -374,6 +383,9 @@ msgstr "Da lista abaixo, selecione as linhas de base para que você vai dar de d
 msgid "Galician"
 msgstr "Galego"
 
+msgid "Geometric Shapes"
+msgstr "Formas Geométricas"
+
 msgid "Georgian"
 msgstr "Georgiano"
 
@@ -486,6 +498,9 @@ msgstr "Itálico"
 msgid "Japanese"
 msgstr "Japonês"
 
+msgid "Javanese"
+msgstr "Javanês"
+
 msgid "Kangxi Radicals"
 msgstr "Radicais Kangxi"
 
@@ -582,6 +597,9 @@ msgstr "Mandáico"
 msgid "Marks"
 msgstr "Marcas"
 
+msgid "Mathematical Operators"
+msgstr "Operadores Matemáticos"
+
 msgid "Mathematical centerline"
 msgstr "Linha central matemático"
 
@@ -602,6 +620,9 @@ msgstr "Mín (descida)"
 
 msgid "Min Bearing"
 msgstr "Rolamento Mínimo"
+
+msgid "Miscellaneous Symbols"
+msgstr "Símbolos Variados"
 
 #, c-format
 msgid "Missing number on line %d of %s"
@@ -675,6 +696,9 @@ msgstr "Nada Selecionado"
 
 msgid "Nothing to trace"
 msgstr "Nada Gravado"
+
+msgid "Number Forms"
+msgstr "Formas de Números"
 
 msgid "Ogham"
 msgstr "Ogam"

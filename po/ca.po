@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-06-24 16:52+0300\n"
+"PO-Revision-Date: 2026-06-24 06:08\n"
 "Last-Translator: \n"
 "Language-Team: Catalan\n"
 "Language: ca_ES\n"
@@ -6218,12 +6218,6 @@ msgstr "Eti_queta el glif amb"
 msgid "Language"
 msgstr "Idioma"
 
-msgid "Language List"
-msgstr "Llista de llenguatges"
-
-msgid "Language Missing"
-msgstr "No hi ha cap idioma"
-
 msgid "Language Tag:"
 msgstr "Etiqueta d'idioma:"
 
@@ -12034,10 +12028,6 @@ msgstr "La subtaula de classe d'interlletratge %s a %s no es correspon amb %s a 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr "Els valor de l'interlletratge de la classe 0 (Qualsevol altre) sempre ha de ser 0."
 
-#, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "L'idioma %s no es tindrà en compte, ja que no figura a la llista de llenguatges coneguts."
-
 msgid "The layers do not match"
 msgstr "Les capes no coincideixen"
 
@@ -13968,13 +13958,6 @@ msgstr "Seleccioneu la subtaula de consulta que inclourà el parell d'interlletr
 
 msgid "You must select at least one language for each script."
 msgstr "Heu de seleccionar, almenys, un idioma per a cada alfabet"
-
-msgid ""
-"You must select at least one language.\n"
-"Use the \"Default\" language if nothing else fits."
-msgstr ""
-"Heu de seleccionar almenys un idioma.\n"
-"Si no en trobau cap que s'adapti, useu el predeterminat (DFLT)."
 
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "Si indiqueu una etiqueta de singularitat, heu de seleccionar almenys un alfabet."

@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-06-24 16:52+0300\n"
+"PO-Revision-Date: 2026-06-24 06:08\n"
 "Last-Translator: \n"
 "Language-Team: Thai\n"
 "Language: th_TH\n"
@@ -25,6 +25,10 @@ msgstr ""
 "X-Crowdin-File-ID: 2\n"
 
 #, c-format
+msgid "%s has a bounding box which is too big for this algorithm to work. Ignored."
+msgstr "%s มีกรอบขอบเขตที่ใหญ่เกินกว่าที่อัลกอริทึมนี้จะทำงานได้ ไม่สนใจ"
+
+#, c-format
 msgid ""
 "%s is not a cidmap file, please download\n"
 "http://fontforge.sourceforge.net/cidmaps.tgz"
@@ -32,11 +36,112 @@ msgstr ""
 "%s ไม่ใช่ไฟล์ cidmap โปรดดาวน์โหลด\n"
 "http://fontforge.sourceforge.net/cidmaps.tgz"
 
+msgid "<Unassigned Plane 10>"
+msgstr "<ระนาบไม่ได้กำหนดรหัส 10>"
+
+msgid "<Unassigned Plane 11>"
+msgstr "<ระนาบไม่ได้กำหนดรหัส 11>"
+
+msgid "<Unassigned Plane 12>"
+msgstr "<ระนาบไม่ได้กำหนดรหัส 12>"
+
+msgid "<Unassigned Plane 13>"
+msgstr "<ระนาบไม่ได้กำหนดรหัส 13>"
+
+msgid "<Unassigned Plane 4>"
+msgstr "<ระนาบไม่ได้กำหนดรหัส 4>"
+
+msgid "<Unassigned Plane 5>"
+msgstr "<ระนาบไม่ได้กำหนดรหัส 5>"
+
+msgid "<Unassigned Plane 6>"
+msgstr "<ระนาบไม่ได้กำหนดรหัส 6>"
+
+msgid "<Unassigned Plane 7>"
+msgstr "<ระนาบไม่ได้กำหนดรหัส 7>"
+
+msgid "<Unassigned Plane 8>"
+msgstr "<ระนาบไม่ได้กำหนดรหัส 8>"
+
+msgid "<Unassigned Plane 9>"
+msgstr "<ระนาบไม่ได้กำหนดรหัส 9>"
+
+msgid "Additional arguments for autotrace program:"
+msgstr "อาร์กิวเมนต์เพิ่มเติมสำหรับโปรแกรม autotrace:"
+
 msgid "Albanian"
 msgstr "แอลเบเนีย"
 
+msgid "Alchemical Symbols"
+msgstr "สัญลักษณ์อัลเคมี"
+
+msgid "All Files"
+msgstr "ทุกไฟล์"
+
+msgid "All Fonts"
+msgstr "ทุกแบบอักษร"
+
+msgid "Alphabetic Presentation Forms"
+msgstr "รูปแบบการนำเสนอของตัวอักษร"
+
+msgid "An outline font editor"
+msgstr "ตัวแก้ไขแบบอักษรโครงร่าง"
+
+msgid "Anatolian Hieroglyphs"
+msgstr "ไฮโรกลิฟอนาโตเลีย"
+
+msgid "Anchor Lost"
+msgstr "จุดยึดหายไป"
+
+msgid "Arabic"
+msgstr "อาหรับ"
+
+msgid "Arabic Extended-A"
+msgstr "อาหรับส่วนขยาย A"
+
+msgid "Arabic Extended-B"
+msgstr "อาหรับส่วนขยาย B"
+
+msgid "Arabic Extended-C"
+msgstr "อาหรับส่วนขยาย C"
+
+msgid "Arabic Mathematical Alphabetic Symbols"
+msgstr "สัญลักษณ์พยัญชนะทางคณิตศาสตร์แบบอาหรับ"
+
+msgid "Arabic Presentation Forms-A"
+msgstr "รูปแบบการนำเสนอของอักษรอาหรับ A"
+
+msgid "Arabic Presentation Forms-B"
+msgstr "รูปแบบการนำเสนอของอักษรอาหรับ B"
+
+msgid "Arabic Supplement"
+msgstr "อาหรับส่วนเสริม"
+
+msgid "Archives"
+msgstr "การเก็บถาวร"
+
 msgid "Are you sure you don't want to use the cidmap I found?"
 msgstr "คุณแน่ใจหรือไม่ว่าไม่ต้องการใช้ cidmap ที่หาพบ"
+
+msgid "Armenian"
+msgstr "อาร์เมเนีย"
+
+msgid "Arrows"
+msgstr "ลูกศร"
+
+#, c-format
+msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
+msgstr "พยายามสร้างขนาดพิกเซลที่ไม่ได้ถูกสร้างขึ้นใหม่ (%d@%d)"
+
+#, c-format
+msgid "AutoWidth failure on %s"
+msgstr "ความล้มเหลวของ AutoWidth บน %s"
+
+msgid "Autotracing..."
+msgstr "กำลังออโต้เทรซ..."
+
+msgid "Backup SFD"
+msgstr "ไฟล์สำรอง SFD"
 
 msgid "Bad Font Name"
 msgstr "ชื่อแบบอักษรไม่ถูกต้อง"
@@ -46,6 +151,9 @@ msgstr "ตัวเลขไม่ถูกต้อง"
 
 msgid "Bad Reference"
 msgstr "การอ้างอิงไม่ถูกต้อง"
+
+msgid "Bad Template"
+msgstr "เทมเพลตไม่ถูกต้อง"
 
 msgid "Bad cidmap file"
 msgstr "ไฟล์ cidmap ไม่ถูกต้อง"
@@ -60,11 +168,150 @@ msgstr "ไฟล์ภาพไม่ถูกต้อง"
 msgid "Bad image file: %.100s"
 msgstr "ไฟล์ภาพไม่ถูกต้อง: %.100s"
 
+msgid "Bad template, no extension"
+msgstr "เทมเพลตไม่ถูกต้อง ไม่มีนามสกุล"
+
+msgid "Bad template, unrecognized format"
+msgstr "เทมเพลตไม่ถูกต้อง มีรูปแบบที่ไม่รู้จัก"
+
+msgid "Bad xfig file"
+msgstr "ไฟล์ xfig ไม่ถูกต้อง"
+
+msgid "Basic Latin"
+msgstr "ละตินพื้นฐาน"
+
+msgid "Basic Multilingual Plane"
+msgstr "ระนาบภาษาพื้นฐาน"
+
+msgid "Bengali"
+msgstr "เบงกอล"
+
+msgid "Bitmap Fonts"
+msgstr "แบบอักษรบิตแมป"
+
+msgid "Block Elements"
+msgstr "องค์ประกอบของบล็อก"
+
+msgid "Box Drawing"
+msgstr "เส้นวาดกล่อง"
+
+msgid "Buginese"
+msgstr "บูกิซ"
+
 msgid "Bulgarian"
 msgstr "บัลแกเรีย"
 
 msgid "Byelorussian"
 msgstr "เบลารุส"
+
+msgid "CJK Compatibility"
+msgstr "สัญลักษณ์ที่เข้ากันได้กับ CJK"
+
+msgid "CJK Compatibility Ideographs"
+msgstr "อักษรภาพที่เข้ากันได้กับ CJK"
+
+msgid "CJK Compatibility Ideographs Supplement"
+msgstr "อักษรภาพที่เข้ากันได้กับ CJK ส่วนเสริม"
+
+msgid "CJK Symbols and Punctuation"
+msgstr "สัญลักษณ์และเครื่องหมายวรรคตอน CJK"
+
+msgid "CJK Unified Ideographs"
+msgstr "อักษรภาพรวมของ CJK"
+
+msgid "CJK Unified Ideographs Extension A"
+msgstr "อักษรภาพรวมของ CJK ส่วนขยาย A"
+
+msgid "CJK Unified Ideographs Extension B"
+msgstr "อักษรภาพรวมของ CJK ส่วนขยาย B"
+
+msgid "CJK Unified Ideographs Extension C"
+msgstr "อักษรภาพรวมของ CJK ส่วนขยาย C"
+
+msgid "CJK Unified Ideographs Extension D"
+msgstr "อักษรภาพรวมของ CJK ส่วนขยาย D"
+
+msgid "CJK Unified Ideographs Extension E"
+msgstr "อักษรภาพรวมของ CJK ส่วนขยาย E"
+
+msgid "CJK Unified Ideographs Extension F"
+msgstr "อักษรภาพรวมของ CJK ส่วนขยาย F"
+
+msgid "CJK Unified Ideographs Extension G"
+msgstr "อักษรภาพรวมของ CJK ส่วนขยาย G"
+
+msgid "CJK Unified Ideographs Extension H"
+msgstr "อักษรภาพรวมของ CJK ส่วนขยาย H"
+
+msgid "CJK Unified Ideographs Extension I"
+msgstr "อักษรภาพรวมของ CJK ส่วนขยาย I"
+
+msgid "CJK Unified Ideographs Extension J"
+msgstr "อักษรภาพรวมของ CJK ส่วนขยาย J"
+
+msgid "Can't create temporary directory"
+msgstr "ไม่สามารถสร้างไดเรกทอรีชั่วคราวได้"
+
+msgid "Can't find autotrace"
+msgstr "ไม่พบ autotrace"
+
+msgid ""
+"Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n"
+"  http://sf.net/projects/autotrace/"
+msgstr ""
+"ไม่พบโปรแกรม autotrace (ตั้งค่าตัวแปรสภาพแวดล้อม AUTOTRACE) หรือดาวน์โหลดจาก:\n"
+"http://sf.net/projects/autotrace/"
+
+msgid "Can't find mf"
+msgstr "ไม่พบ mf"
+
+msgid ""
+"Can't find mf program -- metafont (set MF environment variable) or download from:\n"
+"  http://www.tug.org/\n"
+"  http://www.ctan.org/\n"
+"It's part of the TeX distribution"
+msgstr ""
+"ไม่พบโปรแกรม mf -- metafont (ตั้งค่าตัวแปรสภาพแวดล้อม MF) หรือดาวน์โหลดจาก:\n"
+"  http://www.tug.org/\n"
+"  http://www.ctan.org/\n"
+"เป็นส่วนหนึ่งของชุดแจกจ่าย TeX"
+
+msgid "Can't find the file"
+msgstr "ไม่พบไฟล์"
+
+#, c-format
+msgid "Can't open %s"
+msgstr "ไม่สามารถเปิด %s ได้"
+
+msgid "Can't run mf"
+msgstr "ไม่สามารถเรียกใช้ mf ได้"
+
+msgid "Cannot open file"
+msgstr "ไม่สามารถเปิดไฟล์ได้"
+
+msgid "Chess Symbols"
+msgstr "สัญลักษณ์หมากรุก"
+
+msgid "Combining Diacritical Marks"
+msgstr "เครื่องหมายกำกับเสียงแบบประกอบ"
+
+msgid "Combining Diacritical Marks Extended"
+msgstr "เครื่องหมายกำกับเสียงแบบประกอบส่วนขยาย"
+
+msgid "Combining Diacritical Marks Supplement"
+msgstr "เครื่องหมายกำกับเสียงแบบประกอบส่วนเสริม"
+
+msgid "Combining Diacritical Marks for Symbols"
+msgstr "เครื่องหมายกำกับเสียงแบบประกอบสำหรับสัญลักษณ์"
+
+msgid "Combining Half Marks"
+msgstr "เครื่องหมายรวมอักขระแบบครึ่ง"
+
+msgid "Coptic"
+msgstr "คอปติก"
+
+msgid "Could not read (or perhaps find) mf output file"
+msgstr "ไม่สามารถอ่าน (หรืออาจค้นหา) ไฟล์เอาต์พุต mf ได้"
 
 #, c-format
 msgid "Couldn't open cidmap file: %s"
@@ -80,8 +327,32 @@ msgstr "ไม่สามารถเปิดไฟล์ %.200s"
 msgid "Croatian"
 msgstr "โครเอเชีย"
 
+msgid "Cuneiform"
+msgstr "อักษรรูปลิ่ม"
+
+msgid "Cuneiform Numbers and Punctuation"
+msgstr "ตัวเลขและเครื่องหมายวรรคตอนอักษรรูปลิ่ม"
+
+msgid "Currency Symbols"
+msgstr "สัญลักษณ์สกุลเงิน"
+
 msgid "Cyrillic"
 msgstr "ซีริลลิก"
+
+msgid "Cyrillic Extended-A"
+msgstr "ซีริลลิกส่วนขยาย A"
+
+msgid "Cyrillic Extended-B"
+msgstr "ซีริลลิกส่วนขยาย B"
+
+msgid "Cyrillic Extended-C"
+msgstr "ซีริลลิกส่วนขยาย C"
+
+msgid "Cyrillic Extended-D"
+msgstr "ซีริลลิกส่วนขยาย D"
+
+msgid "Cyrillic Supplement"
+msgstr "ซีริลลิกส่วนเสริม"
 
 msgid "Czech"
 msgstr "เช็ก"
@@ -89,11 +360,53 @@ msgstr "เช็ก"
 msgid "Danish"
 msgstr "เดนมาร์ก"
 
+msgid "Devanagari"
+msgstr "เทวนาครี"
+
+msgid "Devanagari Extended"
+msgstr "เทวนาครีส่วนขยาย"
+
+msgid "Devanagari Extended-A"
+msgstr "เทวนาครีส่วนขยาย A"
+
+msgid "Dingbats"
+msgstr "ดิงแบตส์"
+
+msgid "Display files of this type"
+msgstr "แสดงไฟล์ชนิดนี้"
+
+msgid "Domino Tiles"
+msgstr "กระเบื้องโดมิโน"
+
 msgid "Duplicate pixelsize"
 msgstr "ขนาดพิกเซลซ้ำกัน"
 
 msgid "Dutch"
 msgstr "ดัตช์"
+
+msgid "Early Dynastic Cuneiform"
+msgstr "อักษรรูปลิ่มสมัยราชวงศ์แรก"
+
+msgid "Edit Filter List"
+msgstr "แก้ไขรายชื่อตัวกรอง"
+
+msgid "Edit Font Filters"
+msgstr "แก้ไขตัวกรองแบบอักษร"
+
+msgid "Egyptian Hieroglyphs"
+msgstr "ไฮโรกลิฟอียิปต์"
+
+msgid "Egyptian Hieroglyphs Extended-A"
+msgstr "ไฮโรกลิฟอียิปต์ส่วนขยาย A"
+
+msgid "Emoticons"
+msgstr "อีโมติคอน"
+
+msgid "Enclosed Alphanumerics"
+msgstr "ตัวเลขพยัญชนะควบ"
+
+msgid "Enclosed CJK Letters and Months"
+msgstr "อักษรและเดือน CJK ที่แนบไว้"
 
 msgid "Encoding Too Large"
 msgstr "รหัสอักขระใหญ่เกินไป"
@@ -107,11 +420,65 @@ msgstr "อังกฤษ"
 msgid "Estonian"
 msgstr "เอสโตเนีย"
 
+msgid "Ethiopic"
+msgstr "เอธิโอเปีย"
+
+msgid "Ethiopic Extended"
+msgstr "เอธิโอเปียส่วนขยาย"
+
+msgid "Ethiopic Extended-A"
+msgstr "เอธิโอเปียส่วนขยาย A"
+
+msgid "Ethiopic Extended-B"
+msgstr "เอธิโอเปียส่วนขยาย B"
+
+msgid "Ethiopic Supplement"
+msgstr "เอธิโอเปียส่วนเสริม"
+
+msgid "Extract from PDF"
+msgstr "ดึงจาก PDF"
+
+msgid "Filter"
+msgstr "ตัวกรอง"
+
+msgid "Filter:"
+msgstr "กรอง:"
+
+msgid "Filter|New"
+msgstr "สร้างใหม่"
+
 msgid "Find a cidmap file..."
 msgstr "หาไฟล์ cidmap..."
 
 msgid "Finnish"
 msgstr "ฟินแลนด์"
+
+msgid "Font Editor"
+msgstr "ตัวแก้ไขแบบอักษร"
+
+msgid "FontForge"
+msgstr "FontForge"
+
+msgid "FontForge developers"
+msgstr "นักพัฒนา FontForge"
+
+msgid "FontForge is a font editor for outline and bitmap fonts that lets you create, edit, or convert, a range of fonts, including PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts."
+msgstr "FontForge คือตัวแก้ไขแบบอักษรสำหรับแบบอักษรโครงร่างและบิตแมปที่ช่วยให้คุณสร้าง แก้ไข หรือแปลงแบบอักษรต่างๆ รวมถึงแบบอักษร PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG และ BitMap (bdf, FON, NFNT)"
+
+msgid "FontForge is free Open Source Software written to run on various computer operating systems. You can use FontForge Graphically or as a command-line tool."
+msgstr "FontForge เป็นซอฟต์แวร์โอเพนซอร์สฟรีที่เขียนขึ้นเพื่อใช้งานบนระบบปฏิบัติการคอมพิวเตอร์ต่างๆ คุณสามารถใช้ FontForge แบบกราฟิกหรือเป็นเครื่องมือบรรทัดคำสั่งได้"
+
+msgid "FontForge's SFD"
+msgstr "FontForge SFD"
+
+msgid "Fontforge showing a glyph being edited"
+msgstr "Fontforge แสดงภาพสัญลักษณ์ที่กำลังถูกแก้ไข"
+
+msgid "Font|_New"
+msgstr "_สร้างใหม่"
+
+msgid "Force glyph names to:"
+msgstr "บังคับชื่อภาพสัญลักษณ์เป็น:"
 
 msgid "French"
 msgstr "ฝรั่งเศส"
@@ -119,14 +486,98 @@ msgstr "ฝรั่งเศส"
 msgid "Galician"
 msgstr "กาลิเซีย"
 
+msgid "General Punctuation"
+msgstr "เครื่องหมายวรรคตอนทั่วไป"
+
+msgid "Geometric Shapes"
+msgstr "รูปทรงเรขาคณิต"
+
+msgid "Geometric Shapes Extended"
+msgstr "รูปทรงเรขาคณิตส่วนขยาย"
+
+msgid "Georgian"
+msgstr "จอร์เจีย"
+
+msgid "Georgian Extended"
+msgstr "จอร์เจียส่วนขยาย"
+
+msgid "Georgian Supplement"
+msgstr "จอร์เจียส่วนเสริม"
+
 msgid "German"
 msgstr "เยอรมัน"
+
+msgid "Glagolitic"
+msgstr "กลาโกลิติก"
+
+msgid "Glagolitic Supplement"
+msgstr "กลาโกลิติกส่วนเสริม"
+
+msgid "Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."
+msgstr "ชื่อภาพสัญลักษณ์ควรถูกจำกัดไว้ที่อักขระในชุดอักขระ ASCII แต่มีชื่อในรายชื่อตัวอักษรนี้ซึ่งใช้อักขระที่อยู่นอกเหนือช่วงนั้น"
+
+msgid "Glyph too big"
+msgstr "ภาพสัญลักษณ์ใหญ่เกินไป"
+
+msgid "Greek Extended"
+msgstr "กรีกส่วนขยาย"
+
+msgid "Greek and Coptic"
+msgstr "กรีกและคอปติก"
+
+msgid "Gujarati"
+msgstr "คุชราต"
+
+msgid "Gurmukhi"
+msgstr "คุรุมุขี"
+
+msgid "Hangul Compatibility Jamo"
+msgstr "อักษรจาโมที่เข้ากันได้กับฮันกุล"
+
+msgid "Hangul Jamo"
+msgstr "อักษรจาโมของฮันกุล"
+
+msgid "Hangul Jamo Extended-A"
+msgstr "อักษรจาโมของฮันกุล ส่วนขยาย A"
+
+msgid "Hangul Jamo Extended-B"
+msgstr "อักษรจาโมของฮันกุล ส่วนขยาย B"
+
+msgid "Hangul Syllables"
+msgstr "พยางค์ฮันกุล"
+
+msgid "Hebrew"
+msgstr "ฮีบรู"
+
+msgid "High Private Use Surrogates"
+msgstr "รหัสตัวแทนใช้งานส่วนตัวระดับสูง"
+
+msgid "High Surrogates"
+msgstr "รหัสตัวแทนระดับสูง"
+
+msgid "Hiragana"
+msgstr "ฮิระงะนะ"
 
 msgid "Hungarian"
 msgstr "ฮังการี"
 
+msgid "I'm sorry this file is too complex for me to understand (or is erroneous)"
+msgstr "ขออภัย ไฟล์นี้ซับซ้อนเกินกว่าที่ฉันจะเข้าใจได้ (หรือผิดพลาด)"
+
+msgid "I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)"
+msgstr "ขออภัย ไฟล์นี้ซับซ้อนเกินกว่าที่ฉันจะเข้าใจได้ (หรือผิดพลาด หรือว่างเปล่า)"
+
+msgid "IPA Extensions"
+msgstr "ส่วนขยาย IPA"
+
 msgid "Icelandic"
 msgstr "ไอซ์แลนด์"
+
+msgid "In the saved font, force all glyph names to match those in the specified namelist"
+msgstr "ในแบบอักษรที่บันทึก บังคับให้ชื่อภาพสัญลักษณ์ทั้งหมดเข้าคู่กับชื่อภายในรายชื่อตัวอักษรที่กำหนดไว้"
+
+msgid "Interpolating a font with itself achieves nothing"
+msgstr "การแทรกแบบอักษรด้วยตัวมันเองไม่ได้ทำให้เกิดผลใดๆ"
 
 msgid "Italian"
 msgstr "อิตาลี"
@@ -134,8 +585,32 @@ msgstr "อิตาลี"
 msgid "Japanese"
 msgstr "ญี่ปุ่น"
 
+msgid "Javanese"
+msgstr "จาวา"
+
+msgid "Kana Extended-A"
+msgstr "คะนะส่วนขยาย A"
+
+msgid "Kana Extended-B"
+msgstr "คะนะส่วนขยาย B"
+
+msgid "Kana Supplement"
+msgstr "คะนะส่วนเสริม"
+
+msgid "Kannada"
+msgstr "กันนาดา"
+
+msgid "Katakana"
+msgstr "คะทะคะนะ"
+
+msgid "Katakana Phonetic Extensions"
+msgstr "ส่วนขยายทางสัทศาสตร์คะทะคะนะ"
+
 msgid "Kazakh"
 msgstr "คาซัค"
+
+msgid "Khmer"
+msgstr "เขมร"
 
 msgid "Korean"
 msgstr "เกาหลี"
@@ -146,29 +621,226 @@ msgstr "อาหรับ"
 msgid "Lang|Thai"
 msgstr "ไทย"
 
+msgid "Lao"
+msgstr "ลาว"
+
+msgid "Latin Extended Additional"
+msgstr "ละตินส่วนขยายเพิ่มเติม"
+
+msgid "Latin Extended-A"
+msgstr "ละตินส่วนขยาย A"
+
+msgid "Latin Extended-B"
+msgstr "ละตินส่วนขยาย B"
+
+msgid "Latin Extended-C"
+msgstr "ละตินส่วนขยาย C"
+
+msgid "Latin Extended-D"
+msgstr "ละตินส่วนขยาย D"
+
+msgid "Latin Extended-E"
+msgstr "ละตินส่วนขยาย E"
+
+msgid "Latin Extended-F"
+msgstr "ละตินส่วนขยาย F"
+
+msgid "Latin Extended-G"
+msgstr "ละตินส่วนขยาย G"
+
+msgid "Latin-1 Supplement"
+msgstr "ละติน 1 ส่วนเสริม"
+
 msgid "Latvian"
 msgstr "ลัตเวีย"
+
+msgid "Learning to use FontForge is easy, and there are various tutorials available beginning with the basics up to more advanced features such as making and using scripts."
+msgstr "การเรียนรู้การใช้ FontForge นั้นง่ายมาก และมีบทช่วยสอนต่างๆ มากมายให้เลือกใช้ตั้งแต่ขั้นพื้นฐานไปจนถึงฟีเจอร์ขั้นสูง เช่น การสร้างและการใช้สคริปต์"
+
+msgid "Letterlike Symbols"
+msgstr "สัญลักษณ์ที่เหมือนตัวอักษร"
+
+msgid "Lisu"
+msgstr "ลีซู"
+
+msgid "Lisu Supplement"
+msgstr "ลีซูส่วนเสริม"
 
 msgid "Lithuanian"
 msgstr "ลิทัวเนีย"
 
+msgid "Low Surrogates"
+msgstr "รหัสตัวแทนระดับต่ำ"
+
 msgid "Macedonian"
 msgstr "มาซิโดเนีย"
+
+msgid "Mahjong Tiles"
+msgstr "ไพ่นกกระจอก"
+
+msgid "Malayalam"
+msgstr "มาลายาลัม"
 
 msgid "Maltese"
 msgstr "มอลตา"
 
+msgid "Mathematical Alphanumeric Symbols"
+msgstr "สัญลักษณ์ตัวเลขพยัญชนะทางคณิตศาสตร์"
+
+msgid "Mathematical Operators"
+msgstr "ตัวดำเนินการทางคณิตศาสตร์"
+
+msgid "MetaFont exited with an error"
+msgstr "MetaFont ออกโดยมีข้อผิดพลาด"
+
+msgid "Miscellaneous Mathematical Symbols-A"
+msgstr "สัญลักษณทางคณิตศาสตร์เบ็ดเตล็ด A"
+
+msgid "Miscellaneous Mathematical Symbols-B"
+msgstr "สัญลักษณทางคณิตศาสตร์เบ็ดเตล็ด B"
+
+msgid "Miscellaneous Symbols"
+msgstr "สัญลักษณ์เบ็ดเตล็ด"
+
+msgid "Miscellaneous Symbols Supplement"
+msgstr "สัญลักษณ์เบ็ดเตล็ดส่วนเสริม"
+
+msgid "Miscellaneous Symbols and Arrows"
+msgstr "สัญลักษณ์และลูกศรเบ็ดเตล็ด"
+
+msgid "Miscellaneous Symbols and Pictographs"
+msgstr "สัญลักษณ์และตัวหนังสือภาพเบ็ดเตล็ด"
+
+msgid "Miscellaneous Technical"
+msgstr "สัญลักษณ์ทางเทคนิคเบ็ดเตล็ด"
+
+msgid "Missing Bitmap"
+msgstr "บิตแมปหายไป"
+
 msgid "Missing cidmap file"
 msgstr "ไฟล์ cidmap ขาดหายไป"
+
+#, c-format
+msgid "Missing number on line %d of %s"
+msgstr "ตัวเลขหายไปในบรรทัด %d จาก %s"
+
+msgid "Modifier Tone Letters"
+msgstr "อักษรกำกับเสียง"
+
+msgid "Mongolian"
+msgstr "มองโกล"
+
+msgid "Mongolian Supplement"
+msgstr "มองโกลส่วนเสริม"
+
+msgid "More Images Than Selected Glyphs"
+msgstr "มีรูปภาพมากกว่าภาพสัญลักษณ์ที่เลือก"
+
+msgid "Myanmar"
+msgstr "เมียนมา"
+
+msgid "Myanmar Extended-A"
+msgstr "เมียนมาส่วนขยาย A"
+
+msgid "Myanmar Extended-B"
+msgstr "เมียนมาส่วนขยาย B"
+
+msgid "Myanmar Extended-C"
+msgstr "เมียนมาส่วนขยาย C"
+
+msgid "NKo"
+msgstr "เอ็นโก"
+
+msgid "Name"
+msgstr "ชื่อ"
+
+msgid "Namelist contains non-ASCII names"
+msgstr "รายชื่อตัวอักษรมีชื่อที่ไม่อยู่ใน ASCII"
 
 msgid "Nepali"
 msgstr "เนปาล"
 
+msgid "New Tai Lue"
+msgstr "ไทลื้อใหม่"
+
+#, c-format
+msgid "No CID named %s"
+msgstr "ไม่มี CID ชื่อ %s"
+
+msgid "No Kern Pairs"
+msgstr "ไม่มีคู่เคิร์น"
+
+msgid "No Rename"
+msgstr "ไม่เปลี่ยนชื่อ"
+
+msgid "No _to All"
+msgstr "ไม่_ทั้งหมด"
+
 msgid "No cidmap file..."
 msgstr "ไม่มีไฟล์ cidmap..."
 
+#, c-format
+msgid "No glyph named %s."
+msgstr "ไม่มีภาพสัญลักษณ์ชื่อ %s"
+
+#, c-format
+msgid "No kerning pairs found in %.200s"
+msgstr "ไม่พบคู่เคิร์นนิ่งใน %.200s"
+
 msgid "Norwegian"
 msgstr "นอร์เวย์"
+
+msgid "Nothing Loaded"
+msgstr "ไม่ได้โหลดสิ่งใด"
+
+msgid "Nothing Selected"
+msgstr "ไม่ได้เลือกสิ่งใด"
+
+msgid "Nothing to trace"
+msgstr "ไม่มีอะไรให้เทรซ"
+
+msgid "Number Forms"
+msgstr "รูปแบบตัวเลข"
+
+#, c-format
+msgid "Number too long on line %d of %s"
+msgstr "ตัวเลขยาวเกินไปในบรรทัด %d จาก %s"
+
+msgid "Open Font"
+msgstr "เปิดแบบอักษร"
+
+msgid "OpenType"
+msgstr "OpenType"
+
+msgid "Oriya"
+msgstr "โอริยา"
+
+msgid "Ornamental Dingbats"
+msgstr "ดิงแบตสำหรับตกแต่ง"
+
+msgid "Outline Fonts"
+msgstr "แบบอักษรเส้นขอบ"
+
+msgid "Pasting..."
+msgstr "กำลังวาง..."
+
+msgid "Phags-pa"
+msgstr "ผัคสปะ"
+
+msgid "Phonetic Extensions"
+msgstr "ส่วนขยายทางสัทศาสตร์"
+
+msgid "Phonetic Extensions Supplement"
+msgstr "ส่วนขยายทางสัทศาสตร์ส่วนเสริม"
+
+msgid "Plane 15 (Supplementary Private Use Area-A)"
+msgstr "ระนาบ 15 (พื้นที่ใช้งานส่วนตัวเสริม A)"
+
+msgid "Plane 16 (Supplementary Private Use Area-B)"
+msgstr "ระนาบ 16 (พื้นที่ใช้งานส่วนตัวเสริม B)"
+
+msgid "Playing Cards"
+msgstr "ไพ่"
 
 #, c-format
 msgid "Please name encoding %d in this file"
@@ -183,11 +855,20 @@ msgstr "โปแลนด์"
 msgid "Portuguese"
 msgstr "โปรตุเกส"
 
+msgid "PostScript"
+msgstr "PostScript"
+
+msgid "Private Use Area"
+msgstr "พื้นที่ใช้งานส่วนตัว"
+
 msgid "Romanian"
 msgstr "โรมาเนีย"
 
 msgid "Russian"
 msgstr "รัสเซีย"
+
+msgid "SVG"
+msgstr "SVG"
 
 msgid "Sanskrit"
 msgstr "สันสกฤต"
@@ -195,11 +876,17 @@ msgstr "สันสกฤต"
 msgid "Save Failed"
 msgstr "การบันทึกล้มเหลว"
 
+msgid "Scaling Bitmaps"
+msgstr "กำลังปรับสเกลบิตแมป"
+
 msgid "Serbian"
 msgstr "เซอร์เบีย"
 
 msgid "Simplified Chinese"
 msgstr "จีนตัวย่อ"
+
+msgid "Sinhala"
+msgstr "สิงหล"
 
 msgid "Slovak"
 msgstr "สโลวัก"
@@ -207,11 +894,77 @@ msgstr "สโลวัก"
 msgid "Slovenian"
 msgstr "สโลวีเนีย"
 
+msgid "Small Form Variants"
+msgstr "แวเรียนต์รูปแบบเล็ก"
+
+msgid "Small Kana Extension"
+msgstr "ส่วนขยายคะนะเล็ก"
+
+msgid "Spacing Modifier Letters"
+msgstr "ตัวอักษรเปลี่ยนเสียงแบบใช้เนื้อที่"
+
 msgid "Spanish"
 msgstr "สเปน"
 
+msgid "Specials"
+msgstr "พิเศษ"
+
+msgid "Sundanese"
+msgstr "ซุนดา"
+
+msgid "Sundanese Supplement"
+msgstr "ซุนดาส่วนเสริม"
+
+msgid "Superscripts and Subscripts"
+msgstr "ตัวยกและตัวห้อย"
+
+msgid "Supplemental Arrows-C"
+msgstr "ลูกศรส่วนเสริม C"
+
+msgid "Supplemental Punctuation"
+msgstr "เครื่องหมายวรรคตอนเสริม"
+
+msgid "Supplemental Symbols and Pictographs"
+msgstr "สัญลักษณ์และตัวหนังสือภาพเสริม"
+
+msgid "Supplementary Ideographic Plane"
+msgstr "ระนาบอักษรภาพเสริม"
+
+msgid "Supplementary Multilingual Plane"
+msgstr "ระนาบภาษาเสริม"
+
+msgid "Supplementary Private Use Area-A"
+msgstr "พื้นที่ใช้งานส่วนตัวเสริม A"
+
+msgid "Supplementary Private Use Area-B"
+msgstr "พื้นที่ใช้งานส่วนตัวเสริม B"
+
 msgid "Swedish"
 msgstr "สวีเดน"
+
+msgid "Symbols and Pictographs Extended-A"
+msgstr "สัญลักษณ์และตัวหนังสือภาพส่วนขยาย A"
+
+msgid "Symbols for Legacy Computing"
+msgstr "สัญลักษณ์สำหรับระบบคอมพิวเตอร์ยุคเก่า"
+
+msgid "Tagalog"
+msgstr "ตากาล็อก"
+
+msgid "Tags"
+msgstr "แท็ก"
+
+msgid "Tamil"
+msgstr "ทมิฬ"
+
+msgid "Tamil Supplement"
+msgstr "ทมิฬส่วนเสริม"
+
+msgid "Telugu"
+msgstr "เตลูกู"
+
+msgid "Tertiary Ideographic Plane"
+msgstr "ระนาบอักษรภาพระดับสาม"
 
 msgid "Thai"
 msgstr "ไทย"
@@ -224,14 +977,38 @@ msgstr ""
 "แบบอักษรนี้เข้ารหัสอักขระแบบ %1$.20s-%2$.20s-%3$d แต่รหัสอักขระที่ใกล้เคียงที่สุดที่พบคือ %1$.20s-%2$.20s-%4$d\n"
 "คุณต้องการให้ใช้รหัสอักขระดังกล่าว หรือต้องการค้นหารหัสอักขระด้วยตนเอง"
 
+msgid "Tibetan"
+msgstr "ทิเบต"
+
+msgid "Too Complex or Bad"
+msgstr "ซับซ้อนเกินไปหรือไม่ถูกต้อง"
+
 msgid "Traditional Chinese"
 msgstr "จีนตัวเต็ม"
+
+msgid "Transport and Map Symbols"
+msgstr "สัญลักษณ์ขนส่งและแผนที่"
+
+msgid "TrueType"
+msgstr "TrueType"
 
 msgid "Turkish"
 msgstr "ตุรกี"
 
+msgid "Type1"
+msgstr "Type1"
+
+msgid "Type2"
+msgstr "Type2"
+
+msgid "Type3"
+msgstr "Type3"
+
 msgid "Ukrainian"
 msgstr "ยูเครน"
+
+msgid "Unified Font Object"
+msgstr "Unified Font Object"
 
 msgid "Unknown Language"
 msgstr "ไม่ทราบภาษา"
@@ -242,8 +1019,38 @@ msgstr "ใช้ CID Map"
 msgid "Uzbek"
 msgstr "อุซเบก"
 
+msgid "Vai"
+msgstr "ไว"
+
+msgid "Vertical Forms"
+msgstr "รูปแบบแนวตั้ง"
+
 msgid "Welsh"
 msgstr "เวลส์"
+
+msgid "Yes to _All"
+msgstr "ใช่_ทั้งหมด"
+
+#, c-format
+msgid ""
+"You are attempting to clear %.30s which is referred to by\n"
+"another character. Are you sure you want to clear it?"
+msgstr ""
+"คุณกำลังพยายามล้าง %.30s ซึ่งถูกอ้างอิงโดยอักขระอื่น\n"
+"คุณแน่ใจหรือไม่ว่าต้องการล้าง"
+
+#, c-format
+msgid ""
+"You are attempting to paste a reference to %1$s into %2$s.\n"
+"But %1$s does not exist in this font.\n"
+"Would you like to copy the original splines (or delete the reference)?"
+msgstr ""
+"คุณกำลังพยายามวางการอ้างอิงถึง %1$s ลงใน %2$s\n"
+"แต่ %1$s ไม่มีอยู่ในแบบอักษรนี้\n"
+"คุณต้องการคัดลอกสไพลน์ต้นฉบับ (หรือลบการอ้างอิง) หรือไม่"
+
+msgid "You must select a glyph before you can import an image into it"
+msgstr "คุณต้องเลือกภาพสัญลักษณ์ก่อนจึงจะนำเข้ารูปภาพเข้าไปได้"
 
 msgid "_Add"
 msgstr "เ_พิ่ม"
@@ -256,6 +1063,9 @@ msgstr "_ยกเลิก"
 
 msgid "_Delete"
 msgstr "_ลบ"
+
+msgid "_Filter"
+msgstr "_กรอง"
 
 msgid "_Give Up"
 msgstr "_ยอมแพ้"
@@ -277,3 +1087,9 @@ msgstr "ใ_ช่"
 
 msgid "couldn't write encodings file"
 msgstr "ไม่สามารถเขียนไฟล์รหัสอักขระ"
+
+msgid "font;fonts;editor;TTF;OTF;typeface;"
+msgstr "แบบอักษร;ตัวแก้ไข;TTF;OTF;ไทป์เฟซ;"
+
+msgid "ΤεΧ Bitmap Fonts"
+msgstr "แบบอักษรบิตแมป ΤεΧ"

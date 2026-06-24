@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-06-24 16:52+0300\n"
+"PO-Revision-Date: 2026-06-24 06:08\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -9651,12 +9651,6 @@ msgstr "Lamba"
 msgid "Language"
 msgstr "Langue"
 
-msgid "Language List"
-msgstr "Liste des langues"
-
-msgid "Language Missing"
-msgstr "Langue manquante"
-
 msgid "Language Tag:"
 msgstr "Balise de langue:"
 
@@ -14351,19 +14345,15 @@ msgstr "Réflexion"
 msgid "Refresh File List"
 msgstr "Rafraîchir"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "Références"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs neste_d deeper than:"
 msgstr "Imbrication max des références:"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad ps transformation matrices"
 msgstr "Réf. avec matrice de transformation PS erronée"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad tt transformation matrices"
 msgstr "Réf. avec matrice de transformation TT erronée"
 
@@ -15712,15 +15702,6 @@ msgstr "_Tout sélectionner"
 msgid "Select a ligature to view"
 msgstr "Sélectionner une ligature à visionner"
 
-msgid ""
-"Select as many languages as needed\n"
-"Hold down the control key when clicking\n"
-"to make disjoint selections."
-msgstr ""
-"Sélectionnez autant de langues que nécessaire.\n"
-"Maintenez enfoncée la touche de contrôle en cliquant\n"
-"pour effectuer des sélections multiples."
-
 msgid "Select by Color"
 msgstr "Sélection par couleur"
 
@@ -16288,10 +16269,6 @@ msgstr ""
 
 msgid "Settings"
 msgstr "Sélecteurs"
-
-#, c-format
-msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
-msgstr "Plusieurs étiquettes de langage, incluant '%s', ne sont pas dans la liste de langages connus et seront ommis."
 
 msgid "Shades"
 msgstr "Ombrages"
@@ -18584,10 +18561,6 @@ msgstr "La sous-table de classes de crénage %s dans %s ne correspond pas à %s 
 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr "Les paires de crénage pour la classe 0 (\"tout le reste\") devraient toujours être à 0"
-
-#, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "La langue '%s' n'est pas dans la liste de langues connues et sera omise."
 
 msgid "The layers do not match"
 msgstr "Les calques ne correspondent pas"
@@ -22410,13 +22383,6 @@ msgstr "Vous devez sélectionner une sous-table de lookup pour contenir cette pa
 
 msgid "You must select at least one language for each script."
 msgstr "Vous devez sélectionner au moins une langue par système d'écriture"
-
-msgid ""
-"You must select at least one language.\n"
-"Use the \"Default\" language if nothing else fits."
-msgstr ""
-"Vous devez sélectionner au moins une langue.\n"
-"Utilisez la langue \"Par défaut\" si rien ne convient."
 
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "Vous devez sélectionner au moins un système d'écriture si vous avez une fonctionnalité"
