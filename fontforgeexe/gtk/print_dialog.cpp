@@ -67,7 +67,17 @@ void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv,
         ff_preview_widget, &ff::dlg::PrintPreviewWidget::draw_page_cb));
     print_operation->set_custom_tab_label(ff_preview_widget.label());
     print_operation->signal_create_custom_widget().connect(
-        [&ff_preview_widget]() { return &ff_preview_widget; });
+        [&ff_preview_widget]() {
+            // The top-level window is only available after full realization of
+            // the print dialog.
+            Glib::signal_idle().connect_once([&ff_preview_widget]() {
+                Gtk::Widget* top = ff_preview_widget.get_toplevel();
+                ff::dlg::install_help_key_handler(top,
+                                                  "ui/dialogs/display.html");
+            });
+
+            return &ff_preview_widget;
+        });
 
     ff_preview_widget.update_page_setup(
         print_operation->get_default_page_setup(),
