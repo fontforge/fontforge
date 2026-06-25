@@ -119,6 +119,19 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
     radio_sample_text_->set_name(SAMPLE_TEXT);
     radio_sample_text_->set_active(persistent.radio_selection == SAMPLE_TEXT);
 
+    radio_full_display_->set_tooltip_text(
+        _("Displays all the glyphs in the font on a rectangular grid at the "
+          "given point size"));
+    radio_glyph_pages_->set_tooltip_text(
+        _("Displays all the selected characters, each on its own page, at an "
+          "extremely large point size"));
+    radio_multi_size_->set_tooltip_text(
+        _("Displays all the selected characters, at several different point "
+          "sizes"));
+    radio_sample_text_->set_tooltip_text(
+        _("Displays a text sample using the current font and, if available, "
+          "other fonts from the same family."));
+
     radio_full_display_->signal_toggled().connect(
         sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
     radio_glyph_pages_->signal_toggled().connect(
@@ -192,6 +205,8 @@ void PrintPreviewWidget::populate_script_lang_combo() {
     // shaping regardless of the presence of OpenType features.
     script_lang_combo_->append("DFLT{dflt}", _("Automatic shaping"));
     script_lang_combo_->set_active(0);
+    script_lang_combo_->set_tooltip_text(
+        "Select script and language for OpenType features.");
 
     SplineFont* sf = cairo_painter_.default_rec().sf;
 
@@ -259,6 +274,7 @@ Gtk::Widget* PrintPreviewWidget::build_opentype_controls() {
         Gtk::make_managed<Gtk::ListViewText>(1, false, Gtk::SELECTION_MULTIPLE);
     feature_tags_list_->set_headers_visible(false);
     feature_tags_list_->set_enable_search(false);
+    feature_tags_list_->set_tooltip_text("Select active OpenType features.");
     refresh_feature_tags_list();
 
     script_lang_combo_->signal_changed().connect(
