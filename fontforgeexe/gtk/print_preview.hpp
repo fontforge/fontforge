@@ -107,10 +107,10 @@ class PrintPreviewWidget : public Gtk::Grid {
     Gtk::Scale page_counter_;  // 1-based
 
     // Preview controls
+    Gtk::RadioButton* radio_sample_text_;
     Gtk::RadioButton* radio_full_display_;
     Gtk::RadioButton* radio_glyph_pages_;
     Gtk::RadioButton* radio_multi_size_;
-    Gtk::RadioButton* radio_sample_text_;
 
     Gtk::SpinButton* size_entry_;
     Gtk::ComboBoxText* scaling_option_;

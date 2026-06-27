@@ -47,10 +47,10 @@ static const std::string preview_area_css(
     "box { box-shadow: 3pt 3pt 3pt black;}");
 
 // Widget names to be referred by stack children
+static const std::string SAMPLE_TEXT("sample_text");
 static const std::string FULL_DISPLAY("full_display");
 static const std::string GLYPH_PAGES("glyph_pages");
 static const std::string MULTI_SIZE("multi_size");
-static const std::string SAMPLE_TEXT("sample_text");
 
 static const std::vector<double> kMultiPointsizes{
     72, 48, 36, 24,  20, 18,  16, 15,  14, 13,  12,  11,
@@ -62,7 +62,7 @@ static const int wrapper_margin = 20;
 
 // Preserve the dialog state between invocations
 static struct {
-    std::string radio_selection = FULL_DISPLAY;
+    std::string radio_selection = SAMPLE_TEXT;
     size_t full_display_size = 20;
     std::string full_page_scaling = utils::FullGlyphPrinter::kScaleToPage;
     std::string sample_text = "";
@@ -100,25 +100,28 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
     build_compound_preview_area();
     Gtk::VBox* controls = Gtk::make_managed<Gtk::VBox>();
 
-    radio_full_display_ =
-        Gtk::make_managed<Gtk::RadioButton>(_("_Full Font Display"), true);
-    Gtk::RadioButton::Group group = radio_full_display_->get_group();
+    radio_sample_text_ =
+        Gtk::make_managed<Gtk::RadioButton>(_("Sample Text"), true);
+    Gtk::RadioButton::Group group = radio_sample_text_->get_group();
+    radio_full_display_ = Gtk::make_managed<Gtk::RadioButton>(
+        group, _("_Full Font Display"), true);
     radio_glyph_pages_ = Gtk::make_managed<Gtk::RadioButton>(
         group, _("Full Pa_ge Glyphs"), true);
     radio_multi_size_ = Gtk::make_managed<Gtk::RadioButton>(
         group, _("_Multi Size Glyphs"), true);
-    radio_sample_text_ =
-        Gtk::make_managed<Gtk::RadioButton>(group, _("Sample Text"), true);
 
+    radio_sample_text_->set_name(SAMPLE_TEXT);
+    radio_sample_text_->set_active(persistent.radio_selection == SAMPLE_TEXT);
     radio_full_display_->set_name(FULL_DISPLAY);
     radio_full_display_->set_active(persistent.radio_selection == FULL_DISPLAY);
     radio_glyph_pages_->set_name(GLYPH_PAGES);
     radio_glyph_pages_->set_active(persistent.radio_selection == GLYPH_PAGES);
     radio_multi_size_->set_name(MULTI_SIZE);
     radio_multi_size_->set_active(persistent.radio_selection == MULTI_SIZE);
-    radio_sample_text_->set_name(SAMPLE_TEXT);
-    radio_sample_text_->set_active(persistent.radio_selection == SAMPLE_TEXT);
 
+    radio_sample_text_->set_tooltip_text(
+        _("Displays a text sample using the current font and, if available, "
+          "other fonts from the same family."));
     radio_full_display_->set_tooltip_text(
         _("Displays all the glyphs in the font on a rectangular grid at the "
           "given point size"));
@@ -128,17 +131,14 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
     radio_multi_size_->set_tooltip_text(
         _("Displays all the selected characters, at several different point "
           "sizes"));
-    radio_sample_text_->set_tooltip_text(
-        _("Displays a text sample using the current font and, if available, "
-          "other fonts from the same family."));
 
+    radio_sample_text_->signal_toggled().connect(
+        sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
     radio_full_display_->signal_toggled().connect(
         sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
     radio_glyph_pages_->signal_toggled().connect(
         sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
     radio_multi_size_->signal_toggled().connect(
-        sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
-    radio_sample_text_->signal_toggled().connect(
         sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
 
     // Size of full-display glyphs
@@ -177,15 +177,15 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
 
     stack_ = Gtk::make_managed<Gtk::Stack>();
     stack_->set_vhomogeneous(false);
+    stack_->add(*sample_text_controls, SAMPLE_TEXT);
     stack_->add(*size, FULL_DISPLAY);
     stack_->add(*scaling_option_, GLYPH_PAGES);
     stack_->add(*Gtk::make_managed<Gtk::Label>(), MULTI_SIZE);
-    stack_->add(*sample_text_controls, SAMPLE_TEXT);
 
+    controls->pack_start(*radio_sample_text_, Gtk::PACK_SHRINK);
     controls->pack_start(*radio_full_display_, Gtk::PACK_SHRINK);
     controls->pack_start(*radio_glyph_pages_, Gtk::PACK_SHRINK);
     controls->pack_start(*radio_multi_size_, Gtk::PACK_SHRINK);
-    controls->pack_start(*radio_sample_text_, Gtk::PACK_SHRINK);
     controls->pack_start(*stack_, Gtk::PACK_EXPAND_WIDGET);
     controls->set_vexpand(true);
 
@@ -682,8 +682,8 @@ bool PrintPreviewWidget::on_preview_area_scroll(GdkEventScroll* event) {
 }
 
 void PrintPreviewWidget::on_display_toggled() {
-    for (auto r : {radio_full_display_, radio_glyph_pages_, radio_multi_size_,
-                   radio_sample_text_}) {
+    for (auto r : {radio_sample_text_, radio_full_display_, radio_glyph_pages_,
+                   radio_multi_size_}) {
         if (r->get_active()) {
             persistent.radio_selection = r->get_name();
             stack_->set_visible_child(persistent.radio_selection);
