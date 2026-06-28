@@ -2184,3 +2184,51 @@ void FF_SetMVInterface(struct mv_interface *mvi) {
     mv_interface = mvi;
 }
 
+SplineFont** FVCollectFamily(SplineFont* sf_in) {
+    int cnt;
+    FontViewBase* fv;
+    SplineFont *sf = NULL, **family = NULL;
+
+    for (fv = FontViewFirst(), cnt = 0; fv != NULL; fv = fv->next)
+        if (fv->nextsame == NULL) ++cnt;
+    family = calloc(cnt + 1, sizeof(SplineFont*));
+
+    for (fv = FontViewFirst(), cnt = 0; fv != NULL; fv = fv->next) {
+        if (fv->nextsame == NULL) {
+            sf = fv->sf;
+            if (sf->cidmaster != NULL) sf = sf->cidmaster;
+
+            /* Skip the incoming argument, and other families */
+            if (sf == sf_in || sf_in->familyname == NULL || sf->familyname == NULL ||
+                strcmp(sf_in->familyname, sf->familyname) != 0)
+                continue;
+
+            family[cnt] = sf;
+            ++cnt;
+        }
+    }
+
+    return family;
+}
+
+SplineChar** FVGetSelection(FontViewBase* fv) {
+    int i, gid, cnt = 0;
+
+    for (i = 0; i < fv->map->enccount; ++i) {
+        if (fv->selected[i] && (gid = fv->map->map[i]) != -1 &&
+            fv->sf->glyphs[gid] != NULL)
+            ++cnt;
+    }
+
+    SplineChar** result = malloc((cnt + 1) * sizeof(SplineChar*));
+
+    cnt = 0;
+    for (i = 0; i < fv->map->enccount; ++i) {
+        if (fv->selected[i] && (gid = fv->map->map[i]) != -1 &&
+            fv->sf->glyphs[gid] != NULL)
+            result[cnt++] = fv->sf->glyphs[gid];
+    }
+    result[cnt] = NULL;
+
+    return result;
+}

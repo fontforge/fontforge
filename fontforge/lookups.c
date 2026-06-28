@@ -1648,7 +1648,7 @@ char *TagFullName(SplineFont *sf,uint32_t tag, int ismac, int onlyifknown) {
 	uint32_t stag = tag;
 	if ( tag==CHR('n','u','t','f') )	/* early name that was standardize later as... */
 	    stag = CHR('a','f','r','c');	/*  Stood for nut fractions. "nut" meaning "fits in an en" in old typography-speak => vertical fractions rather than diagonal ones */
-	if ( tag==REQUIRED_FEATURE ) {
+	if ( tag==REQUIRED_FEATURE_ ) {
 	    strcpy(ubuf,_("Required Feature"));
 	} else {
 	    LookupInit();

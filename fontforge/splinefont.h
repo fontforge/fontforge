@@ -52,6 +52,8 @@ extern "C" {
 /*  fonts */
 #define BACK_LAYER_MAX 256
 
+typedef struct cpp_SplineFontProperties cpp_SplineFontProperties;
+
 typedef struct dbasepoint {
     bigreal x;
     bigreal y;
@@ -272,7 +274,7 @@ typedef struct bluedata {
 /* The OpenType spec says in one place that the default script is 'dflt' and */
 /*  in another that it is 'DFLT'. 'DFLT' is correct */
 #define DEFAULT_SCRIPT		CHR('D','F','L','T')
-#define REQUIRED_FEATURE	CHR(' ','R','Q','D')
+#define REQUIRED_FEATURE_	CHR(' ','R','Q','D')
 
 enum otlookup_type {
     ot_undef = 0,			/* Not a lookup type */
@@ -1461,6 +1463,9 @@ extern const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_
 	const unichar_t *weight);
 extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32_t *sizes);
 extern void SplineFontSetUnChanged(SplineFont *sf);
+extern char* SFGetFullName(SplineFont *sf);
+extern SplineFont** FVCollectFamily(SplineFont *sf);
+extern cpp_SplineFontProperties* SFGetProperties(SplineFont* sf);
 
 extern bool RealNear(real a,real b);
 
@@ -1705,8 +1710,6 @@ extern int hasFreeTypeByteCode(void);
 extern int FreeTypeAtLeast(int major, int minor, int patch);
 extern char *FreeTypeStringVersion(void);
 extern void doneFreeType(void);
-extern void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontviewbase *fv,
-	int layer, enum fontformat ff,int flags,void *shared_ftc);
 extern void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontviewbase *fv,int layer);
 extern BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth);
 extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,

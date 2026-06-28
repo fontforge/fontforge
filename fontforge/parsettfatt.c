@@ -2707,7 +2707,7 @@ return( lookups );
 static void tagLookupsWithFeature(uint32_t script_tag,uint32_t lang_tag,
 	int required_feature, struct feature *feature, struct lookup *lookups,
 	struct ttfinfo *info) {
-    uint32_t feature_tag = required_feature ? REQUIRED_FEATURE : feature->tag;
+    uint32_t feature_tag = required_feature ? REQUIRED_FEATURE_ : feature->tag;
     int i;
     OTLookup *otlookup;
     FeatureScriptLangList *fl;

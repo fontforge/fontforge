@@ -1,0 +1,169 @@
+/* Copyright 2025 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#pragma once
+
+#include <gtkmm.h>
+
+namespace ff::widget {
+
+class RichTechEditor : public Gtk::Grid {
+ public:
+    explicit RichTechEditor(const std::vector<double>& pointsizes);
+
+    void configure(bool bold_enabled, bool italic_enabled, bool stretch_enabled,
+                   bool weight_enabled);
+
+    // Load buffer from XML stream
+    void load_buffer(std::istream& istream);
+
+    static const std::string rich_text_mime_type;
+
+    // TextView accessors
+    Glib::RefPtr<Gtk::TextBuffer> get_buffer() {
+        return text_view_.get_buffer();
+    }
+    Gtk::ScrolledWindow& get_scrolled() { return scrolled_; }
+
+    // Special widget class for toggling tags on TextBuffer contents. This
+    // widget is responsible for applying classes, such as "bold", "italic" etc.
+    // to the TextView buffer.
+    //
+    // The desired behavior is as follows (using Bold style as example):
+    //
+    // When a text range is selected, the button in "on" if the entire selected
+    // range is Bold. Otherwise the button is "off". When there is no selection,
+    // the button state is according the character right before the cursor. So
+    // if the character before the cursor is Bold, the button will be "on", and
+    // newly typed characters will be Bold too.
+    //
+    // When the user clicks the button, its state changes. Accordingly, if there
+    // was a selection, the selection style changes accordingly. If there was no
+    // selection, the newly typed characters would have the style according to
+    // the button state.
+    class ToggleTagButton : public Gtk::ToggleToolButton {
+     public:
+        ToggleTagButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+                        Glib::RefPtr<Gtk::TextTag> tag);
+
+        void toggle_tag(const Gtk::TextBuffer::iterator& start,
+                        const Gtk::TextBuffer::iterator& end);
+
+        // Toggle the current selection, if there is any. We don't want to
+        // override Gtk::ToggleToolButton::on_toggled(), we want to be able to
+        // disconnect it.
+        void on_button_toggled();
+
+        // Set the button state when the buffer cursor or selection changes.
+        void on_buffer_cursor_changed(
+            const Gtk::TextBuffer::iterator&,
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark);
+
+     protected:
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+        Glib::RefPtr<Gtk::TextTag> tag_;
+    };
+
+    class TagComboBox : public Gtk::ToolItem {
+     public:
+        TagComboBox(
+            Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+            const std::string& default_id,
+            const std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>>&
+                tag_map,
+            const std::vector<
+                std::pair<std::string /*id*/, std::string /*label*/>>& labels);
+
+        void apply_tag(const Gtk::TextBuffer::iterator& start,
+                       const Gtk::TextBuffer::iterator& end);
+
+        // Apply the tag to the current selection, if there is any. We don't
+        // want to override Gtk::ComboBox::on_changed(), we want to be able to
+        // disconnect it.
+        void on_box_changed();
+
+        std::string get_active_tag(const Gtk::TextBuffer::iterator& start,
+                                   const Gtk::TextBuffer::iterator& end);
+
+        // Set the combobox active row when the buffer cursor or selection
+        // changes.
+        void on_buffer_cursor_changed(
+            const Gtk::TextBuffer::iterator&,
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark);
+
+     protected:
+        std::string default_id_;
+        std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map_;
+
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+
+        Gtk::ComboBoxText combo_box_;
+    };
+
+    class ClearFormattingButton : public Gtk::ToolButton {
+     public:
+        ClearFormattingButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
+
+        void on_button_clicked();
+
+     protected:
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+    };
+
+ protected:
+    // The global scale controls the display size of all text in the editor. It
+    // is convenient when the user wants to set the entire sample in a large or
+    // a small size, but still have a resonably scaled text in UI.
+    double global_scale_ = 1.0;
+    Glib::RefPtr<Gtk::CssProvider> scale_css_provider_;
+
+    Gtk::ScrolledWindow scrolled_;
+    Gtk::TextView text_view_;
+
+    ToggleTagButton* bold_button_;
+    ToggleTagButton* italic_button_;
+    TagComboBox* stretch_combo_;
+    TagComboBox* size_combo_;
+    TagComboBox* weight_combo_;
+    Gtk::Toolbar toolbar_;
+
+    static void on_text_view_paste_clipboard(GtkTextView* text_view,
+                                             gpointer user_data);
+    bool on_text_view_scroll_event(GdkEventScroll* event);
+    void refresh_scale_css();
+    bool request_clipboard_rich_text();
+    void on_clipboard_rich_text_received(const Glib::ustring& format,
+                                         const std::string& text);
+
+    TagComboBox* build_stretch_combo();
+    TagComboBox* build_size_combo(const std::vector<double>& pointsizes);
+    TagComboBox* build_weight_combo();
+    Gtk::ToolButton* build_tools_menu();
+    void on_load_buffer_from_xml();
+    void on_save_buffer_to_xml();
+};
+
+}  // namespace ff::widget

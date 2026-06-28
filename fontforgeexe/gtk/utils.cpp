@@ -140,4 +140,21 @@ void unset_cursor(Gtk::Widget* widget, Glib::RefPtr<Gdk::Cursor> old_cursor) {
     gdk_window->set_cursor(old_cursor);
 }
 
+void apply_css(Gtk::Widget& w, const std::string& style) {
+    Glib::RefPtr<Gtk::CssProvider> css_provider = Gtk::CssProvider::create();
+
+    // Load CSS styles
+    try {
+        css_provider->load_from_data(style);
+    } catch (const Glib::Error& ex) {
+        std::cerr << "Failed CSS data: " << std::endl << style << std::endl;
+        std::cerr << "Error loading CSS: " << ex.what() << std::endl;
+    } catch (...) {
+        std::cerr << "Unknown error occurred while loading CSS." << std::endl;
+    }
+
+    w.get_style_context()->add_provider(css_provider,
+                                        GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
+}
+
 }  // namespace ff::ui_utils

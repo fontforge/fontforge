@@ -50,10 +50,11 @@ class IShaper {
     // ubuf - buffer of Unicode encodings. External shapers (e.g. HarfBuzz) can
     // only accept Unicode-based input, so unencoded glyphs need to be mapped to
     // fake encodings.
+    // mv - whether the shaper should produce output for Metrics View.
     virtual std::vector<MetricsCore> apply_features(
         const std::vector<unichar_t>& ubuf,
         const std::map<Tag, bool>& feature_map, Tag script, Tag lang,
-        bool vertical) = 0;
+        bool vertical, bool mv = true) = 0;
 
     // glyphs - a sequence of glyphs to be shaped
     // NOTE: the glyph sequence can't be passed as a Unicode string, since some
