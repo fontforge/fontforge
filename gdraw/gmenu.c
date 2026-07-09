@@ -1763,18 +1763,17 @@ return( true );
 	    mb->initial_press = true;
 	    GMenuBarChangeSelection(mb,which,event);
 	}
-    } else if ( event->type == et_mousemove && (mb->pressed || mb->entry_with_mouse!=-1) ) {
+    } else if ( event->type == et_mousemove && mb->entry_with_mouse!=-1 ) {
 	/* Once a menu is active on the bar, moving across it switches menus on
-	 * hover (sticky menus), not only while a button is held. Keyed off
-	 * entry_with_mouse rather than child!=NULL so that hovering a disabled
-	 * top-level menu (which opens no pulldown) doesn't end navigation. */
+	 * hover. Keyed off entry_with_mouse rather than button state or child!=NULL
+	 * so that hovering a disabled top-level menu (which opens no pulldown)
+	 * doesn't end navigation. */
 	if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
 	    int which = GMenuBarIndex(mb,event->u.mouse.x);
-	    /* While hovering (no button held), don't let the pointer passing
-	     * over a gap between titles (which==-1) close the open menu -- that
-	     * causes the menu to flicker shut and reopen. Only switch to another
-	     * real title. A held drag keeps the original close-on-gap behaviour. */
-	    if ( which!=-1 || mb->pressed )
+	    /* Don't let the pointer passing over a gap between titles (which==-1)
+	     * close the open menu -- that causes the menu to flicker shut and
+	     * reopen. Only switch to another real title. */
+	    if ( which!=-1 )
 		GMenuBarChangeSelection(mb,which,event);
 	} else if ( mb->child!=NULL ) {
 	    GPoint p;
