@@ -440,7 +440,7 @@ Gdraw.GGroup.Box.Padding: 0
 Gdraw.GMenuBar.Box.BorderOuter: False
 Gdraw.GMenuBar.Box.GradientStartCol: #e5e4e3
 Gdraw.GMenuBar.Box.BorderInnerCol: #edeceb
-Gdraw.GMenuBar.Box.ActiveBorder: #ededed
+Gdraw.GMenuBar.Box.ActiveBorder: #88b2de
 Gdraw.GMenuBar.Box.BorderShape: rect
 Gdraw.GMenuBar.Box.BorderWidth: 1
 Gdraw.GMenuBar.Box.Radius: 2
