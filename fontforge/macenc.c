@@ -851,10 +851,10 @@ static uint16_t _WinLangFromMac[] = {
 	0x450,		/* Mongolian (Mongolian) */
 	0x850,		/* Mongolian (cyrillic) */
 	0x463,		/* Pashto */
-/*60*/	0xffff,		/* Kurdish */
+/*60*/	0x492,		/* Kurdish */
 	0x860,		/* Kashmiri */
 	0x459,		/* Sindhi */
-	0xffff,		/* Tibetan */
+	0x451,		/* Tibetan */
 	0x461,		/* Nepali */
 	0x44f,		/* Sanskrit */
 	0x44e,		/* Marathi */
@@ -881,68 +881,68 @@ static uint16_t _WinLangFromMac[] = {
 	0x472,		/* Galla, oromo, afan */
 	0x477,		/* Somali */
 	0x441,		/* Swahili */
-/*90*/	0xffff,		/* Kinyarwanda/Ruanda */
-	0xffff,		/* Rundi/Kirundi */
-	0xffff,		/* Nyanja/Chewa */
-	0xffff,		/* Malagasy */
-/*94*/	0xffff,		/* Esperanto */
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-/*100*/	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-/*110*/	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-/*120*/	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
-	0xffff,
+/*90*/	0x487,		/* Kinyarwanda/Ruanda */
+	0x1000,		/* Rundi/Kirundi */
+	0x1000,		/* Nyanja/Chewa */
+	0x1000,		/* Malagasy */
+/*94*/	0x1000,		/* Esperanto */
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+/*100*/	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+/*110*/	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+/*120*/	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
+	0x1000,
 /*128*/	0x452,		/* Welsh */
 	0x42d,		/* Basque */
 /*130*/	0x403,		/* Catalan */
 	0x476,		/* Latin */
-	0xffff,		/* Quechua */
+	0x46b,		/* Quechua */
 	0x474,		/* Guarani */
-	0xffff,		/* Aymara */
+	0x1000,		/* Aymara */
 	0x444,		/* Tatar */
-	0xffff,		/* Uighur */
-	0xffff,		/* Dzongkha/Bhutani */
-	0xffff,		/* Javanese (roman) */
-	0xffff,		/* Sundanese (roman) */
+	0x480,		/* Uighur */
+	0xc51,		/* Dzongkha/Bhutani */
+	0x1000,		/* Javanese (roman) */
+	0x1000,		/* Sundanese (roman) */
 /*140*/	0x456,		/* Galician */
 	0x436,		/* Afrikaans */
-	0xffff,		/* Breton */
+	0x47e,		/* Breton */
 	0x45d,		/* Inuktitut */
 	0x43c,		/* Scottish Gaelic */
 	0xc3c,		/* Manx Gaelic */
 	0x83c,		/* Irish Gaelic (with dot) */
-	0xffff,		/* Tongan */
-	0xffff,		/* Greek (polytonic) */
-	0xffff,		/* Greenlandic */	/* Presumably icelandic? */
+	0x1000,		/* Tongan */
+	0x1000,		/* Greek (polytonic) */
+	0x46f,		/* Greenlandic */
 /*150*/	0x42c,		/* Azebaijani (roman) */
-	0xffff
+	0x1000
 };
 
 static char *LanguageCodesFromMacLang[] = {
@@ -1251,14 +1251,19 @@ return( _WinLangFromMac[maclang] );
 uint16_t WinLangToMac(int winlang) {
     int i;
 
-    for ( i=0; i<sizeof(_WinLangFromMac)/sizeof(_WinLangFromMac[0]); ++i )
-	if ( _WinLangFromMac[i] == winlang )
+	/* Some fonts fonts have "CID findfont name" on language 0xffff.
+	Also, Windows has undefiened language 0x1000, which could map to many.
+	In these cases, skip lookup and return 0xFFFF. */
+	if (winlang != 0xffff && winlang != 0x1000){
+		for ( i=0; i<sizeof(_WinLangFromMac)/sizeof(_WinLangFromMac[0]); ++i )
+		if ( _WinLangFromMac[i] == winlang )
 return( i );
 
-    winlang &= 0xff;
-    for ( i=0; i<sizeof(_WinLangFromMac)/sizeof(_WinLangFromMac[0]); ++i )
-	if ( (_WinLangFromMac[i]&0xff) == winlang )
+		winlang &= 0xff;
+		for ( i=0; i<sizeof(_WinLangFromMac)/sizeof(_WinLangFromMac[0]); ++i )
+		if ( (_WinLangFromMac[i]&0xff) == winlang )
 return( i );
+	}
 
 return( 0xffff );
 }
@@ -1435,7 +1440,7 @@ struct macsettingname macfeat_otftag[] = {
     /* 3, 4, initial caps */
     /* 3, 5, initial caps, small caps */
     { 4, 0, CHR('v','r','t','2') },	/* vertical forms => vertical rotation */
-    /* { 4, 0, CHR('v','k','n','a') },	/\* vertical forms => vertical kana *\/ */
+    /* { 4, 0, CHR('v','k','n','a') },	/\* vertical forms => vertical kana *\/ */  // TODO, feature #34-2 (34-0 is hkna)
     { 6, 0, CHR('t','n','u','m') },	/* monospace numbers => Tabular numbers */
     { 10, 1, CHR('s','u','p','s') },	/* superior vertical position => superscript */
     { 10, 2, CHR('s','u','b','s') },	/* inferior vertical position => subscript */
@@ -2005,7 +2010,8 @@ static struct macname fs_names[] = {
 	{ NULL, 0, 4, "Unicodeontleding" },
 	{ NULL, 0, 4, "Canonieke ontleding" },
 	{ &fs_names[541], 0, 0, "Half-Width" },
-	{ NULL, 0, 1, "Demi-taille" },
+	{ &fs_names[542], 0, 1, "Demi-taille" }, // Missing German and Italian translations
+	{ NULL, 0, 4, "Halve breedte" },
 	{ NULL, 0, 0, NULL }
 };
 
