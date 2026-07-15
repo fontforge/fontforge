@@ -33,7 +33,7 @@
 #include "ttf.h"
 #include "ustring.h"
 
-const int winlang_undefined = 0xffff;
+#define WINLANG_UNDEFINED 0x1000
 
 /*
  The original data for these mappings may be found at
@@ -884,55 +884,55 @@ static uint16_t _WinLangFromMac[] = {
 	0x477,		/* Somali */
 	0x441,		/* Swahili */
 /*90*/	0x487,		/* Kinyarwanda/Ruanda */
-	winlang_undefined,		/* Rundi/Kirundi */
-	winlang_undefined,		/* Nyanja/Chewa */
-	winlang_undefined,		/* Malagasy */
-/*94*/	winlang_undefined,		/* Esperanto */
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-/*100*/	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-/*110*/	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-/*120*/	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
-	winlang_undefined,
+	WINLANG_UNDEFINED,		/* Rundi/Kirundi */
+	WINLANG_UNDEFINED,		/* Nyanja/Chewa */
+	WINLANG_UNDEFINED,		/* Malagasy */
+/*94*/	WINLANG_UNDEFINED,		/* Esperanto */
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+/*100*/	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+/*110*/	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+/*120*/	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
+	WINLANG_UNDEFINED,
 /*128*/	0x452,		/* Welsh */
 	0x42d,		/* Basque */
 /*130*/	0x403,		/* Catalan */
 	0x476,		/* Latin */
 	0x46b,		/* Quechua */
 	0x474,		/* Guarani */
-	winlang_undefined,		/* Aymara */
+	WINLANG_UNDEFINED,		/* Aymara */
 	0x444,		/* Tatar */
 	0x480,		/* Uighur */
 	0xc51,		/* Dzongkha/Bhutani */
-	winlang_undefined,		/* Javanese (roman) */
-	winlang_undefined,		/* Sundanese (roman) */
+	WINLANG_UNDEFINED,		/* Javanese (roman) */
+	WINLANG_UNDEFINED,		/* Sundanese (roman) */
 /*140*/	0x456,		/* Galician */
 	0x436,		/* Afrikaans */
 	0x47e,		/* Breton */
@@ -940,11 +940,11 @@ static uint16_t _WinLangFromMac[] = {
 	0x43c,		/* Scottish Gaelic */
 	0xc3c,		/* Manx Gaelic */
 	0x83c,		/* Irish Gaelic (with dot) */
-	winlang_undefined,		/* Tongan */
-	winlang_undefined,		/* Greek (polytonic) */
+	WINLANG_UNDEFINED,		/* Tongan */
+	WINLANG_UNDEFINED,		/* Greek (polytonic) */
 	0x46f,		/* Greenlandic */
 /*150*/	0x42c,		/* Azebaijani (roman) */
-	winlang_undefined
+	WINLANG_UNDEFINED
 };
 
 static char *LanguageCodesFromMacLang[] = {
@@ -1254,9 +1254,9 @@ uint16_t WinLangToMac(int winlang) {
     int i;
 
 	/* Some fonts fonts have "CID findfont name" on language 0xFFFF.
-	Also, Windows has undefined language winlang_undefined, which could map to many.
+	Also, Windows has undefined language WINLANG_UNDEFINED, which could map to many.
 	In these cases, skip lookup and return 0xFFFF. */
-	if (winlang != 0xffff && winlang != winlang_undefined){
+	if (winlang != 0xffff && winlang != WINLANG_UNDEFINED){
 		for ( i=0; i<sizeof(_WinLangFromMac)/sizeof(_WinLangFromMac[0]); ++i )
 		if ( _WinLangFromMac[i] == winlang )
 return( i );
