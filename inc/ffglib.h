@@ -24,6 +24,7 @@
 
 #define GList  GList_Glib
 #define GMenuItem GMenuItem_GIO
+#define GMenu GMenu_GIO
 #define GTimer GTimer_GTK
 
 #ifdef __GNU__
@@ -34,6 +35,9 @@
 #include <glib-object.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#ifdef __cplusplus
+#include <glibmm/ustring.h>
+#endif
 
 #ifdef __GNU__
 # define extended	double

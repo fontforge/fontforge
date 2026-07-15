@@ -30,7 +30,7 @@
 
 #include "flaglist.h"
 #include "splinefont.h"
-#include "views.h"
+#include "baseviews.h"
 
 #pragma push_macro("real")
 #undef real
@@ -62,16 +62,23 @@
         PyObject_HEAD_INIT(type) size,
 #endif
 
+/* These variables are defined in activeinui.c (compiled as C), so they need
+ * extern "C" linkage when referenced from C++ code like python.c */
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern SplineChar *sc_active_in_ui;
 extern FontViewBase *fv_active_in_ui;
 extern int layer_active_in_ui;
-
 extern void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *));
 extern int PyFF_ConvexNibID(const char *);
 extern PyObject *PySC_From_SC(SplineChar *sc);
 extern PyObject *PyFV_From_FV(FontViewBase *fv);
 extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags,const char *flagkind);
 extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
+#ifdef __cplusplus
+}
+#endif
 
 
 /********************************************************************************/
@@ -81,6 +88,9 @@ extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
 /* Other sentinel values for end-of-array initialization */
 #define PYMETHODDEF_EMPTY  { NULL, NULL, 0, NULL }
 #define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
+
+typedef struct ff_glyph PyFF_Glyph;
+typedef struct ff_font PyFF_Font;
 
 typedef struct ff_point {
     PyObject_HEAD
@@ -117,7 +127,7 @@ extern PyTypeObject PyFF_LayerType;
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
     uint8_t replace;
     uint8_t ended;
     uint8_t changed;
@@ -127,24 +137,24 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
 } PyFF_LayerArray;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
 } PyFF_RefArray;
 
 typedef struct glyphmathkernobject {
     PyObject_HEAD
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
 } PyFF_MathKern;
 
-typedef struct {
+typedef struct ff_glyph {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    void *sc_opaque; // Use PyFF_Glyph_GetSC() to access this pointer, never use it directly
     PyFF_LayerArray *layers;
     PyFF_RefArray *refs;
     PyFF_MathKern *mk;
@@ -154,40 +164,39 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
+    PyFF_Font *font;
     int layer;
 } PyFF_LayerInfo;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
+    PyFF_Font *font;
 } PyFF_LayerInfoArray;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
-    FontViewBase *fv;
+    PyFF_Font *font;
 } PyFF_Private;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    FontViewBase *fv;
+    PyFF_Font *font;
     int by_glyphs;
 } PyFF_Selection;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
+    PyFF_Font *font;
     struct ttf_table *cvt;
 } PyFF_Cvt;
 
 typedef struct fontmathobject {
     PyObject_HEAD
-    SplineFont *sf;
+    PyFF_Font *font;
 } PyFF_Math;
 
 /* This Python object is a view into SplineFont::MATH DeviceTable objects.
@@ -195,16 +204,16 @@ typedef struct fontmathobject {
    font has been closed or deleted. */
 typedef struct fontmathdevicetableobject {
     PyObject_HEAD
-    SplineFont *sf;
+    PyFF_Font *font;
     int devtab_offset;
 } PyFF_MathDeviceTable;
 
-typedef struct {
+typedef struct ff_font {
     PyObject_HEAD
     /* Type-specific fields go here. */
     FontViewBase *fv;
     PyFF_LayerInfoArray *layers;
-    PyFF_Private *private;
+    PyFF_Private *priv;
     PyFF_Cvt *cvt;
     PyFF_Selection *selection;
     PyFF_Math *math;
@@ -213,7 +222,13 @@ typedef struct {
 extern PyMethodDef PyFF_Font_methods[];
 extern PyMethodDef module_fontforge_methods[];
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 PyObject* PyFF_FontForFV(FontViewBase *fv);
 PyObject* PyFF_FontForFV_I(FontViewBase *fv);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FFPYTHON_H */

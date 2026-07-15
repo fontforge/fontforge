@@ -4,6 +4,10 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // TODO: move structsmallcaps here from baseviews.h
 
 struct xheightinfo {
@@ -30,5 +34,9 @@ extern void SCCondenseExtend(struct counterinfo *ci, SplineChar *sc, int layer, 
 extern void ScriptSCCondenseExtend(SplineChar *sc, struct counterinfo *ci);
 extern void ScriptSCEmbolden(SplineChar *sc, int layer, enum embolden_type type, struct lcg_zones *zones);
 extern void SmallCapsFindConstants(struct smallcaps *small, SplineFont *sf, int layer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SCSTYLES_H */

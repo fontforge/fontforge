@@ -4,6 +4,10 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int no_windowing_ui, maxundoes;
 
 /**
@@ -81,5 +85,9 @@ extern void SCDoUndo(SplineChar *sc, int layer);
 extern void SCUndoSetLBearingChange(SplineChar *sc, int lbc);
 extern void *UHintCopy(SplineChar *sc, int docopy);
 extern void UndoesFreeButRetainFirstN(Undoes** undopp, int retainAmount);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_CVUNDOES_H */

@@ -1811,3 +1811,44 @@ return;
 	dirs[dcnt] = utf82u_copy(path[dcnt]);
     dirs[dcnt] = NULL;
 }
+
+/* Split multipath of form [<dir>/<file_name>; <file_name>; <file_name>; ...;
+ * <file_name>] */
+char** GFileChooserGetMultipleFiles(const char* multipath) {
+    char *path = NULL, *eod, *full;
+    const char *spt = multipath, *file = multipath, *fpt;
+    char** path_list = NULL;
+    size_t sc_count = 0, i = 0;
+    if (multipath == NULL) return NULL;
+
+    /* Count delimiting semicolons and allocate the NULL-terminated array of
+     * strings */
+    for (sc_count = 0; spt[sc_count];
+         spt[sc_count] == ';' ? sc_count++ : *spt++);
+    path_list = calloc(sc_count + 2, sizeof(char*));
+
+    eod = strrchr(multipath, '/');
+    if (eod != NULL) {
+        path = copyn(multipath, eod - multipath);
+        file = eod + 1;
+    }
+
+    do {
+        fpt = strstr(file, "; ");
+
+        if (fpt == NULL) fpt = file + strlen(file);
+        full = malloc(c_strlen(path) + 1 + (fpt - file) + 1);
+	full[0] = '\0';
+
+        if (path) {
+            strcpy(full, path);
+            strcat(full, "/");
+        }
+        strncat(full, file, fpt - file);
+        path_list[i++] = full;
+        file = fpt + 2;
+    } while (*fpt != '\0');
+
+    free(path);
+    return path_list;
+}

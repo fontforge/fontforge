@@ -154,10 +154,9 @@ FontForge.
 
    FontForge deals in pixel sizes, not point sizes. The conversion between
    pixels and points differs on different systems and indeed on different
-   screens. A point is (approximately) 1/72 of an inch, a pixel is however big a
+   screens. A typographic point is 1/72 of an inch, a pixel is however big a
    pixel happens to be on your screen. Usually pixels range from about 1/72 of
-   an inch to about 1/144 of an inch. Different systems support different screen
-   resolutions as "standard", and FontForge tries to know about these standards.
+   an inch to about 1/144 of an inch.
 
    .. list-table:: Some conversions between points and pixels
       :header-rows: 1
@@ -206,19 +205,14 @@ FontForge.
         - 33
         - 40
 
-   Sadly your screen will probably not match one of the standard screens
-   precisely. On X the standard resolutions are 75 and 100dpi, on MS Windows 96
-   and 120dpi, and on the Mac 72dpi. This dialog provides the conversion between
-   pixel size and point sizes at these resolutions.
+   Most modern monitors report their resolution to the OS. This dialog provides
+   the conversion between pixel sizes and point sizes at your resolution, and
+   for the typical 96 PPI monitor.
 
-   Normally the new glyphs are created by rasterizing the outline font. If your
-   system has the freetype2 library installed (and you checked the "Use
-   FreeType" box) then FontForge will use the FreeType rasterizer to generate
-   bitmaps, otherwise it will use FontForge's built-in rasterizer (which isn't
-   as good, but involves a little less overhead).
-
-   Finally, if you have no outline font then the new glyphs will be created by
-   scaling the (bitmap) font displayed in the font view.
+   Normally the new glyphs are created by rasterizing the outline font.
+   FontForge uses the FreeType rasterizer to generate bitmaps. If you have no
+   outline font then the new glyphs will be created by scaling the (bitmap)
+   font displayed in the font view.
 
    If you want to generate a blank strike (one containing no glyphs) then turn
    off the ``[] Create Rasterized Strikes`` checkbox.

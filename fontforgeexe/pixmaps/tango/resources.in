@@ -21,6 +21,7 @@ fontforge.FontView.HintingNeededColor: #598ec6
 fontforge.FontView.MetricsAdvanceAtColor: #008000
 fontforge.FontView.MetricsAdvanceToColor: #008000
 fontforge.FontView.MetricsBaselineColor: #0000c0
+fontforge.FontView.MetricsGlyphContourColor: #a45a38
 fontforge.FontView.MetricsOriginColor: #c00000
 fontforge.FontView.Font: ^View.LabelFont
 
@@ -140,7 +141,6 @@ fontforge.FontInfo.Font: ^View.DefaultFont
 fontforge.GlyphInfo.Font: ^View.MonoFont
 fontforge.Groups.Font: ^View.DefaultFont
 fontforge.Histogram.GraphColor: #2020ff
-fontforge.Histogram.Font: 83% ^View.DefaultFont
 fontforge.KernClass.Font: ^View.MonoFont
 fontforge.KernClass.TextColor: #006080
 fontforge.KernFormat.Font: ^View.DefaultFont

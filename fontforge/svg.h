@@ -4,6 +4,10 @@
 #include "sd.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char **NamesReadSVG(char *filename);
 extern Entity *EntityInterpretSVG(char *filename, char *memory, int memlen,
                                   int em_size, int ascent, bool scale);
@@ -19,5 +23,9 @@ extern SplineSet *SplinePointListInterpretSVG(char *filename, char *memory, int 
 extern void SFLSetOrder(SplineFont *sf, int layerdest, int order2);
 extern void SFSetOrder(SplineFont *sf, int order2);
 extern void SCDimensionFromSVGFile(const char *path, SplineChar *sc, bool vert);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SVG_H */

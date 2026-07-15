@@ -336,23 +336,23 @@ return( NULL );
 	* NULL first
 	*/
 	if(metaLenUncompressed == UINT32_MAX) {
-		LogError(_("WOFF uncompressed metadata section too large.\n"));
+		LogError(_("WOFF uncompressed metadata section too large."));
 		sf->woffMetadata = NULL; 
 		return( sf );
 	}
 	if(metaLenCompressed == UINT32_MAX) {
-		LogError(_("WOFF compressed metadata section too large.\n"));
+		LogError(_("WOFF compressed metadata section too large."));
 		sf->woffMetadata = NULL;
 		return( sf );
 	}
 	sf->woffMetadata = malloc(metaLenUncompressed+1);
 	if(sf->woffMetadata == NULL) { 
-		LogError(_("WOFF uncompressed metadata section too large.\n"));
+		LogError(_("WOFF uncompressed metadata section too large."));
 		return( sf );
 	}
 	unsigned char *temp = malloc(metaLenCompressed+1);
 	if(temp == NULL) { 
-		LogError(_("WOFF compressed metadata section too large.\n"));
+		LogError(_("WOFF compressed metadata section too large."));
 		free(sf->woffMetadata); 
 		sf->woffMetadata = NULL;
 		free(temp);

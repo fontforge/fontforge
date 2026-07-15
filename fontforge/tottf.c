@@ -33,6 +33,7 @@
 #include "dumpbdf.h"
 #include "dumppfa.h"
 #include "encoding.h"
+#include "ffglib_compat.h"
 #include "fontforge.h"
 #include "fvfonts.h"
 #include "gfile.h"
@@ -61,12 +62,12 @@
 #include <locale.h>
 #include <math.h>
 #include <time.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 #ifdef __CygWin
  #include <sys/stat.h>
  #include <sys/types.h>
- #include <unistd.h>
+ #include "ffunistd.h"
 #endif
 
 char *TTFFoundry=NULL;
@@ -893,9 +894,9 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
     char *stempt;
 
     stem = 0;
-    if ( sf->private!=NULL && (stempt=PSDictHasEntry(sf->private,"StdVW"))!=NULL )
+    if ( sf->private_dict!=NULL && (stempt=PSDictHasEntry(sf->private_dict,"StdVW"))!=NULL )
 	stem = strtod(stempt,NULL);
-    else if ( sf->private!=NULL && (stempt=PSDictHasEntry(sf->private,"StdHW"))!=NULL )
+    else if ( sf->private_dict!=NULL && (stempt=PSDictHasEntry(sf->private_dict,"StdHW"))!=NULL )
 	stem = strtod(stempt,NULL);
     if ( stem<=0 )
 	stem = (sf->ascent+sf->descent)/30;
@@ -1147,7 +1148,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    /*  scale factors, or rotations */
 	    /* That description does not match the behavior of their rasterizer*/
 	    /*  I've reverse engineered something else (see parsettf.c) */
-	    /*  http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html */
+	    /*  http://fonts.apple.com/TrueType-Reference-Manual/RM06/Chap6glyf.html */
 	    /* Adobe says that setting bit 12 means that this will not happen */
 	    /*  Apple doesn't mention bit 12 though...(but they do support it) */
 	}
@@ -1459,7 +1460,6 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     FigureFullMetricsEnd(sf,gi,true);
 
     if ( fixed>0 ) {
-	gi->lasthwidth = 3;
 	gi->hfullcnt = 3;
     }
     for ( i=0; i<gi->gcnt; ++i ) {
@@ -1962,7 +1962,7 @@ static void ATFigureDefWidth(SplineFont *sf, struct alltabs *at, int subfont) {
 static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	int subrcnt) {
     char *pt;
-    FILE *private = subfont==-1?at->private:at->fds[subfont].private;
+    FILE *private = subfont==-1?at->private_file:at->fds[subfont].private_file;
     int mi,i;
     real bluevalues[14], otherblues[10];
     real snapcnt[12];
@@ -1987,9 +1987,9 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
     dumpintoper(private,nomwid,21);		/* Nominative Width */
 
     bs = SplineFontIsFlexible(sf,at->gi.layer,at->gi.flags);
-    hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
-    hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
-    hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
+    hasblue = PSDictHasEntry(sf->private_dict,"BlueValues")!=NULL;
+    hash = PSDictHasEntry(sf->private_dict,"StdHW")!=NULL;
+    hasv = PSDictHasEntry(sf->private_dict,"StdVW")!=NULL;
     ff_progress_change_stages(2+autohint_before_generate+!hasblue);
     if ( autohint_before_generate ) {
 	ff_progress_change_line1(_("Auto Hinting Font..."));
@@ -2024,31 +2024,31 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
     ff_progress_change_line1(_("Saving OpenType Font"));
 
     if ( hasblue )
-	DumpStrArray(PSDictHasEntry(sf->private,"BlueValues"),private,6);
+	DumpStrArray(PSDictHasEntry(sf->private_dict,"BlueValues"),private,6);
     else
 	DumpDblArray(bluevalues,sizeof(bluevalues)/sizeof(bluevalues[0]),private,6);
-    if ( (pt=PSDictHasEntry(sf->private,"OtherBlues"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_dict,"OtherBlues"))!=NULL )
 	DumpStrArray(pt,private,7);
     else if ( !hasblue )
 	DumpDblArray(otherblues,sizeof(otherblues)/sizeof(otherblues[0]),private,7);
-    if ( (pt=PSDictHasEntry(sf->private,"FamilyBlues"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_dict,"FamilyBlues"))!=NULL )
 	DumpStrArray(pt,private,8);
-    bluescale = BlueScaleFigure(sf->private,bluevalues,otherblues);
-    if ( (pt=PSDictHasEntry(sf->private,"FamilyOtherBlues"))!=NULL )
+    bluescale = BlueScaleFigure(sf->private_dict,bluevalues,otherblues);
+    if ( (pt=PSDictHasEntry(sf->private_dict,"FamilyOtherBlues"))!=NULL )
 	DumpStrArray(pt,private,9);
-    if ( (pt=PSDictHasEntry(sf->private,"BlueScale"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_dict,"BlueScale"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+9);
     else if ( bluescale!=-1 )
 	dumpdbloper(private,bluescale,(12<<8)+9);
-    if ( (pt=PSDictHasEntry(sf->private,"BlueShift"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_dict,"BlueShift"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+10);
     else
 	dumpintoper(private,bs,(12<<8)+10);
-    if ( (pt=PSDictHasEntry(sf->private,"BlueFuzz"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_dict,"BlueFuzz"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+11);
     if ( hash ) {
-	DumpStrDouble(PSDictHasEntry(sf->private,"StdHW"),private,10);
-	if ( (pt=PSDictHasEntry(sf->private,"StemSnapH"))!=NULL )
+	DumpStrDouble(PSDictHasEntry(sf->private_dict,"StdHW"),private,10);
+	if ( (pt=PSDictHasEntry(sf->private_dict,"StemSnapH"))!=NULL )
 	    DumpStrArray(pt,private,(12<<8)|12);
     } else {
 	if ( stdhw[0]!=0 )
@@ -2056,15 +2056,15 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	DumpDblArray(stemsnaph,sizeof(stemsnaph)/sizeof(stemsnaph[0]),private,(12<<8)|12);
     }
     if ( hasv ) {
-	DumpStrDouble(PSDictHasEntry(sf->private,"StdVW"),private,11);
-	if ( (pt=PSDictHasEntry(sf->private,"StemSnapV"))!=NULL )
+	DumpStrDouble(PSDictHasEntry(sf->private_dict,"StdVW"),private,11);
+	if ( (pt=PSDictHasEntry(sf->private_dict,"StemSnapV"))!=NULL )
 	    DumpStrArray(pt,private,(12<<8)|13);
     } else {
 	if ( stdvw[0]!=0 )
 	    dumpdbloper(private,stdvw[0],11);
 	DumpDblArray(stemsnapv,sizeof(stemsnapv)/sizeof(stemsnapv[0]),private,(12<<8)|13);
     }
-    if ( (pt=PSDictHasEntry(sf->private,"ForceBold"))!=NULL ) {
+    if ( (pt=PSDictHasEntry(sf->private_dict,"ForceBold"))!=NULL ) {
 	dumpintoper(private,*pt=='t'||*pt=='T',(12<<8)|14);
     } else if ( sf->weight!=NULL &&
 	    (strstrmatch(sf->weight,"Bold")!=NULL ||
@@ -2074,7 +2074,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	     strstrmatch(sf->weight,"Heavy")!=NULL ||
 	     strstrmatch(sf->weight,"Black")!=NULL))
 	dumpintoper(private,1,(12<<8)|14);
-    if ( (pt=PSDictHasEntry(sf->private,"LanguageGroup"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_dict,"LanguageGroup"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+17);
     else if ( map==NULL )
 	/* Do Nothing */;
@@ -2083,7 +2083,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	      map->enc->is_tradchinese ||
 	      map->enc->is_simplechinese )
 	dumpintoper(private,1,(12<<8)|17);
-    if ( (pt=PSDictHasEntry(sf->private,"ExpansionFactor"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_dict,"ExpansionFactor"))!=NULL )
 	DumpStrDouble(pt,private,(12<<8)+18);
     if ( subrcnt!=0 )
 	dumpsizedint(private,false,ftell(private)+3+1,19);	/* Subrs */
@@ -2130,7 +2130,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
 	dumpintoper(cfff,0,(12<<8)|7);
     }
     if ( sf->uniqueid!=-1 && sf->use_uniqueid )
-	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), 13 );
+	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (ff_random_int()&0x3ffff), 13 );
     SplineFontLayerFindBounds(sf,at->gi.layer,&b);
     at->gi.xmin = b.minx;
     at->gi.ymin = b.miny;
@@ -2222,7 +2222,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     dumpdbloper(cfff,sf->cidversion,(12<<8)|31);
     dumpintoper(cfff,cidcnt,(12<<8)|34);
     if ( sf->use_uniqueid )
-	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), (12<<8)|35 );
+	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (ff_random_int()&0x3ffff), (12<<8)|35 );
 
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);
@@ -2291,7 +2291,7 @@ static void finishup(SplineFont *sf,struct alltabs *at) {
     enclen = ftell(at->encoding);
     csetlen = ftell(at->charset);
     cstrlen = ftell(at->charstrings);
-    prvlen = ftell(at->private);
+    prvlen = ftell(at->private_file);
     base = ftell(at->cfff);
     if ( base+6*3+strlen+glen+enclen+csetlen+cstrlen+prvlen > 32767 ) {
 	at->cfflongoffset = true;
@@ -2341,7 +2341,7 @@ static void finishup(SplineFont *sf,struct alltabs *at) {
     if ( !ttfcopyfile(at->cfff,at->charstrings,base+strlen+glen+csetlen+enclen,"CFF-CharStrings")) at->error = true;
 
     /* Private & Subrs */
-    if ( !ttfcopyfile(at->cfff,at->private,base+strlen+glen+csetlen+enclen+cstrlen,"CFF-Private")) at->error = true;
+    if ( !ttfcopyfile(at->cfff,at->private_file,base+strlen+glen+csetlen+enclen+cstrlen,"CFF-Private")) at->error = true;
 }
 
 static void finishupcid(SplineFont *sf,struct alltabs *at) {
@@ -2369,7 +2369,7 @@ static void finishupcid(SplineFont *sf,struct alltabs *at) {
 	fseek(at->fdarray,at->fds[i].fillindictmark,SEEK_SET);
 	dumpsizedint(at->fdarray,false,at->fds[i].privatelen,-1);	/* Private len */
 	dumpsizedint(at->fdarray,true,base+strlen+glen+csetlen+fdsellen+cstrlen+fdarrlen+prvlen,18);	/* Private offset */
-	prvlen += ftell(at->fds[i].private);	/* private & subrs */
+	prvlen += ftell(at->fds[i].private_file);	/* private & subrs */
     }
 
     dumpsizedint(at->cfff,at->cfflongoffset,base+strlen+glen,15);	/* charset */
@@ -2407,8 +2407,8 @@ static void finishupcid(SplineFont *sf,struct alltabs *at) {
     /* Private & Subrs */
     prvlen = 0;
     for ( i=0; i<sf->subfontcnt; ++i ) {
-	int temp = ftell(at->fds[i].private);
-	if ( !ttfcopyfile(at->cfff,at->fds[i].private,
+	int temp = ftell(at->fds[i].private_file);
+	if ( !ttfcopyfile(at->cfff,at->fds[i].private_file,
 		base+strlen+glen+csetlen+fdsellen+cstrlen+fdarrlen+prvlen,"CFF-PrivateSubrs")) at->error = true;
 	prvlen += temp;
     }
@@ -2560,7 +2560,7 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     at->sidh = GFileTmpfile();
     at->charset = GFileTmpfile();
     at->encoding = GFileTmpfile();
-    at->private = GFileTmpfile();
+    at->private_file = GFileTmpfile();
 
     dumpcffheader(at->cfff);
     dumpcffnames(sf,at->cfff);
@@ -2572,7 +2572,7 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
 return( false );
     dumpcffprivate(sf,at,-1,subrs->next);
     if ( subrs->next!=0 )
-	_dumpcffstrings(at->private,subrs);
+	_dumpcffstrings(at->private_file,subrs);
     ff_progress_next_stage();
     at->charstrings = dumpcffstrings(chrs);
     PSCharsFree(subrs);
@@ -2609,7 +2609,7 @@ static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
 
     at->fds = calloc(sf->subfontcnt,sizeof(struct fd2data));
     for ( i=0; i<sf->subfontcnt; ++i ) {
-	at->fds[i].private = GFileTmpfile();
+	at->fds[i].private_file = GFileTmpfile();
 	ATFigureDefWidth(sf->subfonts[i],at,i);
     }
     if ( (chrs = CID2ChrsSubrs2(sf,at->fds,at->gi.flags,&glbls,at->gi.layer))==NULL )
@@ -2617,7 +2617,7 @@ return( false );
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	dumpcffprivate(sf->subfonts[i],at,i,at->fds[i].subrs->next);
 	if ( at->fds[i].subrs->next!=0 )
-	    _dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
+	    _dumpcffstrings(at->fds[i].private_file,at->fds[i].subrs);
 	PSCharsFree(at->fds[i].subrs);
     }
     _dumpcffstrings(at->globalsubrs,glbls);
@@ -3006,7 +3006,7 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	    hold.hheadset = hold.vheadset = false;
 	memset(pfminfo,'\0',sizeof(*pfminfo));
 	SFDefaultOS2Simple(pfminfo,sf);
-	samewid = CIDOneWidth(sf);
+	samewid = SFOneWidth(sf);
 
 	pfminfo->pfmfamily = 0x10;
 	if ( samewid>0 ) {
@@ -5177,8 +5177,8 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
 	fclose(at->charset);
     if ( at->encoding!=NULL )
 	fclose(at->encoding);
-    if ( at->private!=NULL )
-	fclose(at->private);
+    if ( at->private_file!=NULL )
+	fclose(at->private_file);
     if ( at->charstrings!=NULL )
 	fclose(at->charstrings);
     if ( at->fdselect!=NULL )
@@ -5220,8 +5220,8 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
 	fclose(at->avar);
 
     for ( i=0; i<sf->subfontcnt; ++i ) {
-	if ( at->fds[i].private!=NULL )
-	    fclose(at->fds[i].private);
+	if ( at->fds[i].private_file!=NULL )
+	    fclose(at->fds[i].private_file);
     }
     if ( sf->subfontcnt!=0 ) {
 	free(sf->glyphs);
@@ -5344,6 +5344,7 @@ static void ATmaxpInit(struct alltabs *at,SplineFont *sf, enum fontformat format
 static void initATTables(struct alltabs *at, SplineFont *sf, enum fontformat format) {
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
     if ( at->opentypemode ) {
+	SFCollectSubtableMap(sf, at->subtable_map);
 	SFFindUnusedLookups(sf);
 	otf_dumpgpos(at,sf);
 	otf_dumpgsub(at,sf);
@@ -5420,7 +5421,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
 	at->tabdir.tabs[i++].length = at->bdflen;
     }
 
-    if ( format==ff_otf || format==ff_otfcid ) {
+    if ( (format==ff_otf || format==ff_otfcid) && !(flags&ttf_flag_no_outlines) ) {
 	at->tabdir.tabs[i].tag = CHR('C','F','F',' ');
 	at->tabdir.tabs[i].length = at->cfflen;
 	at->tabdir.tabs[i++].data = at->cfff;
@@ -5582,7 +5583,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
 	at->tabdir.tabs[i++].length = at->gasplen;
     }
 
-    if ( at->gi.glyphs!=NULL ) {
+    if ( at->gi.glyphs!=NULL && !(flags&ttf_flag_no_outlines) ) {
 	at->tabdir.tabs[i].tag = CHR('g','l','y','f');
 	at->tabdir.tabs[i].data = at->gi.glyphs;
 	at->tabdir.tabs[i++].length = at->gi.glyph_len;
@@ -6000,26 +6001,10 @@ static void dumpttf(FILE *ttf,struct alltabs *at) {
     /* ttfcopyfile closed all the files (except ttf) */
 }
 
-static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
-    char *d, *e;
-    char *newname = malloc(strlen(fontname)+10);
-    FILE *file;
-    int i,k,max;
+static SplineCharTTFMap* MakeGlyphTTFMap(SplineFont *sf) {
+    int i,k,max, map_idx;
     SplineChar *sc;
-
-    strcpy(newname,fontname);
-    d = strrchr(newname,'/');
-    if ( d==NULL ) d=newname;
-    e = strrchr(d,'.');
-    if ( e==NULL ) e = newname+strlen(newname);
-    strcpy(e,".g2n");
-
-    file = fopen(newname,"wb");
-    if ( file==NULL ) {
-	LogError( _("Failed to open glyph to name map file for writing: %s\n"), newname );
-	free(newname);
-return;
-    }
+    SplineCharTTFMap *map = NULL;
 
     if ( sf->subfontcnt==0 )
 	max = sf->glyphcnt;
@@ -6028,6 +6013,10 @@ return;
 	    if ( sf->subfonts[k]->glyphcnt > max )
 		max = sf->subfonts[k]->glyphcnt;
     }
+
+    map = (SplineCharTTFMap*) calloc(max+1, sizeof(SplineCharTTFMap));
+    map_idx = 0;
+
     for ( i=0; i<max; ++i ) {
 	sc = NULL;
 	if ( sf->subfontcnt==0 )
@@ -6038,12 +6027,42 @@ return;
 	    break;
 	}
 	if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
-	    fprintf( file, "GLYPHID %d\tPSNAME %s", sc->ttf_glyph, sc->name );
-	    if ( sc->unicodeenc!=-1 )
-		fprintf( file, "\tUNICODE %04X", sc->unicodeenc );
-	    putc('\n',file);
+	    map[map_idx].glyph = sc;
+	    map[map_idx++].ttf_glyph = sc->ttf_glyph;
 	}
     }
+
+    return map;
+}
+
+static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
+    char *d, *e;
+    char *newname = malloc(strlen(fontname)+10);
+    FILE *file;
+    SplineCharTTFMap *map = NULL, *entry = NULL;
+
+    strcpy(newname,fontname);
+    d = strrchr(newname,'/');
+    if ( d==NULL ) d=newname;
+    e = strrchr(d,'.');
+    if ( e==NULL ) e = newname+strlen(newname);
+    strcpy(e,".g2n");
+
+    file = fopen(newname,"wb");
+    if ( file==NULL ) {
+	LogError( _("Failed to open glyph to name map file for writing: %s"), newname );
+	free(newname);
+return;
+    }
+
+    map = MakeGlyphTTFMap(sf);
+    for ( entry = map; entry->glyph != NULL; ++entry ) {
+	fprintf( file, "GLYPHID %d\tPSNAME %s", entry->ttf_glyph, entry->glyph->name );
+	if ( entry->glyph->unicodeenc!=-1 )
+	    fprintf( file, "\tUNICODE %04X", entry->glyph->unicodeenc );
+	putc('\n',file);
+    }
+    free(map);
     fclose(file);
     free(newname);
 }
@@ -6113,7 +6132,7 @@ static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int 
     if ( bsizes!=NULL && !at->applebitmaps && !at->otbbitmaps && !at->msbitmaps )
 	at->msbitmaps = true;		/* They asked for bitmaps, but no bitmap type selected */
     at->gi.bsizes = bsizes;
-    at->gi.fixed_width = CIDOneWidth(sf);
+    at->gi.fixed_width = SFOneWidth(sf);
     at->isotf = format==ff_otf || format==ff_otfcid;
     at->format = format;
     at->next_strid = 256;
@@ -6127,6 +6146,7 @@ static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int 
     }
     at->sf = sf;
     at->map = map;
+    at->subtable_map = SubtableMap_new();
 }
 
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
@@ -6182,7 +6202,9 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	if ( initTables(&at,sf,format,flags,bsizes,bf))
 	    dumpttf(ttf,&at);
     }
+
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
+    SubtableMap_delete(&at.subtable_map);
     if ( at.error || ferror(ttf))
 return( 0 );
 
@@ -6215,6 +6237,15 @@ return( 0 );
 return( ret );
 }
 
+/* A special version of TrueType font, which drops all outlines for performance.
+ */
+SplineCharTTFMap* WriteTTFFontForShaper(FILE* ttf, SplineFont* sf) {
+    _WriteTTFFont(ttf, sf, ff_ttf, NULL, bf_ttf,
+                  ttf_flag_otmode | ttf_flag_no_outlines, sf->map, ly_fore);
+    // Build map of TTF codepoints
+    return MakeGlyphTTFMap(sf);
+}
+
 /* ************************************************************************** */
 /* ****************************** Type42 stuff ****************************** */
 /* ************************************************************************** */
@@ -6228,7 +6259,7 @@ static void dumphex(struct hexout *hexout,FILE *temp,int length) {
     int i, ch, ch1;
 
     if ( length&1 )
-	LogError( _("Table length should not be odd\n") );
+	LogError( _("Table length should not be odd") );
 
     while ( length>65534 ) {
 	dumphex(hexout,temp,65534);
@@ -6491,7 +6522,7 @@ static struct alltabs *ttc_prep(struct sflist *sfs, enum fontformat format,
 	    emsize = sf->ascent + sf->descent;
 	else if ( emsize != sf->ascent + sf->descent )
 return( NULL );
-	if ( format==ff_otf && !PSDictSame(sf->private,sfs->sf->private))
+	if ( format==ff_otf && !PSDictSame(sf->private_dict,sfs->sf->private_dict))
 return( NULL );
 	if ( sf->hasvmetrics ) anyvmetrics = true;
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL )
@@ -6613,7 +6644,7 @@ return( NULL );
 return( NULL );
     }
 
-    ret[fcnt].gi.fixed_width = CIDOneWidth(sf);
+    ret[fcnt].gi.fixed_width = SFOneWidth(sf);
     ret[fcnt].gi.bygid = bygid;
     ret[fcnt].gi.gcnt = ret[fcnt].maxp.numGlyphs = dummysf->glyphcnt;
     if ( format==ff_ttf )

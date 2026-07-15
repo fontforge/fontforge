@@ -59,7 +59,7 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, int include_empty) {
     blocks = uniname_blocks(&num_blocks);
     cnt = 2 + num_planes + num_blocks;
 
-    ri = calloc(cnt + 1, sizeof(*ri));
+    ri = (struct rangeinfo*) calloc(cnt + 1, sizeof(*ri));
     if (ri == NULL) {
         NoMoreMemMessage();
         return NULL;
@@ -92,7 +92,7 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, int include_empty) {
             } else if (!isunicodepointassigned(ch)) {
                 /* glyphs attached to code points which have not been assigned in */
                 /*  the version of unicode I know about */
-                ++ri[num_planes = num_blocks + 1].cnt;
+                ++ri[num_planes + num_blocks + 1].cnt;
             }
         }
     }

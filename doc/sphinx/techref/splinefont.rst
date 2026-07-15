@@ -704,7 +704,7 @@ Function declarations
    enum charset;                   /* in charset.h */
    
    extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
-   extern int SFOneWidth(SplineFont *sf);
+   extern bool SFIsFixedWidth(SplineFont *sf);
    extern struct chars *SplineFont2Chrs(SplineFont *sf, int round);
    enum fontformat { ff_pfa, ff_pfb, ff_ptype3, ff_ptype0, ff_ttf, ff_none };
    extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format);

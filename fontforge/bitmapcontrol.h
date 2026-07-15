@@ -29,7 +29,14 @@
 #define FONTFORGE_BITMAPCONTROL_H
 
 #include "baseviews.h"
-#include "splinefont.h"
+
+typedef struct gwindow* GWindow;
+
+enum bd_scope { bd_all, bd_selected, bd_current };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct createbitmapdata {
     FontViewBase *fv;
@@ -37,16 +44,16 @@ typedef struct createbitmapdata {
     SplineChar *sc;
     int layer;
     int isavail;
-    int which;
+    enum bd_scope which;
     int rasterize;
     unsigned int done: 1;
 } CreateBitmapData;
 
-enum { bd_all, bd_selected, bd_current };
-
-extern int bdfcontrol_lastwhich;
-
-void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes,int usefreetype);
+void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes);
 extern int BitmapControl(FontViewBase *fv, int32_t *sizes, int isavail, int rasterize);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BITMAPCONTROL_H */

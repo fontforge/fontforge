@@ -43,6 +43,7 @@
 #include <locale.h>
 #include <math.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 struct opentype_feature_friendlynames friendlies[] = {
@@ -709,44 +710,51 @@ return( false );
 return( true );
 }
 
-SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *subtable) {
-    uint8_t *used = calloc(sf->glyphcnt,sizeof(uint8_t));
-    SplineChar **glyphs, *sc;
-    int i, k, gid, cnt;
+void SFCollectSubtableMap(SplineFont *sf,cpp_SubtableMap* map) {
+    SplineChar *sc;
+    int i, k;
     KernPair *kp;
     PST *pst;
-    int ispair = subtable->lookup->lookup_type == gpos_pair;
-    int isliga = subtable->lookup->lookup_type == gsub_ligature;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc = sf->glyphs[i]) ) {
-	if ( ispair ) {
-	    for ( k=0; k<2; ++k ) {
-		for ( kp= k ? sc->kerns : sc->vkerns; kp!=NULL ; kp=kp->next ) {
-		    if ( !SCWorthOutputting(kp->sc))
-		continue;
-		    if ( kp->subtable == subtable ) {
-			used[i] = true;
-    goto continue_;
-		    }
-		}
+	for ( k=0; k<2; ++k ) {
+	    for ( kp= k ? sc->kerns : sc->vkerns; kp!=NULL ; kp=kp->next ) {
+		if ( !SCWorthOutputting(kp->sc))
+		    continue;
+		SubtableMap_add_kp(map, kp->subtable, i, kp);
 	    }
 	}
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	    if ( pst->subtable == subtable && PSTValid(sf,pst)) {
-		if ( !isliga ) {
-		    used[i] = true;
-    goto continue_;
-		} else {
-		    gid = LigaturesFirstComponentGID(sf,pst->u.lig.components);
-		    pst->u.lig.lig = sc;
-		    if ( gid!=-1 )
-			used[gid] = true;
-		    /* can't continue here. ffi might be "f+f+i" and "ff+i" */
-		    /*  and we need to mark both "f" and "ff" as used */
-		}
+	    if (PSTValid(sf,pst)) {
+		SubtableMap_add_pst(map, pst->subtable, i, pst);
 	    }
 	}
-    continue_: ;
+    }
+}
+
+SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *subtable, cpp_SubtableMap* map) {
+    uint8_t *used = calloc(sf->glyphcnt,sizeof(uint8_t));
+    SplineChar **glyphs;
+    int i, gid, cnt;
+    int isliga = subtable->lookup->lookup_type == gsub_ligature;
+    struct kp_list* kp_it, *kps = SubtableMap_get_kp_list(map, subtable);
+    struct pst_list* pst_it, *psts = SubtableMap_get_pst_list(map, subtable);
+
+    for (kp_it = kps; kp_it && kp_it->kp; ++kp_it) {
+	used[kp_it->gid] = true;
+    }
+
+    for (pst_it = psts; pst_it && pst_it->pst; ++pst_it) {
+	if ( !isliga ) {
+	    used[pst_it->gid] = true;
+	} else {
+	    gid = LigaturesFirstComponentGID(sf,pst_it->pst->u.lig.components);
+	    pst_it->pst->u.lig.lig = sf->glyphs[pst_it->gid];
+	    if ( gid!=-1 )
+		used[gid] = true;
+	    /* can't continue here. ffi might be "f+f+i" and "ff+i" */
+	    /*  and we need to mark both "f" and "ff" as used */
+	}
     }
 
     for ( i=cnt=0 ; i<sf->glyphcnt; ++i )
@@ -1428,6 +1436,7 @@ static struct {
     { N_("Script|Batak"), CHR('b','a','t','k') },
     { N_("Script|Bengali"), CHR('b','e','n','g') },
     { N_("Script|Bengali2"), CHR('b','n','g','2') },
+    { N_("Beria Erfe"), CHR('b','e','r','f') },
     { N_("Bhaiksuki"), CHR('b','h','k','s') },
     { N_("Bopomofo"), CHR('b','o','p','o') },
     { NU_("Brāhmī"), CHR('b','r','a','h') },
@@ -1458,6 +1467,7 @@ static struct {
     { N_("Elbasan"), CHR('e','l','b','a') },
     { N_("Elymaic"), CHR('e','l','y','m') },
     { N_("Script|Ethiopic"), CHR('e','t','h','i') },
+    { N_("Garay"), CHR('g','a','r','a') },
     { N_("Script|Georgian"), CHR('g','e','o','r') },
     { N_("Glagolitic"), CHR('g','l','a','g') },
     { N_("Gothic"), CHR('g','o','t','h') },
@@ -1468,6 +1478,7 @@ static struct {
     { N_("Gunjala Gondi"), CHR('g','o','n','g') },
     { N_("Gurmukhi"), CHR('g','u','r','u') },
     { N_("Gurmukhi2"), CHR('g','u','r','2') },
+    { N_("Gurung Khema"), CHR('g','u','k','h') },
     { N_("Hangul Jamo"), CHR('j','a','m','o') },
     { N_("Hangul"), CHR('h','a','n','g') },
     { N_("Hanifi Rohingya"), CHR('r','o','h','g') },
@@ -1489,6 +1500,7 @@ static struct {
     { N_("Script|Khmer"), CHR('k','h','m','r') },
     { N_("Khojki"), CHR('k','h','o','j') },
     { N_("Khudawadi"), CHR('s','i','n','d') },
+    { N_("Kirat Rai"), CHR('k','r','a','i') },
     { N_("Script|Lao"), CHR('l','a','o',' ') },
     { N_("Script|Latin"), CHR('l','a','t','n') },
     { NU_("Lepcha (Róng)"), CHR('l','e','p','c') },
@@ -1530,6 +1542,7 @@ static struct {
     { N_("Nyiakeng Puachue Hmong"), CHR('h','m','n','p') },
     { N_("Ogham"), CHR('o','g','a','m') },
     { N_("Ol Chiki"), CHR('o','l','c','k') },
+    { N_("Ol Onal"), CHR('o','n','a','o') },
     { N_("Old Hungarian"), CHR('h','u','n','g') },
     { N_("Old Italic (Etruscan, Oscan, etc.)"), CHR('i','t','a','l') },
     { N_("Old North Arabian"), CHR('n','a','r','b') },
@@ -1555,6 +1568,7 @@ static struct {
     { N_("Sharada"), CHR('s','h','r','d') },
     { N_("Shavian"), CHR('s','h','a','w') },
     { N_("Siddham"), CHR('s','i','d','d') },
+    { N_("Script|Sidetic"), CHR('s','i','d','t') },
     { N_("Sutton SignWriting"), CHR('s','g','n','w') },
     { N_("Script|Sinhala"), CHR('s','i','n','h') },
     { N_("Sogdian"), CHR('s','o','g','d') },
@@ -1562,6 +1576,7 @@ static struct {
     { N_("Soyombo"), CHR('s','o','y','o') },
     { N_("Script|Sumero-Akkadian Cuneiform"), CHR('x','s','u','x') },
     { N_("Script|Sundanese"), CHR('s','u','n','d') },
+    { N_("Script|Sunuwar"), CHR('s','u','n','u') },
     { N_("Script|Syloti Nagri"), CHR('s','y','l','o') },
     { N_("Script|Syriac"), CHR('s','y','r','c') },
     { N_("Script|Tagalog"), CHR('t','g','l','g') },
@@ -1569,6 +1584,7 @@ static struct {
     { N_("Tai Le"), CHR('t','a','l','e') },
     { N_("Tai Tham"), CHR('l','a','n','a') },
     { N_("Tai Viet"), CHR('t','a','v','t') },
+    { N_("Script|Tai Yo"), CHR('t','a','y','o') },
     { N_("Takri"), CHR('t','a','k','r') },
     { N_("Tangsa"), CHR('t','n','s','a') },
     { N_("Script|Tamil"), CHR('t','a','m','l') },
@@ -1581,7 +1597,10 @@ static struct {
     { N_("Script|Tibetan"), CHR('t','i','b','t') },
     { N_("Tifinagh (Berber)"), CHR('t','f','n','g') },
     { N_("Tirhuta"), CHR('t','i','r','h') },
+    { N_("Todhri"), CHR('t','o','d','r') },
+    { N_("Tolong Siki"), CHR('t','o','l','s') },
     { N_("Toto"), CHR('t','o','t','o') },
+    { N_("Tulu-Tigalari"), CHR('t','u','t','g') },
     { N_("Script|Ugaritic"), CHR('u','g','a','r') },
     { N_("Script|Vai"), CHR('v','a','i',' ') },
     { N_("Vithkuqi"), CHR('v','i','t','h') },
@@ -2233,12 +2252,12 @@ static FPST *SF_AddFPST(struct sfmergecontext *mc,FPST *fpst,
 	    r->u.glyph.fore = copy( r->u.glyph.fore );
 	  break;
 	  case pst_class:
-	    r->u.class.nclasses = malloc( r->u.class.ncnt*sizeof(uint16_t));
-	    memcpy(r->u.class.nclasses,oldr->u.class.nclasses, r->u.class.ncnt*sizeof(uint16_t));
-	    r->u.class.bclasses = malloc( r->u.class.bcnt*sizeof(uint16_t));
-	    memcpy(r->u.class.bclasses,oldr->u.class.bclasses, r->u.class.bcnt*sizeof(uint16_t));
-	    r->u.class.fclasses = malloc( r->u.class.fcnt*sizeof(uint16_t));
-	    memcpy(r->u.class.fclasses,oldr->u.class.fclasses, r->u.class.fcnt*sizeof(uint16_t));
+	    r->u.fpc_class.nclasses = malloc( r->u.fpc_class.ncnt*sizeof(uint16_t));
+	    memcpy(r->u.fpc_class.nclasses,oldr->u.fpc_class.nclasses, r->u.fpc_class.ncnt*sizeof(uint16_t));
+	    r->u.fpc_class.bclasses = malloc( r->u.fpc_class.bcnt*sizeof(uint16_t));
+	    memcpy(r->u.fpc_class.bclasses,oldr->u.fpc_class.bclasses, r->u.fpc_class.bcnt*sizeof(uint16_t));
+	    r->u.fpc_class.fclasses = malloc( r->u.fpc_class.fcnt*sizeof(uint16_t));
+	    memcpy(r->u.fpc_class.fclasses,oldr->u.fpc_class.fclasses, r->u.fpc_class.fcnt*sizeof(uint16_t));
 	  break;
 	  case pst_coverage:
 	    r->u.coverage.ncovers = ClassCopy( r->u.coverage.ncnt, r->u.coverage.ncovers );
@@ -3242,12 +3261,12 @@ return( 0 );
 		if ( *pt!='\0' )
     continue;		/* didn't match */
 	    } else if ( fpst->format==pst_class ) {
-		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=0; i>=0 && cpos<rule->u.class.bcnt; i = bskipglyphs(lookup_flags,data,i-1)) {
-		    if ( !GlyphNameInClass(data->str[i].sc->name,fpst->bclass[rule->u.class.bclasses[cpos]]) )
+		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=0; i>=0 && cpos<rule->u.fpc_class.bcnt; i = bskipglyphs(lookup_flags,data,i-1)) {
+		    if ( !GlyphNameInClass(data->str[i].sc->name,fpst->bclass[rule->u.fpc_class.bclasses[cpos]]) )
 		break;
 		    ++cpos;
 		}
-		if ( cpos!=rule->u.class.bcnt )
+		if ( cpos!=rule->u.fpc_class.bcnt )
     continue;		/* didn't match */
 	    } else if ( fpst->format==pst_coverage ) {
 		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=0; i>=0 && cpos<rule->u.coverage.bcnt; i = bskipglyphs(lookup_flags,data,i-1)) {
@@ -3274,10 +3293,10 @@ return( 0 );
 	    if ( *pt!='\0' )
     continue;		/* didn't match */
 	} else if ( fpst->format==pst_class ) {
-	    for ( i=pos, cpos=0; i<data->cnt && cpos<rule->u.class.ncnt; i = skipglyphs(lookup_flags,data,i+1)) {
-		int class = rule->u.class.nclasses[cpos];
-		if ( class!=0 ) {
-		    if ( !GlyphNameInClass(data->str[i].sc->name,fpst->nclass[class]) )
+	    for ( i=pos, cpos=0; i<data->cnt && cpos<rule->u.fpc_class.ncnt; i = skipglyphs(lookup_flags,data,i+1)) {
+		int classnum = rule->u.fpc_class.nclasses[cpos];
+		if ( classnum!=0 ) {
+		    if ( !GlyphNameInClass(data->str[i].sc->name,fpst->nclass[classnum]) )
 	    break;
 		} else {
 		    int c;
@@ -3290,7 +3309,7 @@ return( 0 );
 		}
 		data->str[i].context_pos = cpos++;
 	    }
-	    if ( cpos<rule->u.class.ncnt )
+	    if ( cpos<rule->u.fpc_class.ncnt )
     continue;		/* didn't match */
 	} else if ( fpst->format==pst_coverage ) {
 	    for ( i=pos, cpos=0; i<data->cnt && cpos<rule->u.coverage.ncnt; i = skipglyphs(lookup_flags,data,i+1)) {
@@ -3319,12 +3338,12 @@ return( 0 );		/* Not ready to deal with reverse chainging */
 		if ( *pt!='\0' )
     continue;		/* didn't match */
 	    } else if ( fpst->format==pst_class ) {
-		for ( i=retpos, cpos=0; i<data->cnt && cpos<rule->u.class.fcnt; i = skipglyphs(lookup_flags,data,i+1)) {
-		    if ( !GlyphNameInClass(data->str[i].sc->name,fpst->fclass[rule->u.class.fclasses[cpos]]) )
+		for ( i=retpos, cpos=0; i<data->cnt && cpos<rule->u.fpc_class.fcnt; i = skipglyphs(lookup_flags,data,i+1)) {
+		    if ( !GlyphNameInClass(data->str[i].sc->name,fpst->fclass[rule->u.fpc_class.fclasses[cpos]]) )
 		break;
 		    cpos++;
 		}
-		if ( cpos<rule->u.class.fcnt )
+		if ( cpos<rule->u.fpc_class.fcnt )
     continue;		/* didn't match */
 	    } else if ( fpst->format==pst_coverage ) {
 		for ( i=retpos, cpos=0; i<data->cnt && cpos<rule->u.coverage.fcnt; i = skipglyphs(lookup_flags,data,i+1)) {
@@ -3840,7 +3859,7 @@ return( 0 );
 /*  a transformed string with substitutions applied and containing positioning */
 /*  info */
 struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32_t *flist, uint32_t script, uint32_t lang,
-	int pixelsize, SplineChar **glyphs) {
+	bool gpos_only, int pixelsize, SplineChar **glyphs) {
     int isgpos, cnt;
     OTLookup *otl;
     struct lookup_data data;
@@ -3861,8 +3880,8 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32_t *flist, uint32_
     data.pixelsize = pixelsize;
     data.scale = pixelsize/(double) (sf->ascent+sf->descent);
 
-    /* Indic glyph reordering???? */
-    for ( isgpos=0; isgpos<2; ++isgpos ) {
+    isgpos = gpos_only ? 1 : 0;
+    for ( ; isgpos<2; ++isgpos ) {
 	/* Check that this table has an entry for this language */
 	/*  if it doesn't use the default language */
 	/* GPOS/GSUB may have different language sets, so we must be prepared */
@@ -4801,18 +4820,18 @@ char *FPSTRule_To_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule) {
       break;
       case pst_class:
 	/* Reverse the backtrack classes */
-	for ( i=rule->u.class.bcnt-1; i>=0; --i )
-	    GrowBufferAddClass(&gb,rule->u.class.bclasses[i],fpst->bclassnames,fpst->bccnt);
+	for ( i=rule->u.fpc_class.bcnt-1; i>=0; --i )
+	    GrowBufferAddClass(&gb,rule->u.fpc_class.bclasses[i],fpst->bclassnames,fpst->bccnt);
 	if ( fpst->type!=pst_contextpos && fpst->type!=pst_contextsub )
 	    GrowBufferAddStr(&gb,"| ");
-	for ( i=0; i<rule->u.class.ncnt; ++i ) {
-	    GrowBufferAddClass(&gb,rule->u.class.nclasses[i],fpst->nclassnames,fpst->nccnt);
+	for ( i=0; i<rule->u.fpc_class.ncnt; ++i ) {
+	    GrowBufferAddClass(&gb,rule->u.fpc_class.nclasses[i],fpst->nclassnames,fpst->nccnt);
 	    GrowBufferAddLookup(&gb,rule,i);
 	}
 	if ( fpst->type!=pst_contextpos && fpst->type!=pst_contextsub )
 	    GrowBufferAddStr(&gb,"| ");
-	for ( i=0; i<rule->u.class.fcnt; ++i )
-	    GrowBufferAddClass(&gb,rule->u.class.fclasses[i],fpst->fclassnames,fpst->fccnt);
+	for ( i=0; i<rule->u.fpc_class.fcnt; ++i )
+	    GrowBufferAddClass(&gb,rule->u.fpc_class.fclasses[i],fpst->fclassnames,fpst->fccnt);
       break;
       case pst_coverage:
       case pst_reversecoverage:
@@ -5103,14 +5122,14 @@ return( copy( _("A reverse contextual chaining lookup can only match one coverag
 	}
       } break;
       case pst_class:
-        rule->u.class.ncnt = last+1-first;
-	rule->u.class.nclasses = malloc(rule->u.class.ncnt*sizeof(uint16_t));
-	rule->u.class.bcnt = first;
+        rule->u.fpc_class.ncnt = last+1-first;
+	rule->u.fpc_class.nclasses = malloc(rule->u.fpc_class.ncnt*sizeof(uint16_t));
+	rule->u.fpc_class.bcnt = first;
 	if ( first!=0 )
-	    rule->u.class.bclasses = malloc(first*sizeof(uint16_t));
-	rule->u.class.fcnt = cnt==last?0:cnt-last-1;
-	if ( rule->u.class.fcnt!=0 )
-	    rule->u.class.fclasses = malloc(rule->u.class.fcnt*sizeof(uint16_t));
+	    rule->u.fpc_class.bclasses = malloc(first*sizeof(uint16_t));
+	rule->u.fpc_class.fcnt = cnt==last?0:cnt-last-1;
+	if ( rule->u.fpc_class.fcnt!=0 )
+	    rule->u.fpc_class.fclasses = malloc(rule->u.fpc_class.fcnt*sizeof(uint16_t));
 	for ( i=0; i<cnt; ++i ) {
 	    char **classnames, *pend;
 	    int class_cnt, val;
@@ -5137,10 +5156,10 @@ return( copy( _("A reverse contextual chaining lookup can only match one coverag
 		}
 	    }
 	    if ( j==class_cnt ) {
-		free( rule->u.class.nclasses ); rule->u.class.nclasses = NULL;
-		free( rule->u.class.bclasses ); rule->u.class.bclasses = NULL;
-		free( rule->u.class.fclasses ); rule->u.class.fclasses = NULL;
-		rule->u.class.bcnt = rule->u.class.fcnt = rule->u.class.ncnt = 0;
+		free( rule->u.fpc_class.nclasses ); rule->u.fpc_class.nclasses = NULL;
+		free( rule->u.fpc_class.bclasses ); rule->u.fpc_class.bclasses = NULL;
+		free( rule->u.fpc_class.fclasses ); rule->u.fpc_class.fclasses = NULL;
+		rule->u.fpc_class.bcnt = rule->u.fpc_class.fcnt = rule->u.fpc_class.ncnt = 0;
 		if ( i<first )
 return( smprintf( _("%s is not a class name for the backtracking classes." ), parsed[i].entity ) );
 		else if ( i<=last )
@@ -5149,11 +5168,11 @@ return( smprintf( _("%s is not a class name for the matching classes." ), parsed
 return( smprintf( _("%s is not a class name for the forward classes." ), parsed[i].entity ) );
 	    }
 	    if ( i<first )
-		rule->u.class.bclasses[first-1-i] = j;	/* Reverse the backtrack classes */
+		rule->u.fpc_class.bclasses[first-1-i] = j;	/* Reverse the backtrack classes */
 	    else if ( i<=last )
-		rule->u.class.nclasses[i-first] = j;
+		rule->u.fpc_class.nclasses[i-first] = j;
 	    else
-		rule->u.class.fclasses[i-last-1] = j;
+		rule->u.fpc_class.fclasses[i-last-1] = j;
 	}
       break;
       case pst_coverage:

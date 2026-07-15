@@ -69,8 +69,8 @@ struct st {
 static int GetBlueFuzz(SplineFont *sf) {
     char *str, *end;
 
-    if ( sf == NULL || sf->private == NULL || 
-	(str=PSDictHasEntry( sf->private,"BlueFuzz" )) == NULL || !isdigit( str[0] ))
+    if ( sf == NULL || sf->private_dict == NULL || 
+	(str=PSDictHasEntry( sf->private_dict,"BlueFuzz" )) == NULL || !isdigit( str[0] ))
 return 1;
 return strtod( str, &end );
 }
@@ -811,7 +811,10 @@ return( 0 );
 	winding += nw;
     }
     if ( space[i]==NULL ) {
-	fprintf( stderr, "FindMatchinHVEdge didn't\n" );
+	if ( gd->sc )
+	    fprintf( stderr, "FindMatchingHVEdge didn't: 0x%X, '%s'\n", gd->sc->unicodeenc, gd->sc->name );
+	else
+	    fprintf( stderr, "FindMatchingHVEdge didn't: unknown glyph\n" );
 return( 0 );
     }
 

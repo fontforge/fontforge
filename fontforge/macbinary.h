@@ -3,6 +3,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char **NamesReadMacBinary(char *filename);
 extern int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename, EncMap *map);
 extern int WriteMacBitmaps(char *filename, SplineFont *sf, int32_t *sizes, int is_dfont, EncMap *enc);
@@ -14,5 +18,9 @@ extern SplineChar *SFFindExistingCharMac(SplineFont *sf, EncMap *map, int unienc
 extern SplineFont *SFReadMacBinary(char *filename, int flags, enum openflags openflags);
 extern uint16_t _MacStyleCode(const char *styles, SplineFont *sf, uint16_t *psstylecode);
 extern void SfListFree(struct sflist *sfs);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_MACBINARY_H */

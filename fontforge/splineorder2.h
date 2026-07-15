@@ -3,6 +3,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern SplinePoint *SplineTtfApprox(Spline *ps);
 extern SplineSet *SplineSetsConvertOrder(SplineSet *ss, int to_order2);
 extern SplineSet *SplineSetsPSApprox(SplineSet *ss);
@@ -25,5 +29,9 @@ extern void SplinePointNextCPChanged2(SplinePoint *sp);
 extern void SplinePointPrevCPChanged2(SplinePoint *sp);
 extern void SplineRefigure2(Spline *spline);
 extern void SplineRefigureFixup(Spline *spline);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINEORDER2_H */

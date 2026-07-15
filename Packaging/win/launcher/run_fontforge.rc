@@ -1,0 +1,21 @@
+id ICON "fontforge-icon.ico"
+
+1 VERSIONINFO
+FILEVERSION     1,0,2,0
+PRODUCTVERSION  1,0,2,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "CompanyName", "Jeremy Tan"
+      VALUE "FileDescription", "FontForge"
+      VALUE "FileVersion", "1.2"
+      VALUE "InternalName", "run_fontforge"
+      VALUE "LegalCopyright", ""
+      VALUE "OriginalFilename", "run_fontforge.exe"
+      VALUE "ProductName", "FontForge"
+      VALUE "ProductVersion", "1.2"
+    END
+  END
+END

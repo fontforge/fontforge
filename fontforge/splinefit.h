@@ -32,6 +32,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct fitpoint {
     BasePoint p;
     BasePoint ut;
@@ -71,8 +75,12 @@ extern Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint 
 typedef int (*GenPointsP)(void *vinfo, bigreal t_start, bigreal t_end, FitPoint **fpp);
 
 extern SplinePoint *ApproximateSplineSetFromGen(SplinePoint *from, SplinePoint *to,
-                                                bigreal start_t, bigreal end_t, 
+                                                bigreal start_t, bigreal end_t,
                                                 bigreal toler, int toler_is_sumsq,
                                                 GenPointsP genp, void *tok, int order2);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINEFIT_H */

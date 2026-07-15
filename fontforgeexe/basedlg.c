@@ -624,9 +624,8 @@ return( true );
 		int tag = md[cols*r+1].u.md_ival;
 		for ( j=0; stdtags[j]!=0 && stdtags[j]!=tag; ++j );
 		if ( stdtags[j]==0 || mapping[ j ]==-1 ) {
-		    ff_post_error(_("Bad default baseline"),_("Script '%c%c%c%c' claims baseline '%c%c%c%c' as its default, but that baseline is not currently active."),
-			    md[cols*r+0].u.md_ival>>24, md[cols*r+0].u.md_ival>>16,
-			    md[cols*r+0].u.md_ival>>8, md[cols*r+0].u.md_ival,
+		    ff_post_error(_("Bad default baseline"),_("Script '%s' claims baseline '%c%c%c%c' as its default, but that baseline is not currently active."),
+			    md[cols*r+0].u.md_str,
 			    tag>>24, tag>>16, tag>>8, tag );
 return( true );
 		}

@@ -1,0 +1,12 @@
+---
+BasedOnStyle: Google
+Standard: c++17
+IndentWidth: 4
+AccessModifierOffset: -3
+SpacesBeforeTrailingComments: 2
+SortIncludes: false
+IndentAccessModifiers: false
+
+# Force pointers to the type
+DerivePointerAlignment: false
+PointerAlignment: Left

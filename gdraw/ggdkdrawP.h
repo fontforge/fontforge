@@ -32,7 +32,6 @@
 
 #include <fontforge-config.h>
 
-#ifdef FONTFORGE_CAN_USE_GDK
 
 #include "ffgdk.h"
 #include "fontP.h"
@@ -234,7 +233,6 @@ struct ggdkwindow { /* :GWindow */
     unsigned int is_dying: 1;
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
-    unsigned int usecairo: 1;
     char *window_type_name;
     //char pad[4];
     // Inherit GWindow end
@@ -300,8 +298,6 @@ void GGDKDrawDrawImageMagnified(GWindow gw, GImage *gimg, GRect *src, int32_t x,
 
 void GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32_t x, int32_t y);
 
-enum gcairo_flags GGDKDrawHasCairo(GWindow w);
-
 void GGDKDrawPathStartNew(GWindow w);
 void GGDKDrawPathClose(GWindow w);
 void GGDKDrawPathMoveTo(GWindow w, double x, double y);
@@ -336,6 +332,5 @@ void _GGDKDrawCocoa_SetClipboardText(const char *text);
 
 // END functions in ggdkcocoa.m
 
-#endif // FONTFORGE_CAN_USE_GDK
 
 #endif /* FONTFORGE_GGDKDRAWP_H */

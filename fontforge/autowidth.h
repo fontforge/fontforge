@@ -4,6 +4,10 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct charone {
     real lbearing, rmax;
     real newl, newr;
@@ -77,5 +81,9 @@ extern real SFGuessItalicAngle(SplineFont *sf);
 extern void FVRemoveKerns(FontViewBase *fv);
 extern void FVRemoveVKerns(FontViewBase *fv);
 extern void FVVKernFromHKern(FontViewBase *fv);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_AUTOWIDTH_H */

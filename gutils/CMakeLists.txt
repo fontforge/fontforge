@@ -1,15 +1,16 @@
 # Distributed under the original FontForge BSD 3-clause license
 
 add_library(gutils OBJECT
-  dlist.c
-  fsys.c
+  dlist.cpp
+  ffdir.cpp
+  fsys.cpp
   gcol.c
   gimagebmpP.h
   gimage.c
   gimagereadbmp.c
-  gimageread.c
+  gimageread.cpp
   gimagereadgif.c
-  gimagereadjpeg.c
+  gimagereadjpeg.cpp
   gimagereadpng.c
   gimagereadras.c
   gimagereadrgb.c
@@ -18,12 +19,12 @@ add_library(gutils OBJECT
   gimagereadxpm.c
   gimagewritebmp.c
   gimagewritegimage.c
-  gimagewritejpeg.c
-  gimagewritepng.c
+  gimagewritejpeg.cpp
+  gimagewritepng.cpp
   gimagewritexbm.c
-  gimagewritexpm.c
-  gutils.c
-  gwwintl.c
+  gimagewritexpm.cpp
+  gutils.cpp
+  gwwintl.cpp
   prefs.c
 )
 
@@ -31,7 +32,9 @@ if(BUILD_SHARED_LIBS)
   set_property(TARGET gutils PROPERTY POSITION_INDEPENDENT_CODE ON)
 endif()
 
-list(APPEND gutils_LIBRARIES Intl::Intl)
+if(Intl_FOUND)
+  list(APPEND gutils_LIBRARIES Intl::Intl)
+endif()
 if(ENABLE_LIBGIF_RESULT)
   list(APPEND gutils_LIBRARIES GIF::GIF)
 endif()

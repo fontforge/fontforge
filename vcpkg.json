@@ -1,0 +1,12 @@
+{
+  "name": "fontforge",
+  "version-string": "20251009",
+  "builtin-baseline": "6d7bf7ef2193e2d1c5798a5ff8811d533104c861",
+  "dependencies": [
+    "freetype",
+    "harfbuzz",
+    "libxml2",
+    "libiconv",
+    "zlib"
+  ]
+}

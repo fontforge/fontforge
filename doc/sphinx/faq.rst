@@ -952,7 +952,7 @@ Random questions
       postscript file. It is based on the postscript font name but suffers a
       transformation. Don't try to rename this file. Basically the rules are
       (see
-      `Adobe Technical Note 0091 <http://partners.adobe.com/asn/developer/pdfs/tn/0091.Mac_Fond.pdf>`__):
+      `Adobe Technical Note 0091 <http://adobe-type-tools.github.io/font-tech-notes/pdfs/0091.Mac_Fond.pdf>`__):
 
       * The fontname is broken into chunks where each chunk starts with a capital
         letter.

@@ -2,11 +2,14 @@
 
 set -eo pipefail
 
+PYTHON=python3
+
 sudo apt-get remove python3-pip
 sudo add-apt-repository -y ppa:deadsnakes/ppa && sudo apt-get update -y
 sudo apt-get install -y autoconf automake libtool gcc g++ gettext \
-    libjpeg-dev libtiff5-dev libpng-dev libfreetype6-dev libgif-dev \
+    libjpeg-dev libtiff5-dev libpng-dev libfreetype-dev libgif-dev \
     libx11-dev libgtk-3-dev libxml2-dev libpango1.0-dev libcairo2-dev \
+    libgtkmm-3.0-dev \
     libbrotli-dev libwoff-dev ninja-build cmake lcov $PYTHON-dev $PYTHON-venv
 curl https://bootstrap.pypa.io/get-pip.py | sudo $PYTHON
 
@@ -17,13 +20,13 @@ echo "DEPSPREFIX=$DEPSPREFIX" >> $GITHUB_ENV
 echo "PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin:~/.local/bin" >> $GITHUB_ENV
 echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib" >> $GITHUB_ENV
 echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig" >> $GITHUB_ENV
-echo "PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', vars={'platbase': '.'}))")" >> $GITHUB_ENV
+echo "PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON "$GITHUB_WORKSPACE/repo/pyhook/get_pyhook_install_dir.py" "${DESTDIR}${PREFIX}")" >> $GITHUB_ENV
 
 if [ ! -d deps/install ]; then
     echo "Custom dependencies not present - will build them"
     rm -rf deps && mkdir deps && cd deps
 
-    FTVER=`dpkg -s libfreetype6-dev | perl -ne 'print $1 if /^Version: (\d+(?:\.\d+)+)/'`
+    FTVER=`dpkg -s libfreetype-dev | perl -ne 'print $1 if /^Version: (\d+(?:\.\d+)+)/'`
     SFFTVER=`echo $FTVER | perl -ne 'print $1 if /^(\d+(?:\.\d+){1,2})/'`
 
     git clone --depth 1 https://github.com/fontforge/libspiro

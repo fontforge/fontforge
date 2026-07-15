@@ -3,6 +3,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char *FindEnglishNameInMacName(struct macname *mn);
 extern char *MacLanguageFromCode(int code);
 extern char *MacStrToUtf8(const char *str, int macenc, int maclang);
@@ -18,5 +22,9 @@ extern struct macname *MacNameCopy(struct macname *mn);
 extern uint16_t WinLangFromMac(int maclang);
 extern uint16_t WinLangToMac(int winlang);
 extern uint8_t MacEncFromMacLang(int maclang);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_MACENC_H */

@@ -122,7 +122,7 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
     bool FullMatchEndsOnSpace = 0;
     unichar_t* maxpos = in;
     unichar_t* endpos = maxpos-1;
-    TRACE("WordlistEscapedInputStringToRealString_readGlyphName(x1) -->:%s:<--\n", u_to_c(glyphname));
+//     TRACE("WordlistEscapedInputStringToRealString_readGlyphName(x1) -->:%s:<--\n", u_to_c(glyphname));
 
     int loopCounter = 0;
     int firstLookup = 1;
@@ -335,7 +335,7 @@ WordListLine WordlistEscapedInputStringToParsedDataComplex(
     for ( ; in < in_end; in++ )
     {
 	unichar_t ch = *in;
-	TRACE("in:%p end:%p got char %d %c\n", in, in_end, ch, ch );
+	// TRACE("in:%p end:%p got char %d %c\n", in, in_end, ch, ch );
 	if( ch == '[' )
 	{
 	    addingGlyphsToSelected = 1;

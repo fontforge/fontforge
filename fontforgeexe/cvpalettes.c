@@ -1142,6 +1142,7 @@ return( event->u.chr.state & ~bit );
 void CVToolsSetCursor(CharView *cv, int state, char *device) {
     int shouldshow;
     int cntrl;
+    int old_showing_tool = cv->showing_tool;
 
     if ( tools[0] == ct_pointer ) {
 	tools[cvt_pointer] = ct_mypointer;
@@ -1212,6 +1213,8 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 		GDrawSetCursor(cvtools,tools[shouldshow]);
 	}
 	cv->showing_tool = shouldshow;
+	if ( old_showing_tool==cvt_scale || shouldshow==cvt_scale )
+	    GDrawRequestExpose(cv->v,NULL,false);
     }
 
     if ( device==NULL || strcmp(device,"stylus")==0 ) {
@@ -1378,6 +1381,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	else
 	    cv->pressed_display = cv->pressed_tool;
     } else if ( event->type == et_mouseup ) {
+	int old_b1_tool = cv->b1_tool;
 	if ( pos==cvt_freehand && event->u.mouse.clicks==2 ) {
 	    FreeHandStrokeDlg(CVFreeHandInfo());
 	} else if ( pos==cvt_pointer && event->u.mouse.clicks==2 ) {
@@ -1417,6 +1421,8 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	    cv->pressed_tool = cv->pressed_display = cvt_none;
 	}
 	GDrawRequestExpose(cvtools,NULL,false);
+	if ( old_b1_tool!=cv->b1_tool && (old_b1_tool==cvt_scale || cv->b1_tool==cvt_scale) )
+	    GDrawRequestExpose(cv->v,NULL,false);
 	event->u.chr.state &= ~(1<<(7+event->u.mouse.button));
     }
     CVToolsSetCursor(cv,event->u.mouse.state,event->u.mouse.device);
@@ -1953,7 +1959,6 @@ return(true);
 		    cv->showback[0] |= 1;
 		else
 		    cv->showback[0] &= ~1;
-		cv->back_img_out_of_date = true;
 	      break;
 	      case CID_VGrid:
 		CVShows.showgrids = cv->showgrids = GGadgetIsChecked(event->u.control.g);
@@ -2616,7 +2621,6 @@ static void CVLayerInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
     switch ( mi->mid ) {
       case LMID_Fill:
         cv->showfilled = !cv->showfilled;
-        CVRegenFill(cv);
         GDrawRequestExpose(cv->v,NULL,false);
       break;
 
@@ -2648,7 +2652,6 @@ static void CVLayerInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
         if ( layer!=ly_grid && cv->b.sc->layers[layer].order2 ) {
             SFConvertLayerToOrder3(cv->b.sc->parent, layer);
 	    GDrawRequestExpose(cvlayers,NULL,false);
-            cv->back_img_out_of_date = true;
         }
       break;
 
@@ -2656,7 +2659,6 @@ static void CVLayerInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
         if ( layer!=ly_grid && !cv->b.sc->layers[layer].order2 ) {
             SFConvertLayerToOrder2(cv->b.sc->parent, layer);
 	    GDrawRequestExpose(cvlayers,NULL,false);
-            cv->back_img_out_of_date = true;
         }
       break;
 
@@ -2881,7 +2883,6 @@ void CVLSelectLayer(CharView *cv, int layer) {
     }
     layerinfo.active = CVLayer(&cv->b); /* the index of the active layer */
 
-    CVRegenFill(cv);
     GDrawRequestExpose(cv->v,NULL,false);
     if (cvlayers2) GDrawRequestExpose(cvlayers2,NULL,false);
     if (cvlayers)  GDrawRequestExpose(cvlayers,NULL,false);
@@ -2978,7 +2979,6 @@ return( true );
                     SFConvertLayerToOrder3(cv->b.sc->parent, l);
                 else
                     SFConvertLayerToOrder2(cv->b.sc->parent, l);
-                cv->back_img_out_of_date = true;
 	        GDrawRequestExpose(cvlayers,NULL,false);
                 GDrawRequestExpose(cv->v,NULL,false);
             }
@@ -3068,7 +3068,6 @@ return ( true );
 		    cv->showback[0] |= 1;
 		else
 		    cv->showback[0] &= ~1;
-		cv->back_img_out_of_date = true;
                 GDrawRequestExpose(cv->v,NULL,false);
 	      break;
 	      case CID_VGrid:
@@ -3107,7 +3106,6 @@ return ( true );
                         cv->showback[cid>>5] |=  (1<<(cid&31));
                     else
                         cv->showback[cid>>5] &= ~(1<<(cid&31));
-                    cv->back_img_out_of_date = true;
 
                     GDrawRequestExpose(cv->v,NULL,false);
                     if ( dm!=cv->b.drawmode )

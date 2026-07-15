@@ -134,12 +134,6 @@ I am aware of the following significant differences:
   when not using X)
 * On Suns the meta (diamond) key is equivalent to the Alt modifier key.
 
-FontForge will attempt to guess what keyboard you are using and produce menus
-with hot-key indicators that match the host machine. If you are displaying on a
-different machine from the one you are running on the menu names may be wrong.
-You can fix this up with the :ref:`keyboard resource <xres.Keyboard>`, or the
--keyboard command line argument.
-
 
 Tool modifiers in the Outline Glyph Window
 ------------------------------------------

@@ -5,9 +5,9 @@ if(UNIX)
   install(FILES fontforge.xml DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages)
 
   foreach(_size 16x16 22x22 24x24 32x32 48x48 64x64 128x128 256x256 512x512)
-    install(FILES "${THEME}/${_size}/org.fontforge.FontForge.png" DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/${_size}/apps)
+    install(FILES "${GUI_THEME}/${_size}/org.fontforge.FontForge.png" DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/${_size}/apps)
   endforeach()
-  install(FILES "${THEME}/scalable/org.fontforge.FontForge.svg" DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
+  install(FILES "${GUI_THEME}/scalable/org.fontforge.FontForge.svg" DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 
   file(STRINGS "${PROJECT_SOURCE_DIR}/po/LINGUAS" _langs)
   foreach(_lang ${_langs})

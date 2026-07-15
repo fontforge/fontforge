@@ -3,11 +3,11 @@
 add_library(gunicode OBJECT
   ArabicForms.c
   char.c
-  memory.c
-  ucharmap.c
+  memory.cpp
+  ucharmap.cpp
   unialt.c
   uninames.c
-  ustring.c
+  ustring.cpp
   utype.c
 )
 
@@ -19,14 +19,14 @@ if(${CMAKE_VERSION} VERSION_LESS "3.12.0")
   make_object_interface(gunicode
     fontforge_common_headers
     Iconv::Iconv
-    Intl::Intl
+    $<$<BOOL:${Intl_FOUND}>:Intl::Intl>
   )
 else()
   target_link_libraries(gunicode
     PUBLIC
       fontforge_common_headers
       Iconv::Iconv
-      Intl::Intl
+      $<$<BOOL:${Intl_FOUND}>:Intl::Intl>
   )
 endif()
 

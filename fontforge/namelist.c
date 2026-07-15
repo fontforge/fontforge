@@ -43,11 +43,18 @@ int recognizePUA = false;
 NameList *force_names_when_opening=NULL;
 NameList *force_names_when_saving=NULL;
 
-static struct psaltnames {
+struct psaltnames {
     const char *name;
     int unicode;
     int provenance;		/* 1=> Adobe PUA, 2=>AMS PUA, 3=>TeX */
-} psaltnames[];
+};
+/* Forward declaration - actual definition at end of file */
+#ifdef _MSC_VER
+/* MSVC doesn't support incomplete array forward declarations */
+extern struct psaltnames psaltnames[];
+#else
+static struct psaltnames psaltnames[];
+#endif
 
 static NameList agl_sans, agl, agl_nf, adobepua, greeksc, tex, ams;
 NameList *namelist_for_new_fonts = &agl_nf;
@@ -62,8 +69,7 @@ NameList *namelist_for_new_fonts = &agl_nf;
 /* 0xf6be is named dotlessj, 0x237 should be */
 
 static int psnamesinited=false;
-#define HASH_SIZE	257
-struct psbucket { const char *name; int uni; struct psbucket *prev; } *psbuckets[HASH_SIZE];
+struct psbucket { const char *name; int uni; struct psbucket *prev; } *psbuckets[GN_HSIZE];
 
 static void psaddbucket(const char *name, int uni) {
     unsigned int hash = hashname(name);
@@ -110,7 +116,7 @@ static void psreinitnames(void) {
     int i;
     NameList *nl;
 
-    for ( i=0; i<HASH_SIZE; ++i ) {
+    for ( i=0; i<GN_HSIZE; ++i ) {
 	struct psbucket *cur, *prev;
 	for ( cur = psbuckets[i]; cur!=NULL; cur=prev ) {
 	    prev = cur->prev;
@@ -205,7 +211,7 @@ const char *StdGlyphName(char *buffer, int uni,enum uni_interp interp,NameList *
 	    break;
 	}
     } else {
-	LogError( _("Warning: StdGlyphName returning name for value %d outside of Unicode range\n"), uni );
+	LogError( _("Warning: StdGlyphName returning name for value %d outside of Unicode range"), uni );
     }
     if ( name==NULL ) {
 	if ( uni>=0x10000 || uni < 0 )
@@ -526,7 +532,7 @@ static void NameListFree(NameList *nl) {
 }
 /* ************************************************************************** */
 
-#include <dirent.h>
+#include "ffdir.h"
 #include <sys/types.h>
 
 NameList *LoadNamelist(char *filename) {
@@ -698,8 +704,8 @@ return( false );
 }
 
 void LoadNamelistDir(char *dir) {
-    DIR *diro;
-    struct dirent *ent;
+    FF_Dir *diro;
+    FF_DirEntry *ent;
     char buffer[1025];
     char *userConfigDir = NULL;
 
@@ -709,18 +715,18 @@ void LoadNamelistDir(char *dir) {
             return;
     }
 
-    diro = opendir(dir);
+    diro = ff_opendir(dir);
     if ( diro!=NULL ) {         /* It's ok not to have any */
-        while ( (ent = readdir(diro))!=NULL ) {
-            if ( isnamelist(ent->d_name) ) {
-                sprintf( buffer, "%s/%s", dir, ent->d_name );
+        while ( (ent = ff_readdir(diro))!=NULL ) {
+            if ( isnamelist(ent->name) ) {
+                sprintf( buffer, "%s/%s", dir, ent->name );
                 LoadNamelist(buffer);
             }
         }
-        closedir(diro);
+        ff_closedir(diro);
     }
 
-    if ( userConfigDir!=NULL ) 
+    if ( userConfigDir!=NULL )
         free(userConfigDir);
 
     return;
@@ -15372,7 +15378,11 @@ static NameList ams = {
 	NULL, NULL, 0, NULL
 };
 /* ************************************************************************** */
+#ifdef _MSC_VER
+struct psaltnames psaltnames[] = {
+#else
 static struct psaltnames psaltnames[] = {
+#endif
 	{ "AEmacron", 0x01e2, 0 },
 	{ "AEsmall", 0xf7e6, 0 },
 	{ "Aacutesmall", 0xf7e1, 0 },

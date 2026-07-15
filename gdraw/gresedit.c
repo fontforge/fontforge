@@ -2476,11 +2476,19 @@ int _GResEditInitialize(GResInfo *ri) {
 	_GGadgetInitDefaultBox(ri->resname, ri->boxdata);
     }
 
-    if ( ri->font!=NULL )
-	GResourceFindFont(ri->resname, "Font", ri->font);
+    if ( ri->font!=NULL ) {
+        fix_CJK_UI_font(ri->font);
+        GResourceFindFont(ri->resname, "Font", ri->font);
+    }
 
-    if ( ri->extras!=NULL )
-	GResEditFind(ri->extras, ri->resname);
+    if ( ri->extras!=NULL ) {
+        for ( int i=0; ri->extras[i].name!=NULL; ++i ) {
+            if (ri->extras[i].type == rt_font) {
+                fix_CJK_UI_font(ri->extras[i].val);
+            }
+        }
+        GResEditFind(ri->extras, ri->resname);
+    }
 
     ri->is_initialized = true;
     return true;

@@ -110,7 +110,7 @@ return;
 	/* metrics from EBLC */
 	/* Do nothing here */
 	if ( metrics==NULL ) {
-	    LogError(_("Unexpected use of bitmap format 5, no metrics are appearant\n"));
+	    LogError(_("Unexpected use of bitmap format 5, no metrics are appearant"));
 	    info->bad_embedded_bitmap = true;
 	    /*fseek(ttf,len,SEEK_CUR);*/
 return;
@@ -119,17 +119,17 @@ return;
 	/* format 3 is obsolete */
 	/* format 4 is compressed apple and I'm not supporting it (Nor is MS) */
 	if ( imageformat==3 && !info->obscomplain ) {
-	    LogError(_("This font contains bitmaps in the obsolete format 3 (And I can't read them)\n") );
+	    LogError(_("This font contains bitmaps in the obsolete format 3 (And I can't read them)") );
 	    info->bad_embedded_bitmap = true;
 	    info->obscomplain = true;
 	} else if ( imageformat==4 ) {
 	    /* Apple doesn't describe it (fully) in their spec. */
 	    /* MS doesn't support it (and doesn't describe) */
 	    /* Adobe doesn't describe it (and says MS doesn't support it) */
-	    LogError(_("This font contains bitmaps in Apple's compressed format 4 (And I don't support that)\n"));
+	    LogError(_("This font contains bitmaps in Apple's compressed format 4 (And I don't support that)"));
 	    info->cmpcomplain = true;
 	} else if ( !info->unkcomplain ) {
-	    LogError(_("This font contains bitmaps in a format %d that I've never heard of\n"), imageformat );
+	    LogError(_("This font contains bitmaps in a format %d that I've never heard of"), imageformat );
 	    info->bad_embedded_bitmap = true;
 	    info->unkcomplain = true;
 	}
@@ -478,7 +478,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	    free(glyphs);
 	  break;
 	  default:
-	    LogError(_("Didn't understand index format: %d\n"), indexformat );
+	    LogError(_("Didn't understand index format: %d"), indexformat );
 	    info->bad_embedded_bitmap = true;
 	  break;
 	}

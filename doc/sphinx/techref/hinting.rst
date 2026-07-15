@@ -213,10 +213,10 @@ Hint questions:
 I find the hint documentation inadequate for me to do a good job at hinting.
 
 * Section 2.4 of
-  `T1_Supp.pdf <http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf>`__
+  `T1_Supp.pdf <http://adobe-type-tools.github.io/font-tech-notes/pdfs/5015.Type1_Supp.pdf>`__
   says that vertical counters are offset from the lbearing, but the example 2.6
   shows them being offset from 0.
-* In `Type2 <http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf>`__ is
+* In `Type2 <http://adobe-type-tools.github.io/font-tech-notes/pdfs/5177.Type2.pdf>`__ is
   it ok to use Counter mask if LanguageGroup is not 1 and the stems don't fit into
   a \*stem3 pattern? Or can cntrmask only be used for \*stem3 in latin letters?
 * .. image:: /images/NoPointHint.png

@@ -293,7 +293,7 @@ static void FVCreateWidth( void *_fv,SplineChar* _sc,void (*doit)(CreateWidthDat
     GDrawSetVisible(cwd.gw,false);
 }
 
-static void BCDefWidthVal(char *buf,BDFChar *bc, FontView *fv, enum widthtype wtype) {
+static void BCDefWidthVal(char buf[12],BDFChar *bc, FontView *fv, enum widthtype wtype) {
     IBounds bb;
 
     if ( wtype==wt_width )
@@ -311,7 +311,7 @@ static void BCDefWidthVal(char *buf,BDFChar *bc, FontView *fv, enum widthtype wt
     }
 }
 
-static void SCDefWidthVal(char *buf,SplineChar *sc, enum widthtype wtype) {
+static void SCDefWidthVal(char buf[12],SplineChar *sc, enum widthtype wtype) {
     DBounds bb;
 
     if ( wtype==wt_width )
@@ -351,8 +351,15 @@ void FVSetWidth(FontView *fv,enum widthtype wtype) {
     FVCreateWidth(fv,0,FVDoit,wtype,buffer);
 }
 
+static void CVDoit(CreateWidthData *wd) {
+    CharView *cv = (CharView *) (wd->_fv);
+
+    DoChar(cv->b.sc,wd,(FontViewBase *) (cv->b.fv),NULL);
+    wd->done = true;
+}
+
 void CVSetWidth(CharView *cv,enum widthtype wtype) {
-    char buf[10];
+    char buf[12];
 
     SCDefWidthVal(buf,cv->b.sc,wtype);
     FVCreateWidth(cv,cv->b.sc,CVDoit,wtype,buf);
@@ -360,7 +367,7 @@ void CVSetWidth(CharView *cv,enum widthtype wtype) {
 
 
 void GenericVSetWidth(FontView *fv,SplineChar* sc,enum widthtype wtype) {
-    char buf[10];
+    char buf[12];
 
     SCDefWidthVal(buf,sc,wtype);
     FVCreateWidth(fv,sc,GenericVDoit,wtype,buf);

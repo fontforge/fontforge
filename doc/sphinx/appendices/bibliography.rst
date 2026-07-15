@@ -68,25 +68,25 @@ Font File Formats
   (Sadly different sources have slightly different definitions of less important
   parts of the standard, be warned)
 
-  * `Apple <http://developer.apple.com/fonts/TTRefMan/>`__ (I find Apple's prose
+  * `Apple <http://developer.apple.com/fonts/TrueType-Reference-Manual/>`__ (I find Apple's prose
     difficult, and sometimes misleading. I suggest using a different source when
     possible)
   * `Microsoft <http://www.microsoft.com/typography/tt/tt.htm>`__
   * `random useful site <http://www.truetype.demon.co.uk/ttspec.htm>`__
   * `TTC <http://partners.adobe.com/asn/tech/type/opentype/otff.jsp>`__ -- True Type
     Font Collection
-* `Apple Advanced Typography <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6.html>`__
+* `Apple Advanced Typography <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6.html>`__
   extensions to TrueType
 * Apple distortable font (variation tables) -- vaguely equivalent to Multiple
   Master fonts for TrueType
 
-  * `fvar <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html>`__ (font
+  * `fvar <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6fvar.html>`__ (font
     variations)
-  * `gvar <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gvar.html>`__ (glyph
+  * `gvar <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6gvar.html>`__ (glyph
     variations)
-  * `cvar <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvar.html>`__ (cvt
+  * `cvar <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6cvar.html>`__ (cvt
     variations)
-  * `avar <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6avar.html>`__ (axis
+  * `avar <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6avar.html>`__ (axis
     variations)
 * .. _bibliography.OpenType:
 

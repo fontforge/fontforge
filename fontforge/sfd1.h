@@ -36,6 +36,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define SLI_UNKNOWN		0xffff
 #define SLI_NESTED		0xfffe
 
@@ -125,5 +129,9 @@ extern int SFAddScriptIndex(SplineFont1 *sf,uint32_t *scripts,int scnt);
 extern void SFD_AssignLookups(SplineFont1 *sf);
 
 extern enum uni_interp interp_from_encoding(Encoding *enc, enum uni_interp interp);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SFD1_H */

@@ -6,8 +6,12 @@
 #include "sd.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern GImage *ImageAlterClut(GImage *image);
-extern int FVImportImages(FontViewBase *fv, char *path, int format, int toback,
+extern int FVImportImages(FontViewBase *fv, char** path_list, int format, int toback,
                           bool preclear, ImportParams *ip);
 extern int FVImportImageTemplate(FontViewBase *fv, char *path, int format,
                                  int toback, bool preclear, ImportParams *ip);
@@ -32,5 +36,9 @@ extern void SCImportPSFile(SplineChar *sc, int layer, FILE *ps, bool doclear,
 extern void SCImportSVG(SplineChar *sc, int layer, char *path, char *memory,
                         int memlen, bool doclear, ImportParams *ip);
 extern void SCInsertImage(SplineChar *sc, GImage *image, real scale, real yoff, real xoff, int layer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_CVIMAGES_H */

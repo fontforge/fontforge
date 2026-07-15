@@ -1988,10 +1988,6 @@ void MathKernDialog(SplineChar *sc,int def_layer) {
 
     for ( i=0; i<4; ++i ) {
 	CharView *cv = &mkd.cv_topright + i;
-	if ( cv->backimgs!=NULL ) {
-	    GDrawDestroyWindow(cv->backimgs);
-	    cv->backimgs = NULL;
-	}
 	CVPalettesHideIfMine(cv);
     }
     GDrawDestroyWindow(mkd.gw);

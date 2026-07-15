@@ -9,26 +9,24 @@ on:
 jobs:
   linux:
     runs-on: ${{ matrix.os }}
-    env:
-      PYTHON: python3.10
     strategy:
       matrix:
         os: ["ubuntu-latest"]
         target: ["NoUI", "Debug"]
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             target: Release
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: repo
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
       - name: Restore cached custom dependencies
         id: cache-dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: deps/install
           key: ${{ matrix.os }}-deps-${{ hashFiles('repo/.github/workflows/scripts/setup_linux_deps.sh') }}
@@ -39,12 +37,16 @@ jobs:
         run: |
           FFCONFIG="-DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_FONTFORGE_EXTRAS=ON -DENABLE_FREETYPE_DEBUGGER=$DEPSPREFIX/freetype"
           if [ "${{ matrix.target }}" == "Debug" ]; then
-            FFCONFIG="$FFCONFIG -DENABLE_X11=ON -DENABLE_CODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_DOCS=ON -DSPHINX_USE_VENV=ON"
+            FFCONFIG="$FFCONFIG -DENABLE_CODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_DOCS=ON -DSPHINX_USE_VENV=ON"
           elif [ "${{ matrix.target }}" == "NoUI" ]; then
             FFCONFIG="$FFCONFIG -DENABLE_GUI=OFF -DENABLE_PYTHON_SCRIPTING=OFF"
           fi
           mkdir build && pushd build && cmake -GNinja $FFCONFIG .. && popd
-          ninja -C build all potfiles install
+          if [ "${{ matrix.target }}" == "NoUI" ]; then
+            ninja -C build all install
+          else
+            ninja -C build all potfiles install
+          fi
       - name: Run FontForge tests
         run: CTEST_PARALLEL_LEVEL=100 ninja -C repo/build check
       - name: Build dist bundle
@@ -52,24 +54,28 @@ jobs:
         run: ninja -C repo/build dist
       - name: Run pyhook smoke test
         if: matrix.target != 'NoUI'
-        run: $PYTHON repo/tests/pyhook_smoketest.py
+        working-directory: repo
+        run: |
+          # There can be several Python versions installed. We must use the exact one discovered by CMake.
+          PYTHON=`grep -m1 'Python3_EXECUTABLE.*=' build/CMakeCache.txt | cut -d= -f2`
+          $PYTHON tests/pyhook_smoketest.py
       - name: Build AppImage
         if: matrix.target == 'Release'
         working-directory: repo/build
         run: |
           DESTDIR=appdir cmake -DCMAKE_INSTALL_PREFIX=/usr -P cmake_install.cmake
           ../.github/workflows/scripts/ffappimagebuild.sh appdir $GITHUB_SHA
-      - name: Dist archive artifact
-        uses: actions/upload-artifact@v4
+      - name: Source archive artifact
+        uses: actions/upload-artifact@v7
         if: matrix.target == 'NoUI'
         with:
-          name: dist-archive
+          name: source-archive
           path: repo/build/fontforge-*.tar.xz
       - name: AppImage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.target == 'Release'
         with:
-          name: appimage
+          name: Linux_appimage
           path: repo/build/FontForge-*-x86_64.AppImage
       - name: Update Potfile for Crowdin
         if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
@@ -77,24 +83,27 @@ jobs:
         env:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
         run: java -jar $DEPSPREFIX/crowdin-cli.jar upload -c .crowdin.yml
+
   mac:
-    runs-on: macos-13
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: macos-14
+            arch: arm64
+          - runner: macos-15-intel
+            arch: intel
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: repo
       - name: Install dependencies
         run: |
-          # Disable fc-cache on fontconfig install. Because it's slow.
-          sed -i.bak '/fc-cache/d' "$(brew --prefix)/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/f/fontconfig.rb"
-          brew install pkg-config ruby cmake ninja
-          brew install cairo coreutils fontconfig gettext giflib gtk+3 jpeg libpng libspiro libtiff libtool libuninameslist python@3 wget woff2
+          brew install cairo coreutils fontconfig gettext giflib gtk+3 gtkmm3 jpeg libpng libspiro libtiff libtool libuninameslist python@3 wget woff2 --quiet
           PREFIX=$GITHUB_WORKSPACE/target
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig" >> $GITHUB_ENV
           echo "PATH=/usr/local/opt/ruby/bin:/usr/local/opt/gettext/bin:$PATH" >> $GITHUB_ENV
-          # System Python libraries will be discovered by CMake
-          echo "PYTHONPATH=$PREFIX" >> $GITHUB_ENV
       - name: Build FontForge
         working-directory: repo
         run: |
@@ -107,59 +116,163 @@ jobs:
       - name: Run pyhook smoke test
         working-directory: repo
         run: |
-          # MacOS runner has way too much preinstalled Python versions. We must
-          # use the exact one discovered by CMake.
+          # There can be several Python versions installed. We must use the exact one discovered by CMake.
           PYTHON=`grep -m1 'Python3_EXECUTABLE.*=' build/CMakeCache.txt | cut -d= -f2`
-          PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', 'posix_prefix', vars={'platbase': '.'}))")
+          export PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON "$GITHUB_WORKSPACE/repo/pyhook/get_pyhook_install_dir.py" "" "APPLE")
           $PYTHON tests/pyhook_smoketest.py
+      # Import a Developer ID certificate if one is configured. Without the
+      # MACOS_CERT_P12 secret this step is skipped and CODESIGN_IDENTITY stays
+      # unset, so the bundle is ad-hoc signed (launchable on arm64 via the
+      # Gatekeeper bypass). Populate these secrets to enable real signing (#5112).
+      - name: Import signing certificate
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        if: env.MACOS_CERT_P12 != ''
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          security create-keychain -p actions "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p actions "$KEYCHAIN"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k actions "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          echo "CODESIGN_IDENTITY=$MACOS_SIGN_IDENTITY" >> "$GITHUB_ENV"
       - name: Build App Bundle
         working-directory: repo/build
         run: ninja macbundle
+      # Notarize + staple the dmg when notarization credentials are configured.
+      # Skipped (no-op) otherwise. Uses an App Store Connect API key.
+      - name: Notarize and staple
+        working-directory: repo/build/osx
+        env:
+          NOTARY_API_KEY: ${{ secrets.NOTARY_API_KEY }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER: ${{ secrets.NOTARY_ISSUER }}
+        if: env.NOTARY_API_KEY != ''
+        run: |
+          echo "$NOTARY_API_KEY" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+          DMG=$(ls FontForge-*.dmg)
+          xcrun notarytool submit "$DMG" \
+            --key "$RUNNER_TEMP/notary.p8" \
+            --key-id "$NOTARY_KEY_ID" \
+            --issuer "$NOTARY_ISSUER" \
+            --wait
+          xcrun stapler staple "$DMG"
       - name: App Bundle artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: appbundle
+          name: macOS_appbundle_${{ matrix.arch }}
           path: repo/build/osx/FontForge-*.dmg
+
   windows:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.runner }}
     env:
       MSYS2_FC_CACHE_SKIP: true
     strategy:
       matrix:
-        arch: ["MINGW32", "MINGW64"]
+        include:
+          - arch: UCRT64
+            runner: windows-latest
+          - arch: CLANGARM64
+            runner: windows-11-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: repo
-      - name: Checkout FontForgeBuilds
-        uses: actions/checkout@v4
-        with:
-          repository: fontforge/fontforgebuilds
-          path: fontforgebuilds
+          fetch-depth: 0
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.arch }}
           update: true
           install: git
-      - name: Run FontForgeBulds initialisation
-        working-directory: fontforgebuilds
+      - name: Install dependencies
+        working-directory: repo/Packaging/win
         shell: msys2 {0}
+        env:
+          BUILD_DIR: ${{ runner.temp }}/ffbuild
         run: ./ffbuild.sh --github-actions --depsonly
-      - name: Run FontForgeBuilds
-        working-directory: fontforgebuilds
+      - name: Build and package FontForge
+        working-directory: repo/Packaging/win
         shell: msys2 {0}
+        env:
+          BUILD_DIR: ${{ runner.temp }}/ffbuild
         run: |
           ./ffbuild.sh --github-actions
           FFPATH=`cygpath -m "$GITHUB_WORKSPACE/repo"` ./make-portable-package.sh ci
       - name: Run InnoSetup
         if: github.ref == 'refs/heads/master'
-        working-directory: fontforgebuilds/fontforge-setup
-        run: iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }}
+        working-directory: repo/Packaging/win/setup
+        env:
+          BUILD_DIR: ${{ runner.temp }}/ffbuild
+        run: iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }} -DBUILD_DIR="${{ runner.temp }}\ffbuild"
       - name: Build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.arch }}
+          name: Win_${{ matrix.arch }}
           path: |
-            fontforgebuilds/*.7z
-            fontforgebuilds/fontforge-setup/*.exe
+            repo/Packaging/win/*.7z
+            repo/Packaging/win/setup/*.exe
+
+  # Test Python module build with MSVC toolchain
+  # This ensures compatibility with Python.org Windows builds (which use MSVC)
+  windows-msvc:
+    runs-on: windows-latest
+    env:
+      VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg-cache,readwrite"
+    steps:
+      - uses: actions/checkout@v6
+      - name: Restore vcpkg binary cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: vcpkg-cache
+          key: vcpkg-files-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-files-${{ runner.os }}-
+      - name: Create vcpkg cache directory
+        run: New-Item -ItemType Directory -Force -Path vcpkg-cache
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: 'vcpkg.json'
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Configure
+        run: |
+          $pythonExe = (Get-Command python).Source
+          Write-Host "Using Python: $pythonExe"
+          cmake -B build -G "NMake Makefiles" `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DPython3_EXECUTABLE="$pythonExe" `
+            -DENABLE_GUI=OFF `
+            -DENABLE_PYTHON_SCRIPTING=ON `
+            -DENABLE_PYTHON_EXTENSION=ON `
+            -DENABLE_LIBSPIRO=OFF `
+            -DENABLE_WOFF2=OFF `
+            -DENABLE_DOCS=OFF `
+            -DBUILD_SHARED_LIBS=ON
+      - name: Build
+        run: cmake --build build
+      - name: Run pyhook tests
+        run: |
+          # Copy DLLs to lib directory so Python can find them
+          Copy-Item build\bin\*.dll build\lib\ -Force
+          Copy-Item build\vcpkg_installed\x64-windows\bin\*.dll build\lib\ -Force -ErrorAction SilentlyContinue
+          ctest --test-dir build -R "_pyhook" --output-on-failure
+      - name: Save vcpkg binary cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: vcpkg-cache
+          key: vcpkg-files-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}

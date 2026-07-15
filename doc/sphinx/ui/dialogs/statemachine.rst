@@ -106,14 +106,14 @@ For a complete description of what these state machines can do you should read
 Apple's documentation
 
 * On the
-  `'morx' <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html>`__ and
-  `'mort' <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html>`__
+  `'morx' <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6morx.html>`__ and
+  `'mort' <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6mort.html>`__
   tables
 * On the
-  `'kern' <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html>`__ table
+  `'kern' <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6kern.html>`__ table
   (format 1)
-* `On state machines in general <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html#StateTables>`__
-* `The 'feat' (feature) table <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html>`__
+* `On state machines in general <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6Tables.html#StateTables>`__
+* `The 'feat' (feature) table <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6feat.html>`__
 * `Apple's Font Feature registry <http://developer.apple.com/fonts/Registry/index.html>`__
 
 The general idea is that a word processor converts text into a string of glyphs,

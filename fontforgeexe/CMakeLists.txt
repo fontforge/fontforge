@@ -10,7 +10,7 @@ if(ENABLE_GUI)
     autowidth2dlg.c
     basedlg.c
     bdfinfo.c
-    bitmapdlg.c
+    bitmapdlg.cpp
     bitmapview.c
     charinfo.c
     charview_private.h
@@ -24,7 +24,7 @@ if(ENABLE_GUI)
     cvdgloss.c
     cvexportdlg.c
     cvfreehand.c
-    cvgetinfo.c
+    cvgetinfo.cpp
     cvgridfit.c
     cvhand.c
     cvhints.c
@@ -48,7 +48,7 @@ if(ENABLE_GUI)
     fvmetricsdlg.c
     gotodlg.c
     groupsdlg.c
-    histograms.c
+    histograms.cpp
     images.c
     justifydlg.c
     kernclass.c
@@ -61,9 +61,9 @@ if(ENABLE_GUI)
     multidialog.c
     nonlineartransui.c
     openfontdlg.c
-    pluginui.c
+    pluginui.cpp
     prefs.c
-    problems.c
+    problems.cpp
     pythonui.c
     savefontdlg.c
     scriptingdlg.c
@@ -89,6 +89,8 @@ if(ENABLE_GUI)
     wordlistparser.h
   )
 
+  add_subdirectory(gtk)
+
   if(APPLE)
     target_sources(fontforgeexe PRIVATE macobjective.m)
     target_link_libraries(fontforgeexe
@@ -101,7 +103,17 @@ if(ENABLE_GUI)
     target_link_libraries(fontforgeexe PRIVATE Threads::Threads)
   endif()
 
-  target_link_libraries(fontforgeexe PRIVATE gdraw)
+  target_link_libraries(fontforgeexe PRIVATE
+    gdraw
+    shapers
+    ffgtk
+  )
+
+  # GLIB is only needed for GUI builds
+  if(TARGET GLIB::GLIB)
+    target_link_libraries(fontforgeexe PRIVATE GLIB::GLIB PkgConfig::GLibMM)
+    target_compile_definitions(fontforgeexe PRIVATE HAVE_GLIB=1)
+  endif()
 else()
   target_sources(fontforgeexe PRIVATE startnoui.c)
 endif()
@@ -114,7 +126,13 @@ if(WIN32)
   string(REGEX REPLACE "^0+" "" FF_RC_DAY "${FF_RC_DAY}")
   configure_file(fontforge.exe.manifest.in fontforge.exe.manifest @ONLY)
   configure_file(fontforge.rc.in fontforge.rc @ONLY)
-  target_sources(fontforgeexe PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/fontforge.rc" "${CMAKE_CURRENT_BINARY_DIR}/fontforge.exe.manifest")
+  # Only add .rc file - it already includes the manifest via RT_MANIFEST
+  target_sources(fontforgeexe PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/fontforge.rc")
+
+  # For MSVC, disable automatic manifest embedding since we include it in the .rc file
+  if(MSVC)
+    target_link_options(fontforgeexe PRIVATE "/MANIFEST:NO")
+  endif()
 endif()
 
 if(ENABLE_PYTHON_SCRIPTING_RESULT)

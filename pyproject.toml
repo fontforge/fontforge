@@ -1,0 +1,167 @@
+# FontForge Python Module - PyPI Package Configuration
+
+[build-system]
+requires = ["scikit-build-core>=0.5"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "fontforge"
+dynamic = ["version"]
+description = "A font editor and format converter library"
+readme = "README_PYPI.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.8"
+authors = [
+    { name = "FontForge Contributors" }
+]
+maintainers = [
+    { name = "FontForge Contributors" }
+]
+keywords = [
+    "font",
+    "fonts",
+    "typography",
+    "opentype",
+    "truetype",
+    "type1",
+    "otf",
+    "ttf",
+    "woff",
+    "woff2",
+    "ufo",
+    "editor",
+    "converter",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: C",
+    "Programming Language :: C++",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Text Processing :: Fonts",
+    "Topic :: Multimedia :: Graphics :: Editors :: Vector-Based",
+    "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+]
+
+[project.urls]
+Homepage = "https://fontforge.org"
+Documentation = "https://fontforge.org/docs/scripting/python.html"
+Repository = "https://github.com/fontforge/fontforge"
+Issues = "https://github.com/fontforge/fontforge/issues"
+Changelog = "https://github.com/fontforge/fontforge/releases"
+
+[tool.scikit-build]
+# Enable experimental features for custom version provider
+experimental = true
+
+# Get version from CMakeLists.txt (converts YYYYMMDD to CalVer YYYY.M.D)
+metadata.version.provider = "version_provider"
+metadata.version.provider-path = "_build_meta"
+
+# CMake configuration for wheel builds
+cmake.args = [
+    "-DENABLE_GUI=OFF",
+    "-DENABLE_PYTHON_SCRIPTING=ON",
+    "-DENABLE_PYTHON_EXTENSION=ON",
+    "-DENABLE_NATIVE_SCRIPTING=OFF",
+    "-DENABLE_DOCS=OFF",
+    "-DBUILD_SHARED_LIBS=ON",
+]
+
+# Build in Release mode for wheels
+cmake.build-type = "Release"
+
+# No pure Python packages - just the compiled extensions
+wheel.packages = []
+
+# Install extensions to the root of the wheel
+wheel.install-dir = "."
+
+# Minimum CMake version
+cmake.version = ">=3.15"
+
+[tool.scikit-build.cmake.define]
+# These can be overridden via environment variables if needed
+# ENABLE_LIBSPIRO = "ON"
+# ENABLE_WOFF2 = "ON"
+
+# ============================================================================
+# cibuildwheel configuration
+# ============================================================================
+
+[tool.cibuildwheel]
+# Skip PyPy, 32-bit builds, and musllinux
+skip = ["pp*", "*-win32", "*-manylinux_i686", "*-musllinux*"]
+
+# Test that the modules can be imported
+test-command = "python -c \"import fontforge; import psMat; print('fontforge', fontforge.version())\""
+
+# Build for these Python versions (uncomment to restrict)
+# build = ["cp39-*", "cp310-*", "cp311-*", "cp312-*", "cp313-*"]
+
+[tool.cibuildwheel.linux]
+# Use manylinux_2_28 (RHEL 8 based) for broader compatibility
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+
+# Install build dependencies (RHEL 8 / manylinux_2_28)
+# Note: libspiro and libunibreak not in default repos, disabled for now
+before-all = """
+yum install -y \
+    freetype-devel \
+    libxml2-devel \
+    zlib-devel \
+    libpng-devel \
+    libjpeg-devel \
+    libtiff-devel \
+    brotli-devel
+"""
+
+# Repair wheels with auditwheel
+repair-wheel-command = "auditwheel repair -w {dest_dir} {wheel}"
+
+[tool.cibuildwheel.macos]
+# Build separate wheels for each architecture
+archs = ["x86_64", "arm64"]
+
+# arm64 requires macOS 11.0+, x86_64 can target 10.13
+# Use 11.0 for both for simplicity
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
+
+# Install build dependencies via Homebrew
+# Note: Homebrew handles architecture automatically on native runners
+before-all = "brew install freetype libxml2 libpng jpeg libtiff brotli"
+
+# Repair wheels with delocate
+repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} {wheel}"
+
+[tool.cibuildwheel.windows]
+# Build for 64-bit only
+archs = ["AMD64"]
+
+# Environment: point CMake to vcpkg toolchain
+# GitHub Actions provides VCPKG_INSTALLATION_ROOT, but we install our own for consistency
+environment = { CMAKE_TOOLCHAIN_FILE = "C:/vcpkg/scripts/buildsystems/vcpkg.cmake" }
+
+# Bootstrap vcpkg and install dependencies (bash syntax required by cibuildwheel)
+before-all = """
+test -d C:/vcpkg || git clone https://github.com/microsoft/vcpkg.git C:/vcpkg
+C:/vcpkg/bootstrap-vcpkg.bat -disableMetrics
+C:/vcpkg/vcpkg install freetype libxml2 libiconv zlib libpng libjpeg-turbo tiff --triplet x64-windows
+"""
+
+before-build = "pip install delvewheel"
+
+# Repair wheels with delvewheel, adding vcpkg DLL path
+repair-wheel-command = "delvewheel repair --add-path C:/vcpkg/installed/x64-windows/bin -w {dest_dir} {wheel}"

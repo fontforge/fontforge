@@ -32,6 +32,7 @@
   <update_contact>fontforge-devel@lists.sourceforge.net</update_contact>
   <content_rating type="oars-1.1" />
   <releases>
+    <release date="2025-10-01" version="20251009" />
     <release date="2023-01-01" version="20230101" />
     <release date="2022-03-08" version="20220308" />
     <release date="2020-11-07" version="20201107" />

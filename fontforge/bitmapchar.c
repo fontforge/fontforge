@@ -215,32 +215,39 @@ return;
     bdf->props[i].u.val = value;
 }
 
-static const char *AllSame(BDFFont *font,int *avg,int *cnt) {
-    int c=0, a=0, common= -1;
+/* Return 'P' if a proportional font
+   Return 'C' if an X11 "cell" font
+       (all glyphs within (0,width)x(ascent,desent) & monospace )
+   Return 'M' if monospace or dual space and not a cell */
+static const char* Spacing(BDFFont* font, int* avg, int* cnt) {
+    FontPitch pitch = pitch_unknown;
+    int c = 0, a = 0, common = -1;
     int i;
-    BDFChar *bdfc;
-    int cell = -1;
+    BDFChar* bdfc = NULL;
+    bool cell = false;
 
-    /* Return 'P' if a proporitional font */
-    /* Return 'C' if an X11 "cell" font (all glyphs within (0,width)x(ascent,desent) & monospace ) */
-    /* Return 'M' if monospace (and not a cell) */
-    for ( i=0; i<font->glyphcnt; ++i ) {
-	if ( (bdfc = font->glyphs[i])!=NULL && !IsntBDFChar(bdfc)) {
-	    ++c;
-	    a += bdfc->width;
-	    if ( common==-1 ) common = bdfc->width; else if ( common!=bdfc->width ) { common = -2; cell = 0; }
-	    if ( cell ) {
-		if ( bdfc->xmin<0 || bdfc->xmax>common || bdfc->ymax>font->ascent ||
-			-bdfc->ymin>font->descent )
-		    cell = 0;
-		else
-		    cell = 1;
-	    }
-	}
+    for (i = 0; i < font->glyphcnt; ++i) {
+        if ((bdfc = font->glyphs[i]) != NULL && !IsntBDFChar(bdfc)) {
+            ++c;
+            a += bdfc->width;
+            RecomputePitch(bdfc->width, &pitch, &common);
+        }
     }
     if ( c==0 ) *avg=0; else *avg = (10*a)/c;
     *cnt = c;
-return(common==-2 ? "P" : cell ? "C" : "M" );
+    if (pitch == pitch_fixed || pitch == pitch_dual) {
+        int fbb_height, fbb_width, fbb_descent, fbb_lbearing;
+        CalculateBoundingBox(font, &fbb_width, &fbb_height, &fbb_lbearing,
+                             &fbb_descent);
+        if (fbb_lbearing >= 0 && (fbb_width + fbb_lbearing) <= common &&
+            -fbb_descent <= font->descent &&
+            (fbb_height + fbb_descent) <= font->ascent)
+            cell = true;
+    }
+
+    return (pitch == pitch_unknown || pitch == pitch_variable) ? "P"
+           : cell                                              ? "C"
+                                                               : "M";
 }
 
 static void BDFPropAppendString(BDFFont *bdf,const char *keyword,char *value) {
@@ -564,7 +571,7 @@ void XLFD_CreateComponents(BDFFont *font,EncMap *map, int res, struct xlfd_compo
     char reg[100], enc[40];
     int old_res;
 
-    mono = AllSame(font,&avg,&cnt);
+    mono = Spacing(font,&avg,&cnt);
     old_res = BdfPropHasInt(font,"RESOLUTION_X",-1);
     if ( res!=-1 )
 	/* Already set */;
@@ -864,7 +871,7 @@ return( NULL );
 	bdf->glyphcnt = sf->glyphcnt;
     }
     if ( (bc = bdf->glyphs[gid])==NULL ) {
-	if ( use_freetype_to_rasterize_fv ) {
+	if ( use_freetype_to_rasterize_fv && SCDrawsSomething(sc) ) {
 	    void *freetype_context = FreeTypeFontContext(sf,sc,NULL,ly_fore);
 	    if ( freetype_context != NULL ) {
 		bc = SplineCharFreeTypeRasterize(freetype_context,
@@ -947,4 +954,31 @@ struct bc_interface *bc_interface = &noui_bc;
 
 void FF_SetBCInterface(struct bc_interface *bci) {
     bc_interface = bci;
+}
+
+void CalculateBoundingBox(BDFFont* font, int* fbb_width, int* fbb_height,
+                          int* fbb_lbearing, int* fbb_descent) {
+    int minx = 0, maxx = 0, miny = 0, maxy = 0;
+    BDFChar* bdfc;
+    int i;
+
+    if (font->glyphcnt > 0 && (bdfc = font->glyphs[0]) != NULL) {
+        minx = bdfc->xmin;
+        maxx = bdfc->xmax;
+        miny = bdfc->ymin;
+        maxy = bdfc->ymax;
+    }
+
+    for (i = 1; i < font->glyphcnt; ++i) {
+        if ((bdfc = font->glyphs[i]) != NULL) {
+            if (minx > bdfc->xmin) minx = bdfc->xmin;
+            if (maxx < bdfc->xmax) maxx = bdfc->xmax;
+            if (miny > bdfc->ymin) miny = bdfc->ymin;
+            if (maxy < bdfc->ymax) maxy = bdfc->ymax;
+        }
+    }
+    *fbb_height = maxy - miny + 1;
+    *fbb_width = maxx - minx + 1;
+    *fbb_descent = miny;
+    *fbb_lbearing = minx;
 }

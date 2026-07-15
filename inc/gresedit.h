@@ -32,41 +32,6 @@
 #include "ggadget.h"
 #include "gresource.h"
 
-struct resed {
-    const char *name, *resname;
-    enum res_type type;
-    void *val;
-    char *popup;
-    void *(*cvt)(char *,void *);
-    union { int ival; double dval; char *sval; GResFont fontval; GResImage imageval; } orig;
-    int cid;
-    int found;
-};
-
-#define RESED_EMPTY { NULL, NULL, 0, NULL, NULL, NULL, { 0 }, 0, 0 }
-
-typedef struct gresinfo {
-    struct gresinfo *next;
-    struct gresinfo *inherits_from;
-    struct gresinfo *seealso1, *seealso2;
-    GBox *boxdata;
-    GResFont *font;
-    GGadgetCreateData *examples;
-    struct resed *extras;
-    char *name;
-    char *initialcomment;
-    char *resname;
-    char *progname;
-    uint8_t is_button;		/* Activate default button border flag */
-    uint8_t is_initialized;
-    uint32_t override_mask;
-    GBox overrides;
-    GBox orig_state;
-    void (*refresh)(void);	/* Called when user OKs the resource editor dlg */
-    int (*initialize)(struct gresinfo *);
-    void *reserved_for_future_use2;
-} GResInfo;
-
 enum override_mask_flags {
     /* First 8 flags are the enum box_flags */
     omf_border_type	= 0x100,

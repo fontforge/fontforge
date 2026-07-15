@@ -27,7 +27,7 @@ import sys
 BASE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.basename(__file__)
 
-UNIDATA_VERSION = "15.0.0"
+UNIDATA_VERSION = "17.0.0"
 UNICODE_DATA = "UnicodeData%s.txt"
 DERIVED_CORE_PROPERTIES = "DerivedCoreProperties%s.txt"
 PROP_LIST = "PropList%s.txt"
@@ -244,8 +244,8 @@ class UnicodeData:
             (0x20000, 0x2FFFD, "Supplementary Ideographic Plane"),
             (0x30000, 0x3FFFD, "Tertiary Ideographic Plane"),
             (0xE0000, 0xEFFFD, "Supplementary Special-purpose Plane"),
-            (0xF0000, 0xFFFFD, "Supplementary Private Use Area-A"),
-            (0x100000, 0x10FFFD, "Supplementary Private Use Area-B"),
+            (0xF0000, 0xFFFFD, "Plane 15 (Supplementary Private Use Area-A)"),
+            (0x100000, 0x10FFFD, "Plane 16 (Supplementary Private Use Area-B)"),
         ]
         planes = [
             (s, e, s, sum(1 for i in range(s, e + 1) if table[i]), n)
@@ -313,7 +313,7 @@ class UnicodeData:
         self.blocks = sorted(blocks, key=lambda x: x[0])
         self.planes = sorted(planes, key=lambda x: x[0])
 
-        for char, (p,) in UcdFile(DERIVED_CORE_PROPERTIES, version).expanded():
+        for char, (p, *_) in UcdFile(DERIVED_CORE_PROPERTIES, version).expanded():
             if table[char]:
                 # Some properties (e.g. Default_Ignorable_Code_Point)
                 # apply to unassigned code points; ignore them
@@ -728,8 +728,16 @@ def makeuninames(unicode, trace):
         (250, re.compile(rb"(?:[\x21-\x7F]+[ -]+){3}")),
         (750, re.compile(rb"(?:[\x21-\x7F]+[ -]+){2}")),
         (3400, re.compile(rb"(?:[\x21-\x7F]+[ -]+){1}")),
-        (5000, re.compile(rb"\b(?:[a-z]{3,}|[\x21-\x60\x7B-\x7F]{3,})\b")),
+        (3440, re.compile(rb"\b(?:[a-z]{3,}|[\x21-\x60\x7B-\x7F]{3,})\b")),
     ]
+    # Total entry count (first values of regex list) is kept below 8192 to
+    # prevent lexicon overflow. Lexicon size can be further optimized by
+    # balancing between regex counts, but it doesn't seem to improve much from
+    # current.
+    total_count = sum([count for count, _ in regexes])
+    if total_count >= 2 ** 13:
+        print("Warning: lexicon overflow possible", total_count)
+
     # The initial character on annotation lines are excluded from the phrasebook
     # This allows us to substitute them for fancier characters
     annot_re = re.compile(rb"\n(.) ")

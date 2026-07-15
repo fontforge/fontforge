@@ -3,6 +3,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define NICE_PROPORTION	.39
 enum ae_type { ae_all, ae_between_selected, ae_only_good, ae_only_good_rm_later };
 
@@ -93,5 +97,9 @@ extern void SPTouchControl(SplinePoint *sp, BasePoint *which, int order2);
 extern void SPWeightedAverageCps(SplinePoint *sp);
 extern void SSOverlapClusterCpAngles(SplineSet *base, bigreal within);
 extern void SSRemoveStupidControlPoints(SplineSet *base);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINEUTIL2_H */

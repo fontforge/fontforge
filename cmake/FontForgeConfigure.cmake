@@ -12,10 +12,6 @@ of these defines work.
 There are multiple definitions that are not covered by the config header,
 but which are used throughout FontForge.
 
-Defines that are not included, because they are obsolete, include:
-
-_NO_LIBCAIRO
-
 There are other defines where it is not clear if they should be
 configured, or if they are defined locally in source only:
 
@@ -62,8 +58,10 @@ function(fontforge_generate_config template destination)
   check_function_exists(realpath HAVE_REALPATH)
   cmake_pop_check_state()
 
-  # These are hard requirements/unsupported, should get rid of these
-  set(HAVE_LIBINTL_H 1)
+  # Set HAVE_LIBINTL_H only if Intl was found
+  if(Intl_FOUND)
+    set(HAVE_LIBINTL_H 1)
+  endif()
 
   # Configurable settings
   set(FONTFORGE_CONFIG_SHOW_RAW_POINTS ${ENABLE_DEBUG_RAW_POINTS})
@@ -77,23 +75,13 @@ function(fontforge_generate_config template destination)
   endif()
 
   # Configurable features
-  _set_negated(_NO_XKB "${X11_Xkb_FOUND}")
-  _set_negated(_NO_XINPUT "${X11_Xi_FOUND}")
-
-  if(NOT ENABLE_GUI OR NOT ENABLE_X11)
-    set(X_DISPLAY_MISSING 1)
-  endif()
-
-  if(ENABLE_GUI AND NOT ENABLE_X11)
-    set(FONTFORGE_CAN_USE_GDK 1)
-  endif()
-
   set(FONTFORGE_CAN_USE_WOFF2 ${ENABLE_WOFF2_RESULT})
 
   _set_negated(_NO_FFSCRIPT "${ENABLE_NATIVE_SCRIPTING}")
   _set_negated(_NO_LIBJPEG "${ENABLE_LIBJPEG_RESULT}")
   _set_negated(_NO_LIBPNG "${ENABLE_LIBPNG_RESULT}")
   _set_negated(_NO_LIBSPIRO "${ENABLE_LIBSPIRO_RESULT}")
+  _set_negated(_NO_LIBUNIBREAK "${ENABLE_LIBUNIBREAK_RESULT}")
   _set_negated(_NO_LIBTIFF "${ENABLE_LIBTIFF_RESULT}")
   _set_negated(_NO_LIBUNGIF "${ENABLE_LIBGIF_RESULT}")
   _set_negated(_NO_PYTHON "${ENABLE_PYTHON_SCRIPTING_RESULT}")

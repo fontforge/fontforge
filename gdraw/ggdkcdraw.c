@@ -36,7 +36,6 @@
 
 #include "ggdkdrawP.h"
 
-#ifdef FONTFORGE_CAN_USE_GDK
 
 #include "ustring.h"
 
@@ -1128,11 +1127,6 @@ void GGDKDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32_t x, int32_
     cairo_fill(gw->cc);
 }
 
-enum gcairo_flags GGDKDrawHasCairo(GWindow UNUSED(w)) {
-    //Log(LOGDEBUG, " ");
-    return gc_all;
-}
-
 void GGDKDrawPathStartNew(GWindow w) {
     //Log(LOGDEBUG, " ");
     _GGDKDraw_CheckAutoPaint((GGDKWindow)w);
@@ -1403,4 +1397,3 @@ int GGDKDrawLayoutLineStart(GWindow w, int l) {
     return line->start_index;
 }
 
-#endif // FONTFORGE_CAN_USE_GDK

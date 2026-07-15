@@ -38,7 +38,7 @@
 
 #include <math.h>
 
-static void DoChar(SplineChar *sc,CreateWidthData *wd, FontViewBase *fv,
+void DoChar(SplineChar *sc,CreateWidthData *wd, FontViewBase *fv,
 	BDFChar *bc) {
     real transform[6];
     DBounds bb;
@@ -204,12 +204,6 @@ void FVDoit(CreateWidthData *wd) {
     wd->done = true;
 }
 
-void CVDoit(CreateWidthData *wd) {
-    CharView *cv = (CharView *) (wd->_fv);
-
-    DoChar(cv->b.sc,wd,(FontViewBase *) (cv->b.fv),NULL);
-    wd->done = true;
-}
 void GenericVDoit(CreateWidthData *wd) {
     FontViewBase* fv = (FontViewBase*)wd->_fv;
     SplineChar* sc = (SplineChar*)wd->_sc;

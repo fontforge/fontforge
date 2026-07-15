@@ -65,8 +65,8 @@ struct fontinfo {
     char *blendaxistypes;
 };
 
-struct private {
-    struct psdict *private;
+struct psprivate {
+    struct psdict *private_dict;
     struct pschars *subrs;	/* (optional, required if othersubrs is present) */
 			/* 0-2 part of Flex, 3 hint replacement, 4 and up for charstrings */
     int leniv;			/* (optional) must be 4 for old interpreters (number of rand chars at start of charstrings entries) */
@@ -121,7 +121,7 @@ typedef struct fontdict {
     struct psdict *metrics2;	/* (optional) */
     struct pschars *chars;
     struct charprocs *charprocs;
-    struct private *private;
+    struct psprivate *psprivate;
     unsigned int wasbinary: 1;
     unsigned int wascff: 1;
     Encoding *encoding_name;
@@ -174,7 +174,7 @@ struct cidbytes {
 struct fd2data {
     int defwid, nomwid;		/* For Type2 charstrings */
     struct pschars *subrs;
-    FILE *private;		/* Subroutines get stored in the private file immediately after the private dict */
+    FILE *private_file;		/* Subroutines get stored in the private file immediately after the private dict */
     int eodictmark, fillindictmark;
     int privatelen;
 };

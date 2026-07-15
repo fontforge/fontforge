@@ -31,7 +31,6 @@
 
 #include "ggdkdrawP.h"
 
-#ifdef FONTFORGE_CAN_USE_GDK
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -255,4 +254,3 @@ const char *GdkEventName(int code) {
     }
 }
 
-#endif // FONTFORGE_CAN_USE_GDK

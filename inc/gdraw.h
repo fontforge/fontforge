@@ -29,16 +29,7 @@
 #define FONTFORGE_GDRAW_H
 
 #include "gimage.h"
-
-enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_extended=8, fs_vertical=16 };
-enum font_type { ft_unknown, ft_serif, ft_sans, ft_mono, ft_cursive, ft_max };
-
-typedef struct {
-    const char *utf8_family_name;	/* may be more than one */
-    int16_t point_size;			/* negative values are in pixels */
-    int16_t weight;
-    enum font_style style;
-} FontRequest;
+#include "gresource.h"
 
 typedef struct font_instance FontInstance, GFont;
 enum gic_style { gic_overspot=2, gic_root=1, gic_hidden=0, gic_orlesser=4, gic_type=3 };
@@ -228,6 +219,15 @@ enum window_attr_mask { wam_events=0x2, wam_bordwidth=0x4,
 			wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
 			wam_nocairo=0x200000, wam_verytransient=0x400000, wam_palette=0x800000 };
 
+#ifdef __cplusplus
+extern "C++" {
+inline enum window_attr_mask operator|(enum window_attr_mask lhs, enum window_attr_mask rhs) {
+    return static_cast<enum window_attr_mask>(static_cast<int>(lhs) |
+                                              static_cast<int>(rhs));
+}
+}
+#endif
+
 typedef struct gwindow_attrs {
     enum window_attr_mask mask;
     uint32_t event_masks;			/* (1<<et_char) | (1<<et_mouseup) etc */
@@ -262,12 +262,6 @@ typedef struct gdeveventmask {
 } GDevEventMask;
 
 enum gzoom_flags { gzf_pos=1, gzf_size=2 };
-    /* bit flags for the hasCairo query */
-enum gcairo_flags { gc_buildpath=1,	/* Has build path commands (postscript, cairo) */
-		    gc_alpha=2,		/* Supports alpha channels & translucent colors (cairo, pdf) */
-		    gc_xor=4,		/* Cairo can't do the traditional XOR drawing that X11 does */
-		    gc_all = gc_buildpath|gc_alpha
-		    };
 
 typedef int (*GDrawEH)(GWindow,GEvent *);
 
@@ -404,8 +398,8 @@ extern void GDrawGrabSelection(GWindow w,enum selnames sel);
 extern void GDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
 	void *data,int32_t cnt,int32_t unitsize,void *(*gendata)(void *,int32_t *len),
 	void (*freedata)(void *));
-extern void *GDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32_t *len);
-extern int GDrawSelectionHasType(GWindow w,enum selnames sn, char *typename);
+extern void *GDrawRequestSelection(GWindow w,enum selnames sn, char *type_name, int32_t *len);
+extern int GDrawSelectionHasType(GWindow w,enum selnames sn, char *type_name);
 extern void GDrawBindSelection(GDisplay *disp,enum selnames sel, char *atomname);
 extern int GDrawSelectionOwned(GDisplay *disp,enum selnames sel);
 
@@ -429,7 +423,6 @@ extern void GDrawCancelTimer(GTimer *timer);
 extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de);
 extern int GDrawShortcutKeyMatches(const GEvent *e, unichar_t ch);
 
-extern enum gcairo_flags GDrawHasCairo(GWindow w);
 extern void GDrawPathStartNew(GWindow w);
 extern void GDrawPathStartSubNew(GWindow w);
 extern int GDrawFillRuleSetWinding(GWindow w);
@@ -443,7 +436,6 @@ extern void GDrawPathCurveTo(GWindow w,
 extern void GDrawPathStroke(GWindow w,Color col);
 extern void GDrawPathFill(GWindow w,Color col);
 extern void GDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol);
-extern void GDrawEnableCairo(int on);
 
 extern void GDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi);
 extern void GDrawLayoutDraw(GWindow w, int32_t x, int32_t y, Color fg);

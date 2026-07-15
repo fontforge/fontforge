@@ -627,7 +627,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
 	int cnt, extras;
 	for ( cnt=0; formats[cnt].text!=NULL; ++cnt );
 	for ( i=extras=0; py_ie[i].name!=NULL; ++i )
-	    if ( py_ie[i].export!=NULL )
+	    if ( py_ie[i].py_export!=NULL )
 		++extras;
 	if ( extras!=0 ) {
 	    cur_formats = calloc(extras+cnt+1,sizeof(GTextInfo));
@@ -636,7 +636,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
 		cur_formats[cnt].text = (unichar_t *) copy( (char *) formats[cnt].text );
 	    }
 	    for ( i=extras=0; py_ie[i].name!=NULL; ++i ) {
-		if ( py_ie[i].export!=NULL ) {
+		if ( py_ie[i].py_export!=NULL ) {
 		    cur_formats[cnt+extras].text = (unichar_t *) copy(py_ie[i].name);
 		    cur_formats[cnt+extras].text_is_1byte = true;
 		    cur_formats[cnt+extras].userdata = (void *) (intptr_t) (fv_pythonbase+i);

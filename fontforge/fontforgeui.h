@@ -30,7 +30,6 @@
 
 #include <fontforge-config.h>
 
-#include "ffglib.h"
 #include "fontforgevw.h"
 #include "gprogress.h"
 

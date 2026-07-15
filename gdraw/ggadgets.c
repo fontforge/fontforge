@@ -208,6 +208,7 @@ void GGadgetInit(void) {
     GResEditDoInit(&ggadget2_ri);
     GResEditDoInit(&gpopup_ri);
     GResEditDoInit(&listmark_ri);
+    GTabSetInit();
 }
 
 void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state state ) {

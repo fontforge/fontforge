@@ -28,7 +28,15 @@
 #ifndef FONTFORGE_PUA_H
 #define FONTFORGE_PUA_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const int amspua[];
 extern const int cns14pua[];
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PUA_H */

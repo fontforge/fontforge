@@ -38,6 +38,10 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 static const unsigned unicode4_size = 17*65536;
     /* Unicode goes up to 0x10ffff */
 
@@ -76,5 +80,9 @@ extern int quiet;
 extern MacFeat *default_mac_feature_map;
 
 extern int fontforge_main(int, char **);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PFAEDIT_H */

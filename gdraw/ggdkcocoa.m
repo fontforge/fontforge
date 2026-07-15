@@ -29,7 +29,6 @@
 
 #include "ggdkdrawP.h"
 
-#ifdef FONTFORGE_CAN_USE_GDK
 #include "ustring.h"
 #include <Cocoa/Cocoa.h>
 
@@ -57,5 +56,3 @@ void _GGDKDrawCocoa_SetClipboardText(const char *text) {
     [pb setString:ns_clip forType:NSStringPboardType];
     [ns_clip release];
 }
-
-#endif

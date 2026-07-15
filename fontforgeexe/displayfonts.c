@@ -788,7 +788,7 @@ static GTextInfo *FontNames(SplineFont *cur_sf, int insert_text) {
 		ti[cnt].selected = true;
 		selected = true;
 	    } else if ( cur_sf!=sf && !selected && insert_text ) {
-		if ( cur_sf->new )
+		if ( cur_sf->isnew )
 		    any_other = cnt;
 		else {
 		    ti[cnt].selected = true;

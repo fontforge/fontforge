@@ -31,6 +31,10 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct aw_glyph {
     SplineChar *sc;
     DBounds bb;
@@ -91,5 +95,9 @@ extern void AutoWidth2(FontViewBase *fv, int separation, int min_side, int max_s
 extern void AutoKern2BuildClasses(SplineFont *sf, int layer, SplineChar **leftglyphs,SplineChar **rightglyphs, struct lookup_subtable *sub, int separation, int min_kern, int touching, int only_closer, int autokern, real good_enough);
 extern void AutoKern2NewClass(SplineFont *sf, int layer, char **leftnames, char **rightnames, int lcnt, int rcnt, void (*kcAddOffset)(void *data,int left_index, int right_index,int offset), void *data, int separation, int min_kern, int from_closest_approach, int only_closer, int chunk_height);
 extern void GuessOpticalOffset(SplineChar *sc, int layer, real *_loff, real *_roff, int chunk_height);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_AUTOWIDTH2_H */

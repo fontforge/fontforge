@@ -61,7 +61,37 @@ around. (If you wish to create a :ref:`Device Table <metricsview.DeviceTable>`
 for small pixel sizes you must use the
 :ref:`Kern Pair Closeup dialog <metricsview.kernpair>`)
 
-.. rubric:: Kerning
+Shapers
+-------
+
+The shapers are responsible for the correct layout of the glyphs in the view and
+for the application of OpenType features. Currently, FontForge supports two
+shapers: the legacy built-in shaper and HarfBuzz. You can select the desired
+shaper from the :menuselection:`View` menu.
+
+.. _editmenu.HarfBuzz:
+
+.. object:: HarfBuzz
+
+The `HarfBuzz <https://harfbuzz.github.io/>`_ shaper is the standard text shaping
+engine for many platforms, including most Linux systems, Android, and others. It
+renders your font in exactly the same manner as it would appear on these platforms.
+
+HarfBuzz relies on a cached copy of a font, which may not reflect changes to
+OpenType lookups made while the Metrics View window is open. To ensure that the
+shaper displays the most up-to-date version of the font, invoke
+:menuselection:`View --> Refresh Shaper`.
+
+.. _editmenu.BuiltIn:
+
+.. object:: Built-in shaper
+
+The built-in legacy shaper always uses the current state of the font and does not
+require refreshing. However, it has limited support for OpenType features and may
+fail to display complex scripts, such as Arabic or Indic, correctly.
+
+Kerning
+-------
 
 .. flex-grid::
    :class: flex-center

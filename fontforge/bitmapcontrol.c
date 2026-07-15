@@ -39,8 +39,6 @@
 
 #include <math.h>
 
-int bdfcontrol_lastwhich = bd_selected;
-
 static void RemoveBDFWindows(BDFFont *bdf) {
     int i;
 
@@ -105,7 +103,7 @@ static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32_t *sizes) {
     }
 }
 
-static void SFFigureBitmaps(SplineFont *sf,int32_t *sizes,int usefreetype,int rasterize,int layer) {
+static void SFFigureBitmaps(SplineFont *sf,int32_t *sizes,int rasterize,int layer) {
     BDFFont *bdf;
     int i, first;
     void *freetypecontext = NULL;
@@ -116,16 +114,14 @@ static void SFFigureBitmaps(SplineFont *sf,int32_t *sizes,int usefreetype,int ra
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 ) {
 	if ( first && autohint_before_generate )
 	    SplineFontAutoHint(sf,layer);
-	if ( first && usefreetype )
+	if ( first )
 	    freetypecontext = FreeTypeFontContext(sf,NULL,NULL,layer);
 	if ( !rasterize )
 	    bdf = BDFNew(sf,sizes[i]&0xffff,sizes[i]>>16);
 	else if ( freetypecontext )
 	    bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i]&0xffff,sizes[i]>>16);
-	else if ( usefreetype )
-	    bdf = SplineFontFreeTypeRasterizeNoHints(sf,layer,sizes[i]&0xffff,sizes[i]>>16);
 	else
-	    bdf = SplineFontAntiAlias(sf,layer,sizes[i]&0xffff,1<<((sizes[i]>>16)/2));
+	    bdf = SplineFontFreeTypeRasterizeNoHints(sf,layer,sizes[i]&0xffff,sizes[i]>>16);
 	bdf->next = sf->bitmaps;
 	sf->bitmaps = bdf;
 	sf->changed = true;
@@ -179,7 +175,7 @@ static void FVScaleBitmaps(FontViewBase *fv,int32_t *sizes, int rasterize) {
 }
 
 static void ReplaceBDFC(SplineFont *sf,int32_t *sizes,int gid,
-	void *freetypecontext, int usefreetype,int layer) {
+	void *freetypecontext,int layer) {
     BDFFont *bdf;
     BDFChar *bdfc, temp;
     int i;
@@ -193,7 +189,7 @@ return;
 	    bdfc = NULL;
 	    if ( freetypecontext )
 		bdfc = SplineCharFreeTypeRasterize(freetypecontext,gid,bdf->pixelsize,72,BDFDepth(bdf));
-	    else if ( usefreetype )
+	    else
 		bdfc = SplineCharFreeTypeRasterizeNoHints(sf->glyphs[gid],layer,bdf->pixelsize,72,BDFDepth(bdf));
 	    if ( bdfc==NULL ) {
 		if ( autohint_before_generate && 
@@ -217,7 +213,7 @@ return;
     }
 }
 
-static int FVRegenBitmaps(CreateBitmapData *bd,int32_t *sizes,int usefreetype) {
+static int FVRegenBitmaps(CreateBitmapData *bd,int32_t *sizes) {
     FontViewBase *fv = bd->fv, *selfv = bd->which==bd_all ? NULL : fv;
     SplineFont *sf = bd->sf, *subsf, *bdfsf = sf->cidmaster!=NULL ? sf->cidmaster : sf;
     int i,j;
@@ -235,37 +231,29 @@ return( false );
 	}
     }
     if ( bd->which==bd_current && bd->sc!=NULL ) {
-	if ( usefreetype )
-	    freetypecontext = FreeTypeFontContext(bd->sc->parent,bd->sc, selfv,bd->layer);
-	ReplaceBDFC(bd->sc->parent,sizes,bd->sc->orig_pos,freetypecontext,usefreetype,bd->layer);
-	if ( freetypecontext )
-	    FreeTypeFreeContext(freetypecontext);
+	freetypecontext = FreeTypeFontContext(bd->sc->parent,bd->sc, selfv,bd->layer);
+	ReplaceBDFC(bd->sc->parent,sizes,bd->sc->orig_pos,freetypecontext,bd->layer);
+	FreeTypeFreeContext(freetypecontext);
     } else {
 	if ( bdfsf->subfontcnt!=0 && bd->which==bd_all ) {
 	    for ( j=0 ; j<bdfsf->subfontcnt; ++j ) {
 		subsf = bdfsf->subfonts[j];
-	        if ( usefreetype && freetypecontext==NULL )
-		    freetypecontext = FreeTypeFontContext(subsf,NULL, selfv, bd->layer);
+		freetypecontext = FreeTypeFontContext(subsf,NULL, selfv, bd->layer);
 		for ( i=0; i<subsf->glyphcnt; ++i ) {
 		    if ( SCWorthOutputting(subsf->glyphs[i])) {
-			ReplaceBDFC(subsf,sizes,i,freetypecontext,usefreetype, bd->layer);
+			ReplaceBDFC(subsf,sizes,i,freetypecontext,bd->layer);
 		    }
 		}
-		if ( freetypecontext )
-		    FreeTypeFreeContext(freetypecontext);
-		freetypecontext = NULL;
+		FreeTypeFreeContext(freetypecontext);
 	    }
 	} else {
-	    if ( usefreetype && freetypecontext==NULL )
-	        freetypecontext = FreeTypeFontContext(sf,NULL, selfv, bd->layer);
+	    freetypecontext = FreeTypeFontContext(sf,NULL, selfv, bd->layer);
 	    for ( i=0; i<fv->map->enccount; ++i ) {
 		if ( fv->selected[i] || bd->which == bd_all ) {
-		    ReplaceBDFC(sf,sizes,fv->map->map[i],freetypecontext,usefreetype, bd->layer);
+		    ReplaceBDFC(sf,sizes,fv->map->map[i],freetypecontext,bd->layer);
 		}
 	    }
-	    if ( freetypecontext )
-		FreeTypeFreeContext(freetypecontext);
-	    freetypecontext = NULL;
+	    FreeTypeFreeContext(freetypecontext);
 	}
     }
     sf->changed = true;
@@ -322,14 +310,15 @@ static int FVRemoveBitmaps(CreateBitmapData *bd,int32_t *sizes) {
 return( true );
 }
 
-void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes,int usefreetype) {
+/* usefreetype is now always true */
+void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes) {
 
     if ( bd->isavail==-1 )
 	FVRemoveBitmaps(bd,sizes);
     else if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL )
 	FVScaleBitmaps(bd->fv,sizes,bd->rasterize);
     else if ( bd->isavail ) {
-	SFFigureBitmaps(bd->sf,sizes,usefreetype,bd->rasterize,bd->layer);
+	SFFigureBitmaps(bd->sf,sizes,bd->rasterize,bd->layer);
 	/* If we had an empty font, to which we've just added bitmaps, then */
 	/*  presumably we should treat this as a bitmap font and switch the */
 	/*  fontview so that it shows one of the bitmaps */
@@ -342,11 +331,9 @@ void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes,int usefreetype) {
 		FVChangeDisplayBitmap(fvs,bdf);
 	}
     } else {
-	if ( FVRegenBitmaps(bd,sizes,usefreetype))
-	    bdfcontrol_lastwhich = bd->which;
-	else {
+	if ( !FVRegenBitmaps(bd,sizes)) {
 	    bd->done = false;
-return;
+            return;
 	}
     }
     bd->done = true;
@@ -363,6 +350,6 @@ int BitmapControl(FontViewBase *fv,int32_t *sizes,int isavail,int rasterize) {
     bd.which = bd_selected;
     bd.rasterize = rasterize;
     bd.layer = fv->active_layer;
-    BitmapsDoIt(&bd,sizes,hasFreeType());
+    BitmapsDoIt(&bd,sizes);
 return( bd.done );
 }

@@ -18,3 +18,4 @@ tags
 __pycache__
 *.py[co]
 
+build-cpp/

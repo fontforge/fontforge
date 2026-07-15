@@ -29,7 +29,7 @@
 
 #include "autotrace.h"
 #include "encoding.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforge.h"
 #include "gfile.h"
 #include "groups.h"
@@ -43,14 +43,15 @@
 #include "ustring.h"
 
 #include <assert.h>
-#include <dirent.h>
 #include <locale.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 #include <sys/types.h>
 #include <time.h>
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 #include <windows.h>
 #endif
 
@@ -131,7 +132,6 @@ static int infowindowdistance=10;		/* in cvruler.c */
 static int loacal_markextrema, loacal_markpoi, loacal_showrulers,
     loacal_showcpinfo, loacal_showsidebearings, loacal_showpoints,
     loacal_showfilled, loacal_showtabs, loacal_showrefnames;
-static int oldsystem=100;
 static int rectelipse=0, polystar=0, regular_star=0;	/* from cvpalettes.c */
 static int center_out[2]={0,0};			/* from cvpalettes.c */
 static float rr_radius=0;				/* from cvpalettes.c */
@@ -293,7 +293,6 @@ extras[] = {
     { "ShowPoints", pr_bool, &loacal_showpoints, NULL, NULL, '\0', NULL, 1, NULL },
     { "ShowFilled", pr_int, &loacal_showfilled, NULL, NULL, '\0', NULL, 1, NULL },
     { "ShowTabs", pr_int, &loacal_showtabs, NULL, NULL, '\0', NULL, 1, NULL },
-    { "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1, NULL },
     { "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1, NULL },
     { "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1, NULL },
     { "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1, NULL },
@@ -470,7 +469,7 @@ static const char *NOUI_getFontForgeShareDir(void) {
 
 static void DefaultEncoding(void) {
     const char* charset = NULL;
-    bool is_utf8 = g_get_charset(&charset);
+    bool is_utf8 = ff_get_charset(&charset);
 
     if (!SetupUCharMap(FindUnicharName(), charset, is_utf8)) {
         fprintf(stderr, "Failed to set up unichar<->system local encoding, assuming utf-8 and trying again...\n");
@@ -488,17 +487,12 @@ static void DefaultXUID(void) {
     /* FontForge will use the same scheme */
     int r1, r2;
     char buffer[50];
-    struct timeval tv;
 
-    gettimeofday(&tv,NULL);
-    srand(tv.tv_usec);
     do {
-	r1 = rand()&0x3ff;
-    } while ( r1==0 );		/* I reserve "0" for me! */
-    gettimeofday(&tv,NULL);
-    g_random_set_seed(tv.tv_usec+1);
-    r2 = g_random_int();
-    sprintf( buffer, "1021 %d %d", r1, r2 );
+	r1 = ff_random_int() & 0x3ff;
+    } while (r1 == 0);		/* I reserve "0" for me! */
+    r2 = ff_random_int();
+    sprintf(buffer, "1021 %d %d", r1, r2);
     if (xuid != NULL) free(xuid);
     xuid = copy(buffer);
 }

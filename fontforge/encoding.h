@@ -4,6 +4,10 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct cidaltuni {
     struct cidaltuni *next;
     int uni;
@@ -81,5 +85,14 @@ extern void SFEncodeToMap(SplineFont *sf, struct cidmap *map);
 extern void SFExpandGlyphCount(SplineFont *sf, int newcnt);
 extern void SFMatchGlyphs(SplineFont *sf, SplineFont *target, int addempties);
 extern void SFRemoveGlyph(SplineFont *sf, SplineChar *sc);
+
+/* Accessor functions for global encoding variables (needed for MSVC DLL exports) */
+extern Encoding *GetDefaultEncoding(void);
+extern void SetDefaultEncoding(Encoding *enc);
+extern Encoding *GetCustomEncoding(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_ENCODING_H */

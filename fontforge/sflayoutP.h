@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_SFLAYOUTP_H
 #define FONTFORGE_SFLAYOUTP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum sftf_fonttype { sftf_pfb, sftf_ttf, sftf_otf, sftf_nohints, sftf_bitmap, sftf_pfaedit };
 
 typedef struct fontdata {
@@ -122,5 +126,9 @@ extern void LayoutInfoSetTitle(LayoutInfo *li,const unichar_t *tit,int width);
 extern struct fontlist *LI_BreakFontList(LayoutInfo *li,int start,int end);
 extern int LI_SetFontData(LayoutInfo *li, int start, int end, SplineFont *sf,
 	int layer, enum sftf_fonttype fonttype, int size, int antialias,int width);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SFLAYOUTP_H */

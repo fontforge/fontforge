@@ -36,7 +36,7 @@ int32_t memlong(uint8_t *data,int len, int offset) {
 		int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
 		return (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4;
 	} else {
-		LogError( _("Bad font, offset out of bounds.\n") );
+		LogError( _("Bad font, offset out of bounds.") );
 		return 0;
 	}
 }
@@ -46,7 +46,7 @@ int memushort(uint8_t *data,int len, int offset) {
 		int ch1 = data[offset], ch2 = data[offset+1];
 		return (ch1<<8)|ch2;
 	} else {
-		LogError( _("Bad font, offset out of bounds.\n") );
+		LogError( _("Bad font, offset out of bounds.") );
 		return 0;
 	}
 }

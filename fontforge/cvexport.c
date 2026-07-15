@@ -32,6 +32,7 @@
 #include "autohint.h"
 #include "bvedit.h"
 #include "dumppfa.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "gfile.h"
 #include "gicons.h"
@@ -182,8 +183,8 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
 /* TODO: Note, maybe this routine can be combined with print.c dump_pdfprologue() */
     DBounds b;
     time_t now;
-    GDateTime *gdt;
-    GTimeSpan zoffset;
+    struct tm tm_buf;
+    long zoffset;
     int ret;
     int _objlocs[8], xrefloc, streamstart, streamlength, resid = 0, nextobj;
     int *objlocs = _objlocs;
@@ -245,14 +246,23 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "    /Creator (FontForge)\n" );
     now = GetTime();
     if (!getenv("SOURCE_DATE_EPOCH")) {
-	gdt = g_date_time_new_from_unix_local((gint64)now);
+#ifdef _WIN32
+	localtime_s(&tm_buf, &now);
+#else
+	localtime_r(&now, &tm_buf);
+#endif
+	zoffset = ff_get_utc_offset(now);
     } else {
-	gdt = g_date_time_new_from_unix_utc((gint64)now);
+#ifdef _WIN32
+	gmtime_s(&tm_buf, &now);
+#else
+	gmtime_r(&now, &tm_buf);
+#endif
+	zoffset = 0;
     }
     fprintf( pdf, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
-	    g_date_time_get_year(gdt), g_date_time_get_month(gdt), g_date_time_get_day_of_month(gdt),
-	    g_date_time_get_hour(gdt), g_date_time_get_minute(gdt), g_date_time_get_second(gdt) );
-    zoffset = g_date_time_get_utc_offset(gdt)/1000000;
+	    tm_buf.tm_year + 1900, tm_buf.tm_mon + 1, tm_buf.tm_mday,
+	    tm_buf.tm_hour, tm_buf.tm_min, tm_buf.tm_sec );
     if ( zoffset==0 || getenv("SOURCE_DATE_EPOCH") )
 	fprintf( pdf, "Z)\n" );
     else {
@@ -263,8 +273,6 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
 	    fprintf( pdf, "+" );
 	fprintf( pdf, "%02d'%02d')\n", (int)(zoffset/3600),(int)(zoffset/60-(zoffset/3600)*60) );
     }
-    g_date_time_unref(gdt);
-    gdt = NULL;
     fprintf( pdf, "    /Title (%s from %s)\n", sc->name, sc->parent->fontname );
     if ( author!=NULL )
 	fprintf( pdf, "    /Author (%s)\n", author );

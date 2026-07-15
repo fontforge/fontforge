@@ -31,21 +31,9 @@
 #include <fontforge-config.h>
 
 #include "gdrawP.h"
-#ifndef FONTFORGE_CAN_USE_GDK
-#  include "gxdrawP.h"
-#else
-#  include "ggdkdrawP.h"
-#endif
+#include "ggdkdrawP.h"
 
 #define em_uplane0     (em_max+1)
-
-struct font_instance {
-    FontRequest rq;		/* identification of this instance */
-    PangoFontDescription *pango_fd;
-#ifndef _NO_LIBCAIRO
-    PangoFontDescription *pangoc_fd;
-#endif
-};
 
 typedef struct font_state {
     int res;

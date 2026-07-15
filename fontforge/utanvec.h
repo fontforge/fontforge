@@ -35,9 +35,18 @@
 
 #include <math.h>
 
-#define BPUNINIT ((BasePoint) { -INFINITY, INFINITY })
-#define UTZERO ((BasePoint) { 0.0, 1.0 })
-#define UTMIN ((BasePoint) { -1, -DBL_MIN })
+#ifdef __cplusplus
+extern "C" {
+/* C++ brace initialization */
+#define BP_INIT(x, y) BasePoint{x, y}
+#else
+/* C99 compound literal - works on GCC/Clang but not MSVC in C mode */
+#define BP_INIT(x, y) ((BasePoint){x, y})
+#endif
+
+#define BPUNINIT BP_INIT(-INFINITY, INFINITY)
+#define UTZERO BP_INIT(0.0, 1.0)
+#define UTMIN BP_INIT(-1, -DBL_MIN)
 #define UTMARGIN (1e-7)     // Arrived at through testing
 
 static inline int BPWithin(BasePoint bp1, BasePoint bp2, bigreal f) {
@@ -58,27 +67,27 @@ static inline bigreal BPDist(BasePoint p1, BasePoint p2) {
 }
 
 static inline BasePoint BPRev(BasePoint v) {
-    return (BasePoint) { -v.x, -v.y };
+    return BP_INIT(-v.x, -v.y);
 }
 
 static inline BasePoint BPRevIf(int t, BasePoint v) {
-    return t ? (BasePoint) { -v.x, -v.y } : v;
+    return t ? BP_INIT(-v.x, -v.y) : v;
 }
 
 static inline BasePoint BPAdd(BasePoint v1, BasePoint v2) {
-    return (BasePoint) { v1.x + v2.x, v1.y + v2.y };
+    return BP_INIT(v1.x + v2.x, v1.y + v2.y);
 }
 
 static inline BasePoint BPSub(BasePoint v1, BasePoint v2) {
-    return (BasePoint) { v1.x - v2.x, v1.y - v2.y };
+    return BP_INIT(v1.x - v2.x, v1.y - v2.y);
 }
 
 static inline BasePoint BPScale(BasePoint v, bigreal f) {
-    return (BasePoint) { f * v.x, f * v.y };
+    return BP_INIT(f * v.x, f * v.y);
 }
 
 static inline BasePoint BPAvg(BasePoint v1, BasePoint v2) {
-    return (BasePoint) { (v1.x + v2.x) / 2, (v1.y + v2.y)/2 };
+    return BP_INIT((v1.x + v2.x) / 2, (v1.y + v2.y)/2);
 }
 
 static inline bigreal BPDot(BasePoint v1, BasePoint v2) {
@@ -94,7 +103,7 @@ static inline int BPIsUninit(BasePoint bp) {
 }
 
 static inline BasePoint BPRot(BasePoint v, BasePoint ut) {
-    return (BasePoint) { ut.x * v.x - ut.y * v.y, ut.y * v.x + ut.x * v.y };
+    return BP_INIT(ut.x * v.x - ut.y * v.y, ut.y * v.x + ut.x * v.y);
 }
 
 static inline int BPEq(BasePoint bp1, BasePoint bp2) {
@@ -102,15 +111,15 @@ static inline int BPEq(BasePoint bp1, BasePoint bp2) {
 }
 
 static inline BasePoint BP90CCW(BasePoint v) {
-    return (BasePoint) { -v.y, v.x };
+    return BP_INIT(-v.y, v.x);
 }
 
 static inline BasePoint BP90CW(BasePoint v) {
-    return (BasePoint) { v.y, -v.x };
+    return BP_INIT(v.y, -v.x);
 }
 
 static inline BasePoint BPNeg(BasePoint v) {
-    return (BasePoint) { v.x, -v.y };
+    return BP_INIT(v.x, -v.y);
 }
 
 // Not called "BPNear" because this is specific to UTanVecs
@@ -128,5 +137,9 @@ extern BasePoint SplineUTanVecAt(Spline *s, bigreal t);
 extern bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t,
                                      bool picky);
 extern void UTanVecTests();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // FONTFORGE_UTANVEC_H

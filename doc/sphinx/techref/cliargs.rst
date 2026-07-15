@@ -47,29 +47,9 @@ FontForge recognizes the following options:
    Will read a font from "foo.sfd" and then generate a truetype font from it
    called "foo.ttf"
 
-.. option:: -cmap type
-
-   Where type may be
-
-   Current | Copy | Private
-
-   Gives the user some control over :ref:`colormap handling <xres.Colormap>` on
-   8bit screens.
-
-.. option:: -depth val
-
-   Specifies that FontForge should search for a visual with the given depth
-
 .. option:: -display name
 
    Specifies the name of the display on which FontForge will open its windows
-
-.. option:: -dontopenxdevices
-
-   Various people have complained that when FontForge attempts to open the
-   devices of the wacom graphics tablet, the X server gives a BadDevice error. I
-   can't duplicate this, the open works fine on my system, but this argument
-   allows them to tell fontforge not to try to use the tablet.
 
 .. option:: -help
 
@@ -84,33 +64,6 @@ FontForge recognizes the following options:
 .. option:: -version
 
    Prints out the source version and exits.
-
-.. option:: -keyboard type
-
-   .. warning:: Deprecated option, may not do anything
-
-   Where type may be
-
-   ibm | mac | sun | ppc | 0 | 1 | 2 | 3
-
-   Allows you to specify the type of keyboard. Currently this is only relevant
-   when generating menus. The modifier keys are in different locations on
-   different keyboards (under different operating systems) and if FontForge
-   knows what keyboard you are using it can make the hot-keys have better
-   labels.
-
-   * ibm | 0
-
-        Uses the Control and Alt keys
-   * mac | 1
-
-        Uses the Control and Option keys (Mac OS/X, Mac keyboard)
-   * ppc | 3
-
-        Uses the Control and Command keys (Suse ppc linux, Mac keyboard)
-   * sun | 2
-
-        Uses the Control and Meta keys
 
 .. option:: -last
 
@@ -189,16 +142,6 @@ FontForge recognizes the following options:
 .. option:: -usage
 
    Display a brief description of the options
-
-.. option:: -vc type
-
-   Where type may be:
-
-   StaticGray GrayScale StaticColor PseudoColor TrueColor DirectColor
-
-   (See the X manuals for a description of what these mean). FontForge will
-   search through the visuals in an attempt to find one with the desired
-   VisualClass (given here) and depth (given with the -depth option).
 
 
 .. _cliargs.Environment:

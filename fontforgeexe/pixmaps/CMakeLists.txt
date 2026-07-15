@@ -7,4 +7,4 @@ else()
   set(GDRAW_GMENU_MACICONS "False")
 endif()
 
-add_subdirectory(${THEME})
+add_subdirectory(${GUI_THEME})
