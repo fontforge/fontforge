@@ -2004,7 +2004,7 @@ static struct macname fs_names[] = {
 	{ NULL, 0, 4, "Volledige breedte" },
 	{ NULL, 0, 4, "Unicodeontleding" },
 	{ NULL, 0, 4, "Canonieke ontleding" },
-	{ &fs_names[543], 0, 0, "Half-Width" },
+	{ &fs_names[541], 0, 0, "Half-Width" },
 	{ NULL, 0, 1, "Demi-taille" },
 	{ NULL, 0, 0, NULL }
 };
@@ -2096,7 +2096,7 @@ static struct macsetting fs_settings[] = {
 	{ &fs_settings[82], 0, 0, &fs_names[92], 1 },
 	{ NULL, 1, 0, &fs_names[105], 1 },
 	{ &fs_settings[84], 0, 0, &fs_names[104], 0 },
-	{ &fs_settings[118], 1, 0, &fs_names[108], 0 },
+	{ &fs_settings[116], 1, 0, &fs_names[108], 0 },
 	{ &fs_settings[86], 0, 0, &fs_names[107], 1 },
 	{ NULL, 9, 0, &fs_names[119], 0 },
 	{ &fs_settings[88], 8, 0, &fs_names[118], 0 },
@@ -2126,7 +2126,7 @@ static struct macsetting fs_settings[] = {
 	{ &fs_settings[112], 2, 0, &fs_names[142], 0 },
 	{ &fs_settings[113], 1, 0, &fs_names[141], 0 },
 	{ &fs_settings[114], 0, 0, &fs_names[140], 1 },
-	{ NULL, 2, 0, &fs_names[542], 0 },
+	{ NULL, 2, 0, &fs_names[540], 0 },
 	{ NULL, 0, 0, NULL, 0 }
 };
 
