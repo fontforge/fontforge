@@ -1464,7 +1464,7 @@ struct macsettingname macfeat_otftag[] = {
 }, *user_macfeat_otftag;
 
 static struct macname fs_names[] = {
-		{ &fs_names[146], 0, 0, "All Typographic Features" },
+	{ &fs_names[146], 0, 0, "All Typographic Features" },
 	{ &fs_names[147], 0, 0, "All Type Features" },
 	{ &fs_names[148], 0, 0, "Ligatures" },
 	{ &fs_names[149], 0, 0, "Required Ligatures" },
