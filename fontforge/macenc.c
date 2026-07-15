@@ -1451,10 +1451,10 @@ struct macsettingname macfeat_otftag[] = {
     { 20, 4, CHR('j','p','9','0') },	/* jis 1990 */
     { 21, 0, CHR('o','n','u','m') },	/* lower case number => old style numbers */
     { 22, 0, CHR('p','w','i','d') },	/* proportional text => proportional widths */
+    { 22, 1, CHR('f','w','i','d') },	/* full width text => full widths */
     { 22, 2, CHR('h','w','i','d') },	/* half width text => half widths */
-    { 22, 3, CHR('f','w','i','d') },	/* full width text => full widths */
     { 25, 0, CHR('f','w','i','d') },	/* full width kana => full widths */
-    { 25, 1, CHR('p','w','i','d') },	/* proportional kana => proportional widths */
+    { 25, 1, CHR('p','k','n','a') },	/* proportional kana => proportional widths */
     { 26, 0, CHR('f','w','i','d') },	/* full width ideograph => full widths */
     { 26, 1, CHR('p','w','i','d') },	/* proportional ideograph => proportional widths */
     { 103, 0, CHR('h','w','i','d') },	/* half width cjk roman => half widths */
@@ -1464,7 +1464,7 @@ struct macsettingname macfeat_otftag[] = {
 }, *user_macfeat_otftag;
 
 static struct macname fs_names[] = {
-	{ &fs_names[146], 0, 0, "All Typographic Features" },
+		{ &fs_names[146], 0, 0, "All Typographic Features" },
 	{ &fs_names[147], 0, 0, "All Type Features" },
 	{ &fs_names[148], 0, 0, "Ligatures" },
 	{ &fs_names[149], 0, 0, "Required Ligatures" },
@@ -1747,7 +1747,7 @@ static struct macname fs_names[] = {
 	{ &fs_names[528], 0, 1, "Pleine Taille" },
 	{ &fs_names[529], 0, 1, "Proportionnel" },
 	{ &fs_names[533], 0, 1, "Espacement des CJK romains" },
-	{ &fs_names[534], 0, 1, "Pleine Taille" },
+	{ &fs_names[534], 0, 1, "Demi-taille" },
 	{ &fs_names[535], 0, 1, "Proportionnel" },
 	{ &fs_names[536], 0, 1, "Romains par D\216faut" },
 	{ &fs_names[537], 0, 1, "Romains Pleine Taille" },
@@ -2004,6 +2004,8 @@ static struct macname fs_names[] = {
 	{ NULL, 0, 4, "Volledige breedte" },
 	{ NULL, 0, 4, "Unicodeontleding" },
 	{ NULL, 0, 4, "Canonieke ontleding" },
+	{ &fs_names[543], 0, 0, "Half-Width" },
+	{ NULL, 0, 1, "Demi-taille" },
 	{ NULL, 0, 0, NULL }
 };
 
@@ -2094,7 +2096,7 @@ static struct macsetting fs_settings[] = {
 	{ &fs_settings[82], 0, 0, &fs_names[92], 1 },
 	{ NULL, 1, 0, &fs_names[105], 1 },
 	{ &fs_settings[84], 0, 0, &fs_names[104], 0 },
-	{ NULL, 1, 0, &fs_names[108], 0 },
+	{ &fs_settings[118], 1, 0, &fs_names[108], 0 },
 	{ &fs_settings[86], 0, 0, &fs_names[107], 1 },
 	{ NULL, 9, 0, &fs_names[119], 0 },
 	{ &fs_settings[88], 8, 0, &fs_names[118], 0 },
@@ -2124,6 +2126,7 @@ static struct macsetting fs_settings[] = {
 	{ &fs_settings[112], 2, 0, &fs_names[142], 0 },
 	{ &fs_settings[113], 1, 0, &fs_names[141], 0 },
 	{ &fs_settings[114], 0, 0, &fs_names[140], 1 },
+	{ NULL, 2, 0, &fs_names[542], 0 },
 	{ NULL, 0, 0, NULL, 0 }
 };
 
