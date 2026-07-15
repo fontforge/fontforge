@@ -1254,7 +1254,7 @@ uint16_t WinLangToMac(int winlang) {
     int i;
 
 	/* Some fonts fonts have "CID findfont name" on language 0xFFFF.
-	Also, Windows has undefined language WINLANG_UNDEFINED, which could map to many.
+	Also, Windows has undefined language 0x1000, which could map to many.
 	In these cases, skip lookup and return 0xFFFF. */
 	if (winlang != 0xffff && winlang != WINLANG_UNDEFINED){
 		for ( i=0; i<sizeof(_WinLangFromMac)/sizeof(_WinLangFromMac[0]); ++i )
