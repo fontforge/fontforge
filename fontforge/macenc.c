@@ -33,6 +33,8 @@
 #include "ttf.h"
 #include "ustring.h"
 
+const int winlang_undefined = 0xffff;
+
 /*
  The original data for these mappings may be found at
     http://www.unicode.org/Public/MAPPINGS/VENDORS/APPLE/
@@ -882,55 +884,55 @@ static uint16_t _WinLangFromMac[] = {
 	0x477,		/* Somali */
 	0x441,		/* Swahili */
 /*90*/	0x487,		/* Kinyarwanda/Ruanda */
-	0x1000,		/* Rundi/Kirundi */
-	0x1000,		/* Nyanja/Chewa */
-	0x1000,		/* Malagasy */
-/*94*/	0x1000,		/* Esperanto */
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-/*100*/	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-/*110*/	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-/*120*/	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
-	0x1000,
+	winlang_undefined,		/* Rundi/Kirundi */
+	winlang_undefined,		/* Nyanja/Chewa */
+	winlang_undefined,		/* Malagasy */
+/*94*/	winlang_undefined,		/* Esperanto */
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+/*100*/	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+/*110*/	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+/*120*/	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
+	winlang_undefined,
 /*128*/	0x452,		/* Welsh */
 	0x42d,		/* Basque */
 /*130*/	0x403,		/* Catalan */
 	0x476,		/* Latin */
 	0x46b,		/* Quechua */
 	0x474,		/* Guarani */
-	0x1000,		/* Aymara */
+	winlang_undefined,		/* Aymara */
 	0x444,		/* Tatar */
 	0x480,		/* Uighur */
 	0xc51,		/* Dzongkha/Bhutani */
-	0x1000,		/* Javanese (roman) */
-	0x1000,		/* Sundanese (roman) */
+	winlang_undefined,		/* Javanese (roman) */
+	winlang_undefined,		/* Sundanese (roman) */
 /*140*/	0x456,		/* Galician */
 	0x436,		/* Afrikaans */
 	0x47e,		/* Breton */
@@ -938,11 +940,11 @@ static uint16_t _WinLangFromMac[] = {
 	0x43c,		/* Scottish Gaelic */
 	0xc3c,		/* Manx Gaelic */
 	0x83c,		/* Irish Gaelic (with dot) */
-	0x1000,		/* Tongan */
-	0x1000,		/* Greek (polytonic) */
+	winlang_undefined,		/* Tongan */
+	winlang_undefined,		/* Greek (polytonic) */
 	0x46f,		/* Greenlandic */
 /*150*/	0x42c,		/* Azebaijani (roman) */
-	0x1000
+	winlang_undefined
 };
 
 static char *LanguageCodesFromMacLang[] = {
@@ -1252,9 +1254,9 @@ uint16_t WinLangToMac(int winlang) {
     int i;
 
 	/* Some fonts fonts have "CID findfont name" on language 0xFFFF.
-	Also, Windows has undefined language 0x1000, which could map to many.
+	Also, Windows has undefined language winlang_undefined, which could map to many.
 	In these cases, skip lookup and return 0xFFFF. */
-	if (winlang != 0xffff && winlang != 0x1000){
+	if (winlang != 0xffff && winlang != winlang_undefined){
 		for ( i=0; i<sizeof(_WinLangFromMac)/sizeof(_WinLangFromMac[0]); ++i )
 		if ( _WinLangFromMac[i] == winlang )
 return( i );
