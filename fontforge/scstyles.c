@@ -138,7 +138,7 @@ return ((val < (&psp->me.x)[xdir] && val < (&nsp->me.x)[xdir]) ||
 }
 
 /* This is not exactly an interpolation. We are positioning a middle point
- * between two new values in the same proportion as the the old middle point was
+ * between two new values in the same proportion as the old middle point was
  * between two old values. */
 static double InterpolateVal(double a, double b, double a1, double b1,
                              double val) {
