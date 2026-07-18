@@ -4289,7 +4289,7 @@ return(true);
 	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_CPageDefault)) )
 	    hexparse(gw,CID_CodePageRanges,_("MS Code Pages"),codepages,2,&err );
 	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_URangesDefault)) )
-	    hexparse(gw,CID_UnicodeRanges,_("Unicode Ranges"),uranges,4,&err );
+	    hexparse(gw,CID_UnicodeRanges,_("MS Unicode Ranges"),uranges,4,&err );
 	if ( err )
 return( true );
 
@@ -9423,7 +9423,7 @@ return;
     memset(cbox,0,sizeof(cbox));
 
     i = j = 0;
-    clabel[i].text = (unichar_t *) _("Unicode Ranges:");
+    clabel[i].text = (unichar_t *) _("MS Unicode Ranges:");
     clabel[i].text_is_1byte = true;
     cgcd[i].gd.label = &clabel[i];
     cgcd[i].gd.flags = gg_visible | gg_enabled;
@@ -9468,6 +9468,7 @@ return;
     if ( !sf->pfminfo.hasunicoderanges )
 	cgcd[i].gd.flags = gg_visible | gg_list_multiplesel;
     cgcd[i].gd.cid = CID_UnicodeList;
+    cgcd[i].gd.popup_msg = _("A subset of Unicode ranges explicitly recognized by Microsoft. Select the ranges which you consider functional.");
     cgcd[i].gd.u.list = unicoderangenames;
     cgcd[i].gd.handle_controlevent = OS2_UnicodeChange;
     cgcd[i++].creator = GListCreate;
