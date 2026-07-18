@@ -1052,7 +1052,7 @@ static void AI_TestOrdering(GIData *ci,real x) {
 		( aps->lig_index>ap->lig_index &&
 		    (( isr2l && aps->me.x>x) ||
 		     (!isr2l && aps->me.x<x))) ) {
-		ff_post_error(_("Out Of Order"),_("Marks within a ligature should be ordered with the direction of writing.\nThis one and %d are out of order."),aps->lig_index);
+		LogError(_("Marks within a ligature are usually ordered with the direction of writing. This one and %d are out of order."),aps->lig_index);
 return;
 	    }
 	}
