@@ -1252,6 +1252,10 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     PListAddNameString(dictnode,"openTypeNameSampleText",sf,ttf_sampletext);
     PListAddNameString(dictnode,"openTypeWWSFamilyName",sf,ttf_wwsfamily);
     PListAddNameString(dictnode,"openTypeWWSSubfamilyName",sf,ttf_wwssubfamily);
+    if ( sf->use_typo_metrics ) {
+	char typo_metrics_bit = 7;
+	PListAddIntArray(dictnode,"openTypeOS2Selection",&typo_metrics_bit,1);
+    }
     if ( sf->pfminfo.panose_set )
 	PListAddIntArray(dictnode,"openTypeOS2Panose",sf->pfminfo.panose,10);
     if ( sf->pfminfo.pfmset ) {
@@ -3919,7 +3923,13 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
 		free(valname);
 	    } else if ( strncmp((char *) keyname,"openTypeOS2",11)==0 ) {
 		sf->pfminfo.pfmset = true;
-		if ( xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 ) {
+		if ( xmlStrcmp(keyname+11,(xmlChar *) "Selection")==0 ) {
+		    char selection[16];
+		    UFOGetByteArray(selection,sizeof(selection),doc,value);
+		    for ( int i=0; i<sizeof(selection); ++i )
+			if ( selection[i] == 7 )
+			    sf->use_typo_metrics = true;
+		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 ) {
 		    UFOGetByteArray(sf->pfminfo.panose,sizeof(sf->pfminfo.panose),doc,value);
 		    sf->pfminfo.panose_set = true;
 		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "Type")==0 ) {
