@@ -5826,6 +5826,7 @@ struct glyphvariants *GlyphVariantsCopy(struct glyphvariants *gv) {
 return( NULL );
     newgv = chunkalloc(sizeof(struct glyphvariants));
     newgv->variants = copy(gv->variants);
+    newgv->italic_correction = gv->italic_correction;
     newgv->italic_adjusts = DeviceTableCopy(gv->italic_adjusts);
     newgv->part_cnt = gv->part_cnt;
     if ( gv->part_cnt!=0 ) {
