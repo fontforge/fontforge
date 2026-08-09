@@ -15,7 +15,6 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 #!/usr/bin/env python
-from distutils.core import setup
 from setuptools import setup 
 setup(name='Font Compare',
       version='1.0',
