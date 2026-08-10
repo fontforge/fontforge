@@ -31,6 +31,7 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <sstream>
 #include <vector>
 
 typedef struct gdisplay GDisplay;
@@ -266,6 +267,17 @@ std::string build_unset_style(
     return selector + " {\n" + property_list + "}\n";
 }
 
+static std::vector<std::string> split_selector_components(
+    const std::string& selector_list) {
+    std::vector<std::string> selectors;
+    std::string token;
+    std::istringstream token_stream(selector_list);
+
+    while (std::getline(token_stream, token, ',')) selectors.push_back(token);
+
+    return selectors;
+}
+
 // Some GTK widgets have substantially different structure from their GDraw
 // analogs. For them we collect only color properties.
 std::string build_color_only_styles(const GResInfo* gdraw_ri) {
@@ -312,15 +324,20 @@ std::string build_styles(const GResInfo* gdraw_ri) {
     };
 
     static const std::map<std::string, Selector> css_selector_map = {
-        {"", {"box", {"tooltip"}}},
-        {"GLabel", {"label", {"button", "tooltip", "tab"}}},
-        {"GButton", {"button", {"spinbutton"}}},
+        {"",
+         {"box stack, dialog, box.dialog-vbox, toolbar, popover", {"button"}}},
+        {"GLabel", {"label", {"button", "radiobutton", "header", "tab"}}},
+        {"GButton", {"button:not(.toggle)", {"spinbutton"}}},
         {"GDefaultButton", {"button#ok", {}}},
         {"GCancelButton", {"button#cancel", {}}},
         {"GNumericField", {"spinbutton", {}}},
-        {"GNumericFieldSpinner", {"spinbutton button", {}}},
-        {"GTextField", {"entry", {"spinbutton"}}},
-        {"GGadget.Popup", {"tooltip", {}}},
+        // It's not quite clear why internal spinbutton buttons need to specify
+        // the same pseudoclass as GButton, which is already excluded and should
+        // not be affecting the style.
+        // TODO(iorsh): Review this hack.
+        {"GNumericFieldSpinner", {"spinbutton button:not(.toggle)", {}}},
+        {"GTextField", {"entry, textview text", {"spinbutton"}}},
+        {"GGadget.Popup", {"tooltip, tooltip label", {}}},
         {"GScrollBar", {"scrollbar", {}}},
     };
 
@@ -332,6 +349,8 @@ std::string build_styles(const GResInfo* gdraw_ri) {
             continue;
         }
         const Selector& selector = sel_it->second;
+        const auto selector_components =
+            split_selector_components(selector.node_name);
 
         if ((std::strcmp(ri->resname, "") == 0 ||
              std::strcmp(ri->resname, "GGadget.Popup") == 0) &&
@@ -343,8 +362,10 @@ std::string build_styles(const GResInfo* gdraw_ri) {
             // When the node is inside predefined containers, we shall unset the
             // affected properties
             for (const std::string& container : selector.excluded_containers) {
-                styles += build_unset_style(
-                    container + " " + selector.node_name, props_main);
+                for (const std::string& node_component : selector_components) {
+                    styles += build_unset_style(
+                        container + " " + node_component, props_main);
+                }
             }
 
             continue;
@@ -358,16 +379,20 @@ std::string build_styles(const GResInfo* gdraw_ri) {
         styles += build_style(selector.node_name, props);
 
         auto props_disabled = collect_css_properties_disabled(*(ri->boxdata));
-        styles += build_style(selector.node_name + ":disabled", props_disabled);
+        for (const std::string& node_component : selector_components) {
+            styles += build_style(node_component + ":disabled", props_disabled);
+        }
 
         // When the node is inside predefined containers, we shall unset the
         // affected properties
         for (const std::string& container : selector.excluded_containers) {
-            styles +=
-                build_unset_style(container + " " + selector.node_name, props);
-            styles += build_unset_style(
-                container + " " + selector.node_name + ":disabled",
-                props_disabled);
+            for (const std::string& node_component : selector_components) {
+                styles +=
+                    build_unset_style(container + " " + node_component, props);
+                styles += build_unset_style(
+                    container + " " + node_component + ":disabled",
+                    props_disabled);
+            }
         }
     }
 

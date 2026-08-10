@@ -562,25 +562,30 @@ void utf82u_strcat(unichar_t *to,const char *from) {
     utf82u_strcpy(to+u_strlen(to),from);
 }
 
-char *u2utf8_strncpy(char *utf8buf,const unichar_t *ubuf,int len) {
+char *u2utf8_strncpy(char *utf8buf,const unichar_t *ubuf,int len, int idpb_flags) {
 /* Copy unichar string 'ubuf' into utf8 buffer string 'utf8buf' */
-    char *pt = utf8buf;
+    char *pt = utf8buf, *pt2;
 
     assert(utf8buf != NULL);
 
     if ( ubuf!=NULL ) {
-        while ( *ubuf && (--len != 0) ) {
-            pt=utf8_idpb(pt,*ubuf++,0);
-        }
-        *pt = '\0';
-        return( utf8buf );
+	while ( *ubuf && (pt2=utf8_idpb(pt,*ubuf++,idpb_flags)) && --len )
+		pt = pt2;
+
+	if ( pt2 )
+		pt = pt2;
+	else if ( *ubuf )
+		TRACE("u2utf8_copyn: truncated on invalid char 0x%x\n", ubuf[-1]);
+
+	*pt = '\0';
+	return( utf8buf );
     }
 
     return( NULL );
 }
 
 char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
-    return u2utf8_strncpy(utf8buf, ubuf, -1);
+    return u2utf8_strncpy(utf8buf, ubuf, -1, 0);
 }
 
 char *utf8_strchr(const char *str, int search) {
@@ -654,21 +659,12 @@ char *u2utf8_copy(const unichar_t *ubuf) {
 
 char *u2utf8_copyn(const unichar_t *ubuf,int len) {
 /* Make a utf8 string copy of unichar string ubuf[0..len] */
-    char *utf8buf, *pt, *pt2;
+    char *utf8buf;
 
-    if ( ubuf==NULL || len<=0 || (utf8buf=pt=(char *)malloc(len*6+1))==NULL )
+    if ( ubuf==NULL || len<=0 || (utf8buf=(char *)malloc(len*6+1))==NULL )
 	return( NULL );
 
-    while ( (pt2=utf8_idpb(pt,*ubuf++,0)) && --len )
-	pt = pt2;
-
-    if ( pt2 )
-	pt = pt2;
-    else
-	TRACE("u2utf8_copyn: truncated on invalid char 0x%x\n", ubuf[-1]);
-
-    *pt = '\0';
-    return( utf8buf );
+    return u2utf8_strncpy(utf8buf, ubuf, len, 0);
 }
 
 int32_t utf8_ildb(const char **_text) {
@@ -714,7 +710,7 @@ char *utf8_idpb(char *utf8_text,uint32_t ch,int flags) {
 /* character values up to U+7FFFFFFF before RFC3629. */
 
     if ( ch>0x7fffffff || \
-	 (!(flags&UTF8IDPB_OLDLIMIT) && ((ch>=0xd800 && ch<=0xdfff) || ch>=17*65536)) )
+	 ((ch>=0xd800 && ch<=0xdfff) || !(flags&UTF8IDPB_NOLIMIT) && ch>=17*65536) )
 	return( 0 ); /* Error, ch is out of range */
 
     if ( (flags&(UTF8IDPB_UCS2|UTF8IDPB_UTF16|UTF8IDPB_UTF32)) ) {

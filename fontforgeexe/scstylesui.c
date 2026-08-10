@@ -65,7 +65,7 @@ typedef struct styledlg {
     FontView *fv;
     SplineFont *sf;
     int layer;
-    struct smallcaps *small;
+    struct smallcaps *smallcaps;
     enum glyphchange_type gc;
     bigreal scale;
 } StyleDlg;
@@ -439,7 +439,7 @@ static int SS_Feature_Changed(GGadget *g, GEvent *e) {
 	GGadgetSetTitle8(g,tagbuf);
 	GGadgetSetTitle8(GWidgetGetControl(ew,CID_Extension), ss_extensions[index]);
 
-	sprintf( offset, "%g", rint( ed->small->xheight*ss_percent_xh_up[index]/100.0 ));
+	sprintf( offset, "%g", rint( ed->smallcaps->xheight*ss_percent_xh_up[index]/100.0 ));
 	GGadgetSetTitle8(GWidgetGetControl(ew,CID_VerticalOff), offset);
     }
 return( true );
@@ -458,7 +458,7 @@ static int GlyphChange_OK(GGadget *g, GEvent *e) {
 
 	memset(&genchange,0,sizeof(genchange));
 	genchange.gc = gc;
-	genchange.small = ed->small;
+	genchange.smallcaps = ed->smallcaps;
 	genchange.stem_height_scale = GetReal8(ew,CID_StemHeight,_("Horizontal Stem Height Scale"),&err)/100.;
 	genchange.stem_height_add   = GetReal8(ew,CID_StemHeightAdd,_("Horizontal Stem Height Add"),&err);
 	genchange.stem_threshold = stem_bywidth ? GetReal8(ew,CID_StemThreshold,_("Threshold between Thin and Thick Stems"),&err) : 0;
@@ -885,10 +885,10 @@ static int GlyphChange_Default(GGadget *g, GEvent *e) {
 	    GGadgetSetChecked(GWidgetGetControl(ew,CID_Symbols_Too),false);
 	    GGadgetSetChecked(GWidgetGetControl(ew,CID_SmallCaps),true);
 
-	    if ( ed->small->xheight!=0 && ed->small->capheight!=0 )
-		glyph_scale = ed->small->xheight/ed->small->capheight;
-	    if ( ed->small->lc_stem_width!=0 && ed->small->uc_stem_width!=0 )
-		stem_scale  = ed->small->lc_stem_width/ed->small->uc_stem_width;
+	    if ( ed->smallcaps->xheight!=0 && ed->smallcaps->capheight!=0 )
+		glyph_scale = ed->smallcaps->xheight/ed->smallcaps->capheight;
+	    if ( ed->smallcaps->lc_stem_width!=0 && ed->smallcaps->uc_stem_width!=0 )
+		stem_scale  = ed->smallcaps->lc_stem_width/ed->smallcaps->uc_stem_width;
 	}
 	ed->scale = glyph_scale;
 	sprintf( glyph_factor, "%.2f", (double) (100*glyph_scale) );
@@ -916,8 +916,8 @@ static int GlyphChange_Default(GGadget *g, GEvent *e) {
 
 	MappingMatrixInit(&mapmi,
 		ed->sf,
-		gc==gc_smallcaps?0:ed->small->xheight,
-		ed->small->capheight,glyph_scale);
+		gc==gc_smallcaps?0:ed->smallcaps->xheight,
+		ed->smallcaps->capheight,glyph_scale);
 	GMatrixEditSet(GWidgetGetControl(ew,CID_VMappings),
 		mapmi.matrix_data,mapmi.initial_row_cnt,false);
 
@@ -941,7 +941,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     GTextInfo label[64];
     GTabInfo aspects[5];
     int i,k,l,s, a;
-    struct smallcaps small;
+    struct smallcaps smallcaps_data;
     struct matrixinit mapmi;
     bigreal glyph_scale = 1.0, stem_scale=1.0;
     char glyph_factor[40], stem_factor[40], stem_threshold[10];
@@ -954,7 +954,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
     ed.fv = fv;
     ed.cv = cv;
     ed.sf = sf;
-    ed.small = &small;
+    ed.smallcaps = &smallcaps_data;
     ed.gc = gc;
 
     if (!intldone) {
@@ -965,7 +965,7 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	    stemheight[i].text = (unichar_t *) _((char *) stemheight[i].text);
     }
 
-    SmallCapsFindConstants(&small,sf,layer); /* I want to know the xheight... */
+    SmallCapsFindConstants(&smallcaps_data,sf,layer); /* I want to know the xheight... */
 
     if ( last_dlg[gc] == NULL || last_sf[gc] != sf ) {
 	if ( last_dlg[gc]!=NULL )
@@ -1203,10 +1203,10 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 	    aspects[a].text_is_1byte = true;
 	    aspects[a++].gcd = &boxes[4];
 
-	    if ( small.xheight!=0 && small.capheight!=0 )
-		glyph_scale = small.xheight/small.capheight;
-	    if ( small.lc_stem_width!=0 && small.uc_stem_width!=0 )
-		stem_scale  = small.lc_stem_width/small.uc_stem_width;
+	    if ( smallcaps_data.xheight!=0 && smallcaps_data.capheight!=0 )
+		glyph_scale = smallcaps_data.xheight/smallcaps_data.capheight;
+	    if ( smallcaps_data.lc_stem_width!=0 && smallcaps_data.uc_stem_width!=0 )
+		stem_scale  = smallcaps_data.lc_stem_width/smallcaps_data.uc_stem_width;
 	}
 
 	l = 0;
@@ -1700,8 +1700,8 @@ void GlyphChangeDlg(FontView *fv,CharView *cv, enum glyphchange_type gc) {
 
 	MappingMatrixInit(&mapmi,
 		sf,
-		gc==gc_smallcaps?0:small.xheight,
-		small.capheight,glyph_scale);
+		gc==gc_smallcaps?0:smallcaps_data.xheight,
+		smallcaps_data.capheight,glyph_scale);
 
 	gcd[k].gd.flags = gg_enabled | gg_visible;
 	gcd[k].gd.cid = CID_VMappings;

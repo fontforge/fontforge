@@ -109,10 +109,7 @@ std::string combine_values(const std::set<int>& values,
 class ErrorLabel : public Gtk::Label {
  public:
     ErrorLabel() {
-        auto error_css_provider = Gtk::CssProvider::create();
-        error_css_provider->load_from_data("label { color: @error_color; }");
-        get_style_context()->add_provider(error_css_provider,
-                                          GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
+        ff::ui_utils::apply_css(*this, "label { color: @error_color; }");
     }
 };
 

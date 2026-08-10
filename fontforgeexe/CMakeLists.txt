@@ -85,8 +85,8 @@ if(ENABLE_GUI)
     usermenu.c
     usermenu.h
     windowmenu.c
-    wordlistparser.c
-    wordlistparser.h
+    wordlistparser_ui.c
+    wordlistparser_ui.h
   )
 
   add_subdirectory(gtk)

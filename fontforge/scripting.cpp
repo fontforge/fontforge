@@ -4834,7 +4834,7 @@ static void bSmallCaps(Context *c) {
     genchange.m.cnt = 2;
     genchange.m.maps = maps;
     genchange.dstem_control = 1;
-    genchange.small = &small;
+    genchange.smallcaps = &small;
 
     /* Arguments:
        1 => vertical scale: make smallcap height this fraction of full caps.

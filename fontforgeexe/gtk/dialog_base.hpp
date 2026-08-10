@@ -32,6 +32,11 @@ typedef struct gwindow* GWindow;
 
 namespace ff::dlg {
 
+// Attach F1/Help key handling to this widget. The widget should usually be a
+// dialog or a top-level window.
+void install_help_key_handler(Gtk::Widget* widget, const std::string& file,
+                              const std::string& section = "");
+
 // Modal dialog
 class DialogBase : public Gtk::Dialog {
  public:
@@ -57,10 +62,6 @@ class DialogBase : public Gtk::Dialog {
 
  private:
     GWindow parent_gwindow_ = nullptr;
-
-    std::string help_file_, help_section_;
-
-    bool on_help_key_press(GdkEventKey* event);
 };
 
 }  // namespace ff::dlg

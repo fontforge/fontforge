@@ -87,7 +87,7 @@ char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n) {
     if (ufrom == NULL || to == NULL || n == 0) {
         return to;
     } else if (is_local_encoding_utf8) {
-        return u2utf8_strncpy(to, ufrom, n);
+        return u2utf8_copyn(ufrom, n);
     } else {
         size_t in_left = sizeof(ufrom[0]) * u_strlen(ufrom), out_left = sizeof(to[0])*(n-1);
         char *cto = (char *) to;

@@ -2881,3 +2881,9 @@ void SCGetEncoding(const SplineChar* sc, int* p_unicodeenc, int* p_ttf_glyph) {
     if (p_unicodeenc) *p_unicodeenc = sc->unicodeenc;
     if (p_ttf_glyph) *p_ttf_glyph = sc->ttf_glyph;
 }
+
+void SCCharMetrics(SplineChar* sc, int16_t* width,
+                          int16_t* vwidth) {
+    if (width) *width = sc->width;
+    if (vwidth) *vwidth = sc->vwidth;
+}
