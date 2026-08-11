@@ -1054,35 +1054,69 @@ void AltUniAdd_DontCheckDups(SplineChar *sc,int uni) {
     }
 }
 
+struct aporder {
+    AnchorPoint *ap;
+    int order;
+};
+
+static int SCOrderAPCmp(const void *a, const void *b) {
+    const struct aporder *ap_a = a, *ap_b = b;
+
+    if ( ap_a->ap->lig_index < ap_b->ap->lig_index )
+return( -1 );
+    if ( ap_a->ap->lig_index > ap_b->ap->lig_index )
+return( 1 );
+return( ap_a->order - ap_b->order );
+}
+
 void SCOrderAP(SplineChar *sc) {
-    int lc=0, cnt=0, out=false, i,j;
-    AnchorPoint *ap, **array;
+    int cnt=0, ascending=true, descending=true, first=true, prev=0, i;
+    AnchorPoint *ap, *next, *rev = NULL;
+    struct aporder *array;
     /* Order so that first ligature index comes first */
 
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-	if ( ap->lig_index<lc ) out = true;
-	if ( ap->lig_index>lc ) lc = ap->lig_index;
+	if ( first ) {
+	    prev = ap->lig_index;
+	    first = false;
+	} else {
+	    if ( ap->lig_index < prev )
+		ascending = false;
+	    if ( ap->lig_index > prev )
+		descending = false;
+	    prev = ap->lig_index;
+	}
 	++cnt;
     }
-    if ( !out )
+    if ( cnt<2 || ascending )
 return;
 
-    array = malloc(cnt*sizeof(AnchorPoint *));
-    for ( i=0, ap=sc->anchor; ap!=NULL; ++i, ap=ap->next )
-	array[i] = ap;
-    for ( i=0; i<cnt-1; ++i ) {
-	for ( j=i+1; j<cnt; ++j ) {
-	    if ( array[i]->lig_index>array[j]->lig_index ) {
-		ap = array[i];
-		array[i] = array[j];
-		array[j] = ap;
-	    }
+
+    if ( descending ) {
+	for ( ap = sc->anchor; ap!=NULL; ap=next ) {
+	    next = ap->next;
+	    ap->next = rev;
+	    rev = ap;
 	}
+	sc->anchor = rev;
+	return;
     }
-    sc->anchor = array[0];
+
+    array = malloc(cnt*sizeof(*array));
+    if ( array==NULL )
+return;
+
+    for ( i=0, ap=sc->anchor; ap!=NULL; ++i, ap=ap->next ) {
+	array[i].ap = ap;
+	array[i].order = i;
+    }
+    qsort(array,cnt,sizeof(*array),SCOrderAPCmp);
+
+    sc->anchor = array[0].ap;
     for ( i=0; i<cnt-1; ++i )
-	array[i]->next = array[i+1];
-    array[cnt-1]->next = NULL;
+	array[i].ap->next = array[i+1].ap;
+
+	array[cnt-1].ap->next = NULL;
     free( array );
 }
 
