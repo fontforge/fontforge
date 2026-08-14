@@ -1,0 +1,10 @@
+# Distributed under the original FontForge BSD 3-clause license
+function(remove_identity_0_cidmap CIDMAP_DIR)
+  set(ident_cidmap "${CMAKE_INSTALL_PREFIX}/${CIDMAP_DIR}/Adobe-Identity-0.cidmap")
+  if (EXISTS "${ident_cidmap}")
+    file(REMOVE "${ident_cidmap}")
+    message(STATUS "Deleted: ${ident_cidmap}")
+  else()
+    message(DEBUG "Not deleted: ${ident_cidmap}")
+  endif()
+endfunction()
