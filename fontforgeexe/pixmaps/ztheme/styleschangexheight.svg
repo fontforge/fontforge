@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">
+  <path d="M2,8h5.5v1H2v-1ZM2,15h5.5v-1H2v1Z" fill-rule="evenodd" opacity=".3"/>
+  <path d="M13.25,11.625l2.47,2.375h1.28v1h-3.75v-1h.72l-1.595-1.534-1.595,1.534h.97v1h-3.75v-1h1.03l2.47-2.375-2.73-2.625h-.77v-1h3.75v1h-1.23l1.855,1.784,1.855-1.784h-.98v-1h3.75v1h-1.02l-2.73,2.625ZM2,9h.75v5h-.75v1h3v-1h-.75v-5h.75v-1H2v1ZM8,3H2v1h.75v3h1.5v-3h1.772l1.228,1.75.75.241v-2.991Z" fill-rule="evenodd"/>
+</svg>
