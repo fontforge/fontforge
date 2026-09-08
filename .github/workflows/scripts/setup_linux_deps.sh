@@ -34,11 +34,15 @@ if [ ! -d deps/install ]; then
     git clone --depth 1 --branch v1.0.2 https://github.com/google/woff2
     wget --tries 1 "http://download.savannah.gnu.org/releases/freetype/freetype-$FTVER.tar.gz" || \
         wget "https://sourceforge.net/projects/freetype/files/freetype2/$SFFTVER/freetype-$FTVER.tar.gz"
-    wget https://github.com/crowdin/crowdin-cli/releases/latest/download/crowdin-cli.zip
+
+    # GitHub Actions exposes RUNNER_ARCH as uppercase (X64/ARM64); use ${var,,}
+    # to lowercase it so it matches the Crowdin asset name, e.g. x64 or arm64.
+    CROWDIN_ARCH="${RUNNER_ARCH,,}"
+    wget -O crowdin-linux-${RUNNER_ARCH} "https://github.com/crowdin/crowdin-cli/releases/latest/download/crowdin-linux-${CROWDIN_ARCH}"
 
     pushd libspiro && autoreconf -fiv && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
     pushd libuninameslist && autoreconf -fiv && ./configure --enable-pscript --prefix=$DEPSPREFIX && make -j4 && make install && popd
     pushd woff2 && mkdir build && cd build && cmake -GNinja .. -DCMAKE_INSTALL_PREFIX=$DEPSPREFIX -DCMAKE_INSTALL_LIBDIR=lib && ninja install && popd
     tar -zxf freetype-$FTVER.tar.gz && mv freetype-$FTVER $DEPSPREFIX/freetype
-    mkdir crowdin && pushd crowdin && unzip ../crowdin-cli.zip && mv */* . && mv crowdin-cli.jar $DEPSPREFIX && popd
+    chmod a+x crowdin-linux-${RUNNER_ARCH} && mv crowdin-linux-${RUNNER_ARCH} $DEPSPREFIX
 fi
