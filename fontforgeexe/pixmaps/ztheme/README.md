@@ -4,19 +4,19 @@ A light-mode SVG icon theme for FontForge's legacy UI, created by [Adolfo Ovalle
 
 Filenames follow the existing [Tango](../tango) icon set's naming convention, allowing this theme to serve as a drop-in SVG replacement. Icons are intended to work with FontForge's symbolic SVG support, where a single monochrome icon set adapts automatically to light/dark theme colors — removing the need for separate icon sets per theme.
 
-## Status: Draft / Pending Review
+## Status
 
-This PR is submitted as a **draft** for review and discussion before merging. A few items still need confirmation:
+The icon set has been reviewed. Redundant icons flagged during review have been removed. Merging is expected before symbolic SVG integration lands in FontForge's rendering code, which is deferred until after the next release for stability reasons.
 
-### Confirming intentionally distinct icon pairs
+### Removed redundant icons
 
-Following Tango's own convention, filenames that look conceptually similar are kept as separate files rather than merged, since some are referenced independently by different dialogs (as already confirmed for `rmoverlap`/`overlaprm`). Flagging the full list here so you can confirm the rest follow the same pattern, or point out any that should actually be merged:
+The following icons were confirmed unused and removed from the set, since a differently-named file already covers the same UI element: `exclude`, `fliphor`, `flipvert`, `changeweight`, `extendcondense`, `inline`, `oblique`, `text12210`, `outline`, `wireframe`, `shadow`, `rotate180`, `rotateccw`, `rotatecw`, `skew`, `findinter`, `fileclose2`, `intersection`, `rmoverlap`.
 
-`exclude` / `overlapexclude` · `fliphor` / `transformfliphor` · `flipvert` / `transformflipvert` · `changeweight` / `styleschangeweight` · `extendcondense` / `stylesextendcondense` · `inline` / `stylesinline` · `oblique` / `stylesoblique` · `text12210` / `stylesitalic` · `outline` / `stylesoutline` · `wireframe` / `styleswireframe` · `shadow` / `stylesshadow` · `rotate180` / `transformrotate180` · `rotateccw` / `transformrotateccw` · `rotatecw` / `transformrotatecw` · `skew` / `transformskew` · `rmoverlap` / `overlaprm` · `findinter` / `overlapfindinter` · `fileclose2` / `fileclose` · `intersection` / `overlapintersection`
+`rmoverlap` was also flagged as mistakenly referenced in Metrics View. That reference should be updated to point to `overlaprm` instead, which is the file kept in this set.
 
 ### Known placeholders
 
-`elementtilepath.svg` and `elementtilepattern.svg` (Element menu → Tile Path / Tile Pattern) are currently **intentionally blank** — empty SVGs sized to match the rest of the set. I wasn't able to locate where these commands appear in FontForge's UI to design dedicated icons. Pointers on the right dialog/menu would be appreciated, or confirmation that a blank icon is acceptable for now.
+`elementtilepath.svg` and `elementtilepattern.svg` (Element menu → Tile Path / Tile Pattern) are intentionally blank. These commands have been disabled in FontForge for years and are not currently reachable in the UI, so blank icons are acceptable here.
 
 ### Extra files
 
@@ -26,8 +26,8 @@ Following Tango's own convention, filenames that look conceptually similar are k
 
 A few icons were refined or newly created specifically for this FontForge contribution, beyond what exists in the original zTheme releases:
 
-- **Refined:** `chooserhomefolder`, `chooserupdir`, `chooserback`, `chooserforward`, `chooserdir`, `choosersfdir`, `elementclockwise`, `elementanticlock`, `elementcorrectdir`
-- **New:** `elementharmonize`, `elementaddinflections`, `elementbalance` 
+- Refined: `chooserhomefolder`, `chooserupdir`, `chooserback`, `chooserforward`, `chooserdir`, `choosersfdir`, `elementclockwise`, `elementanticlock`, `elementcorrectdir`
+- New: `elementharmonize`, `elementaddinflections`, `elementbalance`
 
 ### SVG format notes
 
@@ -35,9 +35,7 @@ Icons are exported as plain SVG using presentation attributes (no inline `<style
 
 ### Fill color convention
 
-Paths intended to follow the theme (light/dark) currently have **no fill attribute set** — they rely on the SVG default (implicit black) as a placeholder, with the intent that these become symbolic/theme-aware. Paths intended to keep a **fixed, non-themable color** (e.g., the `selectblue.svg`, `selectred.svg` swatches) already have an explicit `fill` attribute assigned.
-
-Before finalizing, I need to confirm: for the themable paths, should I add `fill="currentColor"` explicitly, or does your symbolic SVG implementation expect a different convention (e.g., specific sentinel hex values per the older GTK symbolic spec)?
+Paths intended to follow the theme (light/dark) currently have no fill attribute set. They rely on the SVG default (implicit black) as a placeholder, with the intent that these become symbolic/theme-aware. Paths intended to keep a fixed, non-themable color (e.g., the `selectblue.svg`, `selectred.svg` swatches) already have an explicit `fill` attribute assigned.
 
 ## What's included
 

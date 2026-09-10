@@ -31,13 +31,13 @@ install(FILES
   elementround.svg elementshowdep.svg elementsimplify.svg elementstyles.svg
   elementtransform.svg elementvalidate.svg elementvbaselines.svg
   fflogo13.png fflogo.png ffsplash1.png ffsplash2.png ffsplash3.png
-  fileclose2.svg fileclose.svg filedisplay.svg fileexecute.svg fileexport.svg filegeneratefamily.svg
+  fileclose.svg filedisplay.svg fileexecute.svg fileexport.svg filegeneratefamily.svg
   filegenerate.svg fileimport.svg filemergefeature.svg filenew.svg fileopen.svg fileprefs.svg
   fileprint.svg filequit.svg filerecent.svg filerevertbackup.svg filerevertglyph.svg filerevert.svg
-  filesaveall.svg filesaveas.svg filesave.svg findinter.svg helpabout.svg helphelp.svg
+  filesaveall.svg filesaveas.svg filesave.svg helpabout.svg helphelp.svg
   helpindex.svg hintsadddstem.svg hintsaddhstem.svg hintsaddvstem.svg hintsautohint.svg
   hintscleardstems.svg hintsclearhstems.svg hintsclearvstems.svg hintsdontautohint.svg
-  hintsreviewhints.svg intersection.svg menuempty.svg metricscenter.svg
+  hintsreviewhints.svg menuempty.svg metricscenter.svg
   metricssetlbearing.svg metricssetrbearing.svg metricssetvwidth.svg metricssetwidth.svg
   overlapexclude.svg overlapfindinter.svg overlapintersection.svg overlaprm.svg
   palette3drotate.svg palette3drotate-selected.svg palettecorner.svg palettecorner-selected.svg
@@ -67,7 +67,7 @@ install(FILES
   pointsG2curve.svg pointshvcurve.svg pointsmakearc.svg pointsmakeline.svg pointsnamecontour.svg
   pointsnamepoint.svg pointsspironext.svg pointsspiroprev.svg pointstangent.svg ptinfocorner.svg
   ptinfocurve.svg ptinfohvcurve.svg ptinfotangent.svg python.svg radio_off_disabled.svg radio_off.svg
-  radio_on_disabled.svg radio_on.svg rmoverlap.svg
+  radio_on_disabled.svg radio_on.svg
   selectblue.svg selectcyan.svg selectdefault.svg selectgreen.svg selectmagenta.svg selectred.svg
   selectwhite.svg selectyellow.svg styleschangeweight.svg styleschangexheight.svg
   stylesextendcondense.svg stylesinline.svg stylesitalic.svg stylesoblique.svg stylesoutline.svg
@@ -83,8 +83,6 @@ install(FILES
   viewpalettes.svg viewprevdef.svg viewprev.svg viewreplace.svg viewsmallersize.svg viewzoomin.svg
   viewzoomout.svg
   visibility_off_disabled.svg visibility_off.svg visibility_on_disabled.svg visibility_on.svg
-  changeweight.svg exclude.svg extendcondense.svg fliphor.svg flipvert.svg inline.svg oblique.svg 
-  outline.svg rotate180.svg rotateccw.svg rotatecw.svg shadow.svg skew.svg text12210.svg wireframe.svg
 
   charviewicon.xbm fontview2.xbm logo.xbm
 
