@@ -783,7 +783,8 @@ if ("Interpreter" IN_LIST ${_PYTHON_PREFIX}_FIND_COMPONENTS)
   endif()
 
   # retrieve various package installation directories
-  execute_process (COMMAND "${${_PYTHON_PREFIX}_EXECUTABLE}" -c "import sys; from distutils import sysconfig;sys.stdout.write(';'.join([sysconfig.get_python_lib(plat_specific=False,standard_lib=True),sysconfig.get_python_lib(plat_specific=True,standard_lib=True),sysconfig.get_python_lib(plat_specific=False,standard_lib=False),sysconfig.get_python_lib(plat_specific=True,standard_lib=False)]))"
+  execute_process (COMMAND "${${_PYTHON_PREFIX}_EXECUTABLE}" -c
+                           "import sys\nif sys.version_info >= (3, 10):\n    import sysconfig\n    sys.stdout.write(';'.join([\n        sysconfig.get_path('stdlib'),\n        sysconfig.get_path('platstdlib'),\n        sysconfig.get_path('purelib'),\n        sysconfig.get_path('platlib'),\n    ]))\nelse:\n    from distutils import sysconfig\n    sys.stdout.write(';'.join([\n        sysconfig.get_python_lib(plat_specific=False, standard_lib=True),\n        sysconfig.get_python_lib(plat_specific=True, standard_lib=True),\n        sysconfig.get_python_lib(plat_specific=False, standard_lib=False),\n        sysconfig.get_python_lib(plat_specific=True, standard_lib=False),\n    ]))"
 
                    RESULT_VARIABLE _${_PYTHON_PREFIX}_RESULT
                    OUTPUT_VARIABLE _${_PYTHON_PREFIX}_LIBPATHS
@@ -1000,7 +1001,7 @@ if ("Development" IN_LIST ${_PYTHON_PREFIX}_FIND_COMPONENTS
   unset (_${_PYTHON_PREFIX}_BASE_EXEC_PREFIX)
   if (${_PYTHON_PREFIX}_Interpreter_FOUND)
     execute_process (COMMAND "${${_PYTHON_PREFIX}_EXECUTABLE}" -c
-                             "import sys; from distutils import sysconfig; sys.stdout.write(sysconfig.EXEC_PREFIX)"
+                             "import sys\ntry:\n    import sysconfig\n    sys.stdout.write(sysconfig.get_config_var('exec_prefix') or sys.exec_prefix)\nexcept Exception:\n    from distutils import sysconfig\n    sys.stdout.write(sysconfig.EXEC_PREFIX)"
                      RESULT_VARIABLE _${_PYTHON_PREFIX}_RESULT
                      OUTPUT_VARIABLE _${_PYTHON_PREFIX}_EXEC_PREFIX
                      ERROR_QUIET
@@ -1011,7 +1012,7 @@ if ("Development" IN_LIST ${_PYTHON_PREFIX}_FIND_COMPONENTS
 
     if (NOT ${_PYTHON_PREFIX}_FIND_VIRTUALENV STREQUAL "STANDARD")
       execute_process (COMMAND "${${_PYTHON_PREFIX}_EXECUTABLE}" -c
-                               "import sys; from distutils import sysconfig; sys.stdout.write(sysconfig.BASE_EXEC_PREFIX)"
+                               "import sys\ntry:\n    import sysconfig\n    sys.stdout.write(sysconfig.get_config_var('installed_platbase') or sys.base_exec_prefix)\nexcept Exception:\n    from distutils import sysconfig\n    sys.stdout.write(sysconfig.BASE_EXEC_PREFIX)"
                        RESULT_VARIABLE _${_PYTHON_PREFIX}_RESULT
                        OUTPUT_VARIABLE _${_PYTHON_PREFIX}_BASE_EXEC_PREFIX
                        ERROR_QUIET

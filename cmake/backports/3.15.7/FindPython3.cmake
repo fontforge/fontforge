@@ -78,22 +78,22 @@ This module will set the following variables in your project
   Standard platform independent installation directory.
 
   Information returned by
-  ``distutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=True)``.
+  ``sysconfig.get_path('stdlib')``.
 ``Python3_STDARCH``
   Standard platform dependent installation directory.
 
   Information returned by
-  ``distutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=True)``.
+  ``sysconfig.get_path('platstdlib')``.
 ``Python3_SITELIB``
   Third-party platform independent installation directory.
 
   Information returned by
-  ``distutils.sysconfig.get_python_lib(plat_specific=False,standard_lib=False)``.
+  ``sysconfig.get_path('purelib')``.
 ``Python3_SITEARCH``
   Third-party platform dependent installation directory.
 
   Information returned by
-  ``distutils.sysconfig.get_python_lib(plat_specific=True,standard_lib=False)``.
+  ``sysconfig.get_path('platlib')``.
 ``Python3_Compiler_FOUND``
   System has the Python 3 compiler.
 ``Python3_COMPILER``
