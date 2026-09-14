@@ -33,6 +33,8 @@
 #include <sstream>
 #include <set>
 
+#include "font_selector.hpp"
+
 extern "C" {
 #include "../fffreetype.h"
 
@@ -684,10 +686,16 @@ void SampleTextPrinter::calculate_layout(
         for (const std::string& tag : current_tags) {
             parsed_tags.emplace_back(parse_tag(tag));
         }
-        size_t font_idx = select_face(parsed_tags, default_properties);
+
+        std::vector<SplineFontProperties> properties_list;
+        std::for_each(cairo_family_.begin(), cairo_family_.end(),
+                      [&properties_list](const auto& font) {
+                          properties_list.push_back(font.props);
+                      });
+        size_t font_idx = layout::select_face(parsed_tags, properties_list,
+                                              default_properties);
         Cairo::RefPtr<Cairo::FtFontFace> font_face =
             cairo_family_[font_idx].face;
-        select_face(parsed_tags, default_properties);
         double font_size = get_size(current_tags);
         cr->set_font_face(font_face);
         cr->set_font_size(font_size);
@@ -909,27 +917,6 @@ void SampleTextPrinter::draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
             x += seg_advance;
         }
     }
-}
-
-size_t SampleTextPrinter::select_face(
-    const std::vector<ParsedTag>& parsed_tags,
-    const SplineFontProperties& default_properties) const {
-    // Desired properties are derived from the default ones, with
-    // segment-specific tags overriding them when applicable.
-    SplineFontProperties text_props =
-        SplineFontProperties::from_tags(parsed_tags);
-    SplineFontProperties desired_properties = default_properties;
-    desired_properties.merge(text_props);
-
-    // Find the face with properties closest to the desired properties.
-    auto closest_face =
-        std::min_element(cairo_family_.begin(), cairo_family_.end(),
-                         [&desired_properties](const auto& a, const auto& b) {
-                             return desired_properties.distance(a.props) <
-                                    desired_properties.distance(b.props);
-                         });
-
-    return closest_face - cairo_family_.begin();
 }
 
 double SampleTextPrinter::get_size(const std::vector<std::string>& tags) {

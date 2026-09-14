@@ -10,6 +10,8 @@ if(ENABLE_GUI)
   target_sources(layout PRIVATE
     cairo_painter.hpp
     cairo_painter.cpp
+    font_selector.hpp
+    font_selector.cpp
   )
   target_link_libraries(layout PRIVATE
     fontforge_common_headers

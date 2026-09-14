@@ -244,11 +244,6 @@ class SampleTextPrinter : public ff::layout::IPrinter {
                    double y_baseline, Tag script, Tag lang,
                    const std::map<Tag, bool>& features);
 
-    // Select specific face to print a text segment based on the tags which
-    // apply to it. Returns an index into CairoPainter::cairo_family_.
-    size_t select_face(const std::vector<ParsedTag>& parsed_tags,
-                       const SplineFontProperties& default_properties) const;
-
     double get_size(const std::vector<std::string>& tags);
 };
 
