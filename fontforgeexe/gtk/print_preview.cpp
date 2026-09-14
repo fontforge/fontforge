@@ -349,14 +349,9 @@ void PrintPreviewWidget::build_sample_text_editor() {
         rt_font_list.emplace_back(
             font_props.full_name,
             make_rt_properties(font_props, font_list.front().family_name));
-
-        // The generic interface allows access to the same family only. Switch
-        // to the specific interface if multiple families are present.
-        if (font_props.family_name != font_list.front().family_name)
-            generic = false;
     }
-    sample_text_ = Gtk::make_managed<widget::RichTechEditor>(
-        kMultiPointsizes, rt_font_list, generic);
+    sample_text_ = Gtk::make_managed<widget::RichTechEditor>(kMultiPointsizes,
+                                                             rt_font_list);
     sample_text_->set_hexpand();
     sample_text_->set_vexpand();
     sample_text_->get_buffer()->signal_changed().connect([this] {

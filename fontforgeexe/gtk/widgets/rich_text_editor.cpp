@@ -275,8 +275,7 @@ const std::string RichTechEditor::rich_text_mime_type =
     "application/vnd.fontforge.rich-text+xml";
 
 RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes,
-                               const RichTextFontList& font_list,
-                               bool generic) {
+                               const RichTextFontList& font_list) {
     scale_css_provider_ = Gtk::CssProvider::create();
     text_view_.get_style_context()->add_provider(
         scale_css_provider_, GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
@@ -291,11 +290,7 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes,
     clear_button->set_tooltip_text(_("Clear Formatting"));
     Gtk::ToolButton* hamburger_button = build_tools_menu();
 
-    if (generic) {
-        toolbar_ = build_generic_toolbar();
-    } else {
-        toolbar_ = build_fonts_toolbar(font_list);
-    }
+    toolbar_ = build_toolbar(font_list);
     toolbar_->append(*size_combo_);
     toolbar_->append(*clear_button);
     toolbar_->append(*hamburger_button);
@@ -658,7 +653,10 @@ Gtk::ToolButton* RichTechEditor::build_tools_menu() {
     return hamburger_button;
 }
 
-Gtk::Toolbar* RichTechEditor::build_generic_toolbar() {
+Gtk::Toolbar* RichTechEditor::build_toolbar(const RichTextFontList& font_list) {
+    fonts_combo_ = build_fonts_combo(font_list);
+    fonts_combo_->set_tooltip_text(_("Font"));
+
     auto bold_tag = text_view_.get_buffer()->create_tag("bold");
     bold_tag->property_weight() = 700;
 
@@ -682,21 +680,11 @@ Gtk::Toolbar* RichTechEditor::build_generic_toolbar() {
     weight_combo_->set_tooltip_text(_("Weight Class"));
 
     Gtk::Toolbar* toolbar = Gtk::make_managed<Gtk::Toolbar>();
+    toolbar->append(*fonts_combo_);
     toolbar->append(*bold_button_);
     toolbar->append(*italic_button_);
     toolbar->append(*stretch_combo_);
     toolbar->append(*weight_combo_);
-
-    return toolbar;
-}
-
-Gtk::Toolbar* RichTechEditor::build_fonts_toolbar(
-    const RichTextFontList& font_list) {
-    fonts_combo_ = build_fonts_combo(font_list);
-    fonts_combo_->set_tooltip_text(_("Font"));
-
-    Gtk::Toolbar* toolbar = Gtk::make_managed<Gtk::Toolbar>();
-    toolbar->append(*fonts_combo_);
 
     return toolbar;
 }
