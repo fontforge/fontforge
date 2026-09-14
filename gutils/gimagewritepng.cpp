@@ -60,11 +60,44 @@ static void mem_write_fn(png_structp png_ptr, png_bytep data, png_size_t sz) {
 static void mem_flush_fn(png_structp UNUSED(png_ptr)) {
 }
 
+/* Pack unpacked byte_data (1 byte per sample) into the proper bit-packed format.
+ * For example, 4bpp needs 2 samples per byte. Samples should be left-justified.
+ * Returns allocated packed buffer (must be freed by caller) or NULL if no packing needed. */
+static png_byte* PackByteDataForPNG(struct _GImage *base, int bit_depth, int *packed_bpl) {
+    int expected_bpl = (base->width * bit_depth + 7) / 8;
+    if (base->bytes_per_line <= expected_bpl) {
+        return NULL;  /* Already packed or correct stride */
+    }
+    
+    int samples_per_byte = 8 / bit_depth;
+    int mask = (1 << bit_depth) - 1;
+    png_byte *packed = (png_byte*)malloc(base->height * expected_bpl);
+    
+    for (int y = 0; y < base->height; ++y) {
+        png_byte *src_row = (png_byte*)(base->data + y * base->bytes_per_line);
+        png_byte *dst_row = packed + y * expected_bpl;
+        memset(dst_row, 0, expected_bpl);
+        
+        for (int x = 0; x < base->width; ++x) {
+            png_byte sample = src_row[x] & mask;
+            int byte_idx = x / samples_per_byte;
+            int sample_idx = x % samples_per_byte;
+            int shift = 8 - (sample_idx + 1) * bit_depth;
+            dst_row[byte_idx] |= (sample << shift);
+        }
+    }
+    
+    *packed_bpl = expected_bpl;
+    return packed;
+}
+
 static int GImageWritePngFull(GImage *gi, void *io, bool in_memory, int compression_level, bool progressive) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     png_structp png_ptr;
     png_infop info_ptr;
     png_byte **rows;
+    png_byte *packed_data = NULL;
+    int packed_bpl = 0;
     int i;
     int bit_depth;
     int color_type;
@@ -139,8 +172,18 @@ return(false);
 	   }
        }
        png_set_PLTE(png_ptr, info_ptr, palette, num_palette);
-       if ( num_palette<=16 )
-	   png_set_packing(png_ptr);
+       
+       /* For palette images with bit_depth < 8, we need to decide between:
+        * 1. Manual packing: pack byte_data ourselves (1 byte/sample -> multibit/byte)
+        * 2. PNG's packing: use png_set_packing() for already-correct byte data
+        * Detect which is needed by checking if data exceeds expected packed size */
+       int expected_bpl = (base->width * bit_depth + 7) / 8;
+       if (num_palette <= 16 && base->bytes_per_line > expected_bpl) {
+           /* Data is unpacked (byte_data), we'll pack it manually; don't use png_set_packing() */
+       } else if (num_palette <= 16) {
+           /* Data is already in the format png_set_packing() expects */
+           png_set_packing(png_ptr);
+       }
 
        if ( base->trans!=(Color)-1 ) {
 	   trans_alpha = (png_bytep) malloc(1);
@@ -165,9 +208,19 @@ return(false);
     if (color_type == PNG_COLOR_TYPE_RGB || color_type == PNG_COLOR_TYPE_RGB_ALPHA)
         png_set_bgr(png_ptr);
 
+    /* For palette images with bit_depth < 8, pack byte_data if needed. */
+    if ((base->image_type==it_index || base->image_type==it_bitmap) && bit_depth < 8) {
+        packed_data = PackByteDataForPNG(base, bit_depth, &packed_bpl);
+    }
+
     rows = (png_byte **) malloc(base->height*sizeof(png_byte *));
-    for ( i=0; i<base->height; ++i )
-	rows[i] = (png_byte *) (base->data + i*base->bytes_per_line);
+    if (packed_data) {
+        for ( i=0; i<base->height; ++i )
+            rows[i] = (png_byte *) (packed_data + i*packed_bpl);
+    } else {
+        for ( i=0; i<base->height; ++i )
+            rows[i] = (png_byte *) (base->data + i*base->bytes_per_line);
+    }
 
     png_write_image(png_ptr,rows);
 
@@ -176,6 +229,7 @@ return(false);
     free(trans_alpha);
     free(trans_color);
     free(palette);
+    free(packed_data);
     png_destroy_write_struct(&png_ptr, &info_ptr);
     free(rows);
 return( 1 );

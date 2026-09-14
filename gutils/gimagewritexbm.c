@@ -27,6 +27,7 @@
 
 #include <fontforge-config.h>
 
+#include "gfile.h"
 #include "gimage.h"
 
 int GImageWriteXbm(GImage *gi, char *filename) {
@@ -36,6 +37,7 @@ int GImageWriteXbm(GImage *gi, char *filename) {
     int i,j, val,val2,k;
     char stem[256];
     char *pt; uint8_t *scanline;
+    char *reg_filename = GFileNormalizePath(strdup(filename));
 
     /* This routine only exports 1-pixel mono-type images */
     if ( base->image_type!=it_mono ) {
@@ -44,10 +46,10 @@ int GImageWriteXbm(GImage *gi, char *filename) {
     }
 
     /* get filename stem (255chars max) */
-    if ( (pt=strrchr(filename,'/'))!=NULL )
+    if ( (pt=strrchr(reg_filename,'/'))!=NULL )
 	++pt;
     else
-	pt=filename;
+	pt=reg_filename;
     strncpy(stem,pt,sizeof(stem)); stem[255]='\0';
     if ( (pt=strrchr(stem,'.'))!=NULL && pt!=stem )
 	*pt = '\0';

@@ -27,6 +27,8 @@ extern void BCSetPoint(BDFChar *bc, int x, int y, int color);
 extern void BCTrans(BDFFont *bdf, BDFChar *bc, BVTFunc *bvts, FontViewBase *fv);
 extern void BCTransFunc(BDFChar *bc, enum bvtools type, int xoff, int yoff);
 extern void BCUnlinkThisReference(struct fontviewbase *fv, BDFChar *bc);
+extern BDFChar *BCScale(BDFChar *old,int from, int to);
+extern BDFChar *BCScaleGrey(BDFChar *old,int from, int from_depth, int to, int to_depth);
 extern void BDFCharFindBounds(BDFChar *bc, IBounds *bb);
 extern void BDFFloatFree(BDFFloat *sel);
 extern void skewselect(BVTFunc *bvtf, real t);

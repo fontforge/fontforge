@@ -137,8 +137,23 @@ return ((val < (&psp->me.x)[xdir] && val < (&nsp->me.x)[xdir]) ||
 	(val > (&psp->me.x)[xdir] && val > (&nsp->me.x)[xdir]));
 }
 
-static double InterpolateVal( double a,double b,double a1, double b1, double val ) {
-return( a1 + ( val - a ) * ( b1 - a1 )/( b - a ));
+/* This is not exactly an interpolation. We are positioning a middle point
+ * between two new values in the same proportion as the old middle point was
+ * between two old values. */
+static double InterpolateVal(double a, double b, double a1, double b1,
+                             double val) {
+    double weight1 = 0.5, weight2 = 0.5;
+    if (!RealNear(a, b)) {
+        weight1 = (b - val) / (b - a);
+        /* Clamp aggressively to avoid runaway values, it's graphics, not
+         * physics. */
+        if (weight1 < -20.0) weight1 = -20.0;
+        if (weight1 > 21.0) weight1 = 21.0;
+
+        weight2 = 1 - weight1;
+    }
+
+    return a1 * weight1 + b1 * weight2;
 }
 
 static int IsPointFixed( PointData *pd ) {
@@ -2238,17 +2253,13 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 		for ( i=0; i<tot; ++i ) {
 		    if ( val>=overlaps[i].start && val<overlaps[i].stop ) {
 			sp->ticked = true;
-			ptpos[sp->ptindex].new_pos = overlaps[i].new_start +
-				(val-overlaps[i].start) *
-				    (overlaps[i].new_stop - overlaps[i].new_start)/
-				    (overlaps[i].stop - overlaps[i].start);
+			ptpos[sp->ptindex].new_pos = InterpolateVal(overlaps[i].start, overlaps[i].stop,
+				overlaps[i].new_start, overlaps[i].new_stop, val);
 		break;
 		    } else if ( i>0 && val>=overlaps[i-1].stop && val<=overlaps[i].start ) {
 			sp->ticked = true;
-			ptpos[sp->ptindex].new_pos = overlaps[i-1].new_stop +
-				(val-overlaps[i-1].stop) *
-				    (overlaps[i].new_start - overlaps[i-1].new_stop)/
-				    (overlaps[i].start - overlaps[i-1].stop);
+			ptpos[sp->ptindex].new_pos = InterpolateVal(overlaps[i-1].stop, overlaps[i].start,
+				overlaps[i-1].new_stop, overlaps[i].new_start, val);
 		break;
 		    }
 		}
@@ -2295,10 +2306,8 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 	    }
 	    if ( sp==last ) {
 		for ( sp=start->next->to; sp!=last; sp=sp->next->to ) {
-		    ptpos[sp->ptindex].new_pos = ptpos[start->ptindex].new_pos +
-			    ((&sp->me.x)[coord] - ptpos[start->ptindex].old) *
-			      (ptpos[last->ptindex].new_pos - ptpos[start->ptindex].new_pos) /
-			      (ptpos[last->ptindex].old - ptpos[start->ptindex].old);
+			ptpos[sp->ptindex].new_pos = InterpolateVal(ptpos[start->ptindex].old, ptpos[last->ptindex].old,
+				ptpos[start->ptindex].new_pos, ptpos[last->ptindex].new_pos, (&sp->me.x)[coord]);
 		    sp->ticked = true;
 		}
 	    } else
@@ -2316,17 +2325,13 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 		for ( i=0; i<tot; ++i ) {
 		    if ( val>=overlaps[i].start && val<overlaps[i].stop ) {
 			sp->ticked = true;
-			ptpos[sp->ptindex].new_pos = overlaps[i].new_start +
-				(val-overlaps[i].start) *
-				    (overlaps[i].new_stop - overlaps[i].new_start)/
-				    (overlaps[i].stop - overlaps[i].start);
+			ptpos[sp->ptindex].new_pos = InterpolateVal( overlaps[i].start, overlaps[i].stop,
+				overlaps[i].new_start, overlaps[i].new_stop, val);
 		break;
 		    } else if ( i>0 && val>=overlaps[i-1].stop && val<=overlaps[i].start ) {
 			sp->ticked = true;
-			ptpos[sp->ptindex].new_pos = overlaps[i-1].new_stop +
-				(val-overlaps[i-1].stop) *
-				    (overlaps[i].new_start - overlaps[i-1].new_stop)/
-				    (overlaps[i].start - overlaps[i-1].stop);
+			ptpos[sp->ptindex].new_pos = InterpolateVal( overlaps[i-1].stop, overlaps[i].start,
+				overlaps[i-1].new_stop, overlaps[i].new_start, val);
 		break;
 		    }
 		}
@@ -2347,16 +2352,12 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 	val = (&ap->me.x)[coord];
 	for ( i=0; i<tot; ++i ) {
 	    if ( val>=overlaps[i].start && val<overlaps[i].stop ) {
-		(&ap->me.x)[coord] = overlaps[i].new_start +
-			(val-overlaps[i].start) *
-			    (overlaps[i].new_stop - overlaps[i].new_start)/
-			    (overlaps[i].stop - overlaps[i].start);
+			(&ap->me.x)[coord] = InterpolateVal(overlaps[i].start, overlaps[i].stop,
+				overlaps[i].new_start, overlaps[i].new_stop, val);
 	break;
 	    } else if ( i>0 && val>=overlaps[i-1].stop && val<=overlaps[i].start ) {
-		(&ap->me.x)[coord] = overlaps[i-1].new_stop +
-			(val-overlaps[i-1].stop) *
-			    (overlaps[i].new_start - overlaps[i-1].new_stop)/
-			    (overlaps[i].start - overlaps[i-1].stop);
+			(&ap->me.x)[coord] = InterpolateVal(overlaps[i-1].stop, overlaps[i].start,
+				overlaps[i-1].new_stop, overlaps[i].new_start, val);
 	break;
 	    }
 	}
@@ -2378,20 +2379,16 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 		    if ( ptpos[sp->prev->from->ptindex].old == ptpos[sp->ptindex].old )
 			(&sp->prevcp.x)[coord] = ptpos[sp->ptindex].new_pos;
 		    else
-			(&sp->prevcp.x)[coord] = ptpos[sp->ptindex].new_pos +
-				((&sp->prevcp.x)[coord] - ptpos[sp->ptindex].old)*
-				(ptpos[sp->prev->from->ptindex].new_pos-ptpos[sp->ptindex].new_pos)/
-				(ptpos[sp->prev->from->ptindex].old-ptpos[sp->ptindex].old);
+			(&sp->prevcp.x)[coord] = InterpolateVal(ptpos[sp->ptindex].old, ptpos[sp->prev->from->ptindex].old,
+				ptpos[sp->ptindex].new_pos, ptpos[sp->prev->from->ptindex].new_pos, (&sp->prevcp.x)[coord]);
 		}
 		if ( sp->next==NULL )
 	    break;
 		if ( ptpos[sp->next->to->ptindex].old == ptpos[sp->ptindex].old )
 		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new_pos;
 		else
-		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new_pos +
-			    ((&sp->nextcp.x)[coord] - ptpos[sp->ptindex].old)*
-			    (ptpos[sp->next->to->ptindex].new_pos-ptpos[sp->ptindex].new_pos)/
-			    (ptpos[sp->next->to->ptindex].old-ptpos[sp->ptindex].old);
+			(&sp->nextcp.x)[coord] = InterpolateVal(ptpos[sp->ptindex].old, ptpos[sp->next->to->ptindex].old,
+				ptpos[sp->ptindex].new_pos, ptpos[sp->next->to->ptindex].new_pos, (&sp->nextcp.x)[coord]);
 		sp = sp->next->to;
 		if ( sp==spl->first )
 	    break;
@@ -2406,10 +2403,8 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 		if ( ptpos[sp->next->to->ptindex].old == ptpos[sp->ptindex].old )
 		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new_pos;
 		else
-		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new_pos +
-			    ((&sp->nextcp.x)[coord] - ptpos[sp->ptindex].old)*
-			    (ptpos[sp->next->to->ptindex].new_pos-ptpos[sp->ptindex].new_pos)/
-			    (ptpos[sp->next->to->ptindex].old-ptpos[sp->ptindex].old);
+			(&sp->nextcp.x)[coord] = InterpolateVal(ptpos[sp->ptindex].old, ptpos[sp->next->to->ptindex].old,
+				ptpos[sp->ptindex].new_pos, ptpos[sp->next->to->ptindex].new_pos, (&sp->nextcp.x)[coord]);
 		(&sp->next->to->prevcp.x)[coord] = (&sp->nextcp.x)[coord];
 		sp = sp->next->to;
 		if ( sp==spl->first )

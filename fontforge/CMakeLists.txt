@@ -162,6 +162,7 @@ add_library(fontforge
   mathconstants.c
   mem.c
   mm.c
+  multimastersubrs.c
   namelist.c
   nonlineartrans.c
   noprefs.c

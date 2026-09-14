@@ -701,14 +701,15 @@ return( (GDrawGetEH(testm->menubar->g.base))(testm->menubar->g.base,event));
 	    GMenuDismissAll(m);
 	else if ( event->type==et_mouseup )
 	    GMenuSetPressed(m,false);
-	else if ( m->pressed )
+	else if ( event->type==et_mousemove )
+	    /* A displayed menu tracks the pointer whether or not a button is
+	     * held (sticky menus): moving off the menu clears the highlight. */
 	    GMenuChangeSelection(m,-1,event);
 return( true );
     }
 
     event->u.mouse.x = p.x; event->u.mouse.y = p.y; event->w = m->w;
-    if (( m->pressed && event->type==et_mousemove ) ||
-	    event->type == et_mousedown ) {
+    if ( event->type==et_mousemove || event->type == et_mousedown ) {
 	int l = (event->u.mouse.y-m->bp)/m->fh;
 	int i = l + m->offtop;
 	if ( m->scrollit!=NULL )
@@ -1698,11 +1699,26 @@ static int gmenubar_expose(GWindow pixmap, GGadget *g, GEvent *expose) {
 
     r = g->inner;
     for ( i=0; i<mb->lastmi; ++i ) {
-	r.x = mb->xs[i]+mb->g.inner.x; r.width = mb->xs[i+1]-mb->xs[i];
+	int cellx = mb->xs[i]+mb->g.inner.x;
+	int cellw = mb->xs[i+1]-mb->xs[i];
+	/* Draw the active title's highlight ourselves, with horizontal padding
+	 * and filling the bar height, rather than relying on GTextInfoDraw's
+	 * text-tight fill (which hugs the glyphs and looks cramped on macOS).
+	 * We then pass COLOR_DEFAULT below so GTextInfoDraw skips its own fill. */
+	if ( mb->mi[i].ti.selected && mb->g.box->active_border!=COLOR_DEFAULT ) {
+	    GRect hl;
+	    int padx = GDrawPointsToPixels(mb->g.base,5);
+	    int textw = cellw - GDrawPointsToPixels(mb->g.base,8); /* cell = 8pt gap + text */
+	    hl.x = cellx - padx; hl.width = textw + 2*padx;
+	    if ( hl.x < g->inner.x ) { hl.width -= g->inner.x - hl.x; hl.x = g->inner.x; }
+	    hl.y = g->inner.y; hl.height = g->inner.height;
+	    GDrawFillRect(pixmap,&hl,mb->g.box->active_border);
+	}
+	r.x = cellx; r.width = cellw;
 	GDrawPushClip(pixmap,&r,&old3);
 	GTextInfoDraw(pixmap,r.x,r.y,&mb->mi[i].ti,mb->font,
 		mb->mi[i].ti.disabled?mb->g.box->disabled_foreground:fg,
-		mb->g.box->active_border,r.y+r.height, mb->ascender,
+		COLOR_DEFAULT,r.y+r.height, mb->ascender,
 		mb->descender);
 	GDrawPopClip(pixmap,&old3);
     }
@@ -1747,10 +1763,19 @@ return( true );
 	    mb->initial_press = true;
 	    GMenuBarChangeSelection(mb,which,event);
 	}
-    } else if ( event->type == et_mousemove && mb->pressed ) {
-	if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y))
-	    GMenuBarChangeSelection(mb,GMenuBarIndex(mb,event->u.mouse.x),event);
-	else if ( mb->child!=NULL ) {
+    } else if ( event->type == et_mousemove && mb->entry_with_mouse!=-1 ) {
+	/* Once a menu is active on the bar, moving across it switches menus on
+	 * hover. Keyed off entry_with_mouse rather than button state or child!=NULL
+	 * so that hovering a disabled top-level menu (which opens no pulldown)
+	 * doesn't end navigation. */
+	if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
+	    int which = GMenuBarIndex(mb,event->u.mouse.x);
+	    /* Don't let the pointer passing over a gap between titles (which==-1)
+	     * close the open menu -- that causes the menu to flicker shut and
+	     * reopen. Only switch to another real title. */
+	    if ( which!=-1 )
+		GMenuBarChangeSelection(mb,which,event);
+	} else if ( mb->child!=NULL ) {
 	    GPoint p;
 
 	    p.x = event->u.mouse.x; p.y = event->u.mouse.y;
