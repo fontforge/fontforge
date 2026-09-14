@@ -342,7 +342,9 @@ void RichTechEditor::configure(bool bold_enabled, bool bold_value,
                 weight_combo_->set_active_tag(tag->property_name());
             }
         });
-    stretch_combo_->set_sensitive(stretch_enabled);
+    // NOTE: The stretch property is rather uncommon, and takes a lot of space,
+    // so we will hide the stretch combobox when it is not applicable.
+    stretch_combo_->set_visible_horizontal(stretch_enabled);
     weight_combo_->set_sensitive(weight_enabled);
 }
 
