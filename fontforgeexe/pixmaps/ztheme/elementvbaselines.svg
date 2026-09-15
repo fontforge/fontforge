@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 18 18">
+  <g>
+    <polygon points="11.85 9 11 9.75 13.75 14.5 15.5 13 11.85 9" fill-rule="evenodd"/>
+    <polygon points="6.85 9.75 4 12.35 5.5 14.027 7.85 10.5 6.85 9.75" fill-rule="evenodd"/>
+    <path d="M14.25,7.5l.25-1.5h-4.501v-2.25s2.001-.75,2.001-.75v-1h-2l-1.5,1v3H4l.25,1.5h4.25v3.5c0,1.965-.754,3.388-1.365,4.74h1.86c.795-1.565,1.003-3.236,1.003-4.74v-3.5h4.252Z" fill-rule="evenodd"/>
+  </g>
+  <path d="M3,2v14h-1V2h1ZM17,16V2s-1,0-1,0v14s1,0,1,0Z" fill-rule="evenodd" opacity=".3"/>
+</svg>
