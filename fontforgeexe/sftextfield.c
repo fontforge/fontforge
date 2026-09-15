@@ -2438,34 +2438,3 @@ float SFTFGetDPI(GGadget *g) {
 
 return( st->li.dpi );
 }
-
-void SFTFRefreshFonts(GGadget *g) {
-    SFTextArea *st = (SFTextArea *) g;
-    FontData *fd;
-    struct sfmaps *sfmaps;
-
-    /* First regenerate the EncMaps. Glyphs might have been added or removed */
-    for ( sfmaps = st->li.sfmaps; sfmaps!=NULL; sfmaps = sfmaps->next ) {
-	EncMapFree(sfmaps->map);
-	SplineCharFree(sfmaps->fake_notdef);
-	sfmaps->fake_notdef = NULL;
-	SFMapFill(sfmaps,sfmaps->sf);
-    }
-
-    /* Then free all old generated bitmaps */
-    /* need to do this first because otherwise we might reuse a freetype context */
-    for ( fd = st->li.generated; fd!=NULL; fd=fd->next ) {
-	if ( fd->depends_on )
-	    fd->bdf->freetype_context = NULL;
-	if ( fd->fonttype!=sftf_bitmap ) {
-	    BDFFontFree(fd->bdf);
-	    fd->bdf = NULL;
-	}
-    }
-    for ( fd = st->li.generated; fd!=NULL; fd=fd->next ) {
-	LI_RegenFontData(&st->li,fd);
-    }
-    LayoutInfoRefigureLines(&st->li,0,-1,st->g.inner.width);
-    SFTextAreaShow(&st->g,st->sel_start);	/* Refigure scrollbars for new size */
-	    /* And force an expose event */
-}

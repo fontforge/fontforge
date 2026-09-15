@@ -49,7 +49,8 @@
 #include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
-#include "wordlistparser.h"
+#include "wordlistparser_ui.h"
+#include "gtk/simple_dialogs.hpp"
 #include "shapers/shaper_shim.hpp"
 #include "mv_mids.h"
 
@@ -1823,13 +1824,6 @@ static void MVVScroll(MetricsView *mv,struct sbevent *sb) {
     }
 }
 
-static int MVFakeUnicodeOfSc(MetricsView *mv, SplineChar *sc) {
-    if (sc->unicodeenc != -1)
-        return sc->unicodeenc;
-    else
-        return FAKE_UNICODE_BASE + sc->orig_pos;
-}
-
 static int MVOddMatch(MetricsView *mv,int uni,SplineChar *sc) {
     if ( sc->unicodeenc!=-1 )
 return( false );
@@ -1853,7 +1847,7 @@ void MVSetSCs(MetricsView *mv, SplineChar **scs) {
 	if ( scs[len]->unicodeenc>0 )
 	    ustr[len] = scs[len]->unicodeenc;
 	else
-	    ustr[len] = MVFakeUnicodeOfSc(mv,scs[len]);
+	    ustr[len] = WordlistSCFakeUnicode(scs[len]);
     ustr[len] = 0;
     GGadgetSetTitle(mv->text,ustr);
     free(ustr);
@@ -1862,15 +1856,6 @@ void MVSetSCs(MetricsView *mv, SplineChar **scs) {
 
     GDrawRequestExpose(mv->v,NULL,false);
 }
-
-
-static int WordlistEscapedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc( SplineChar *sc, void* udata )
-{
-    MetricsView *mv = (MetricsView *)udata;
-    int n = MVFakeUnicodeOfSc( mv, sc );
-    return n;
-}
-
 
 static void MVTextChanged(MetricsView *mv) {
     const unichar_t *ret = 0, *pt, *ept, *tpt;
@@ -1884,7 +1869,7 @@ static void MVTextChanged(MetricsView *mv) {
     // for the metrics window
     WordListLine wll = WordlistEscapedInputStringToParsedDataComplex(
     	mv->sf, _GGadgetGetTitle(mv->text),
-    	WordlistEscapedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc, mv );
+    	WordlistSCFakeUnicode_cb, NULL );
     ret = WordListLine_toustr( wll );
 
     if (( isrighttoleft(ret[0]) && !mv->right_to_left ) ||
@@ -2010,7 +1995,7 @@ static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
     newtext = malloc((cnt+1)*sizeof(unichar_t));
     for ( i=0; i<cnt; ++i ) {
 	newtext[i] = founds[i]->unicodeenc==-1 ?
-						MVFakeUnicodeOfSc(mv,founds[i]) :
+						WordlistSCFakeUnicode(founds[i]) :
 						founds[i]->unicodeenc;
 	mv->chars[i] = founds[i];
     }
@@ -2247,7 +2232,10 @@ static void MVMenuGenerateTTC(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 
 static void MVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    PrintFFDlg(NULL, NULL, mv);
+
+    char *sample_text = GGadgetGetTitle8(mv->text);
+    print_dialog(gw, mv->sf, &mv->fv->b, sample_text);
+    free(sample_text);
 }
 
 static void MVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -2793,7 +2781,7 @@ static void MVResetText(MetricsView *mv) {
     new = malloc((mv->clen+1)*sizeof(unichar_t));
     for ( pt=new, i=0; i<mv->clen; ++i ) {
 	if ( mv->chars[i]->unicodeenc==-1 )
-	    *pt++ = MVFakeUnicodeOfSc(mv,mv->chars[i]);
+	    *pt++ = WordlistSCFakeUnicode(mv->chars[i]);
 	else
 	    *pt++ = mv->chars[i]->unicodeenc;
     }
@@ -4893,7 +4881,7 @@ return;
     for ( i=within; i<within+cnt; ++i ) {
 	mv->chars[i] = founds[i-within];
 	newtext[i] = founds[i-within]->unicodeenc>=0 ?
-		founds[i-within]->unicodeenc : MVFakeUnicodeOfSc(mv,founds[i-within]);
+		founds[i-within]->unicodeenc : WordlistSCFakeUnicode(founds[i-within]);
     }
     mv->clen += cnt;
     MVRemetric(mv);
@@ -5090,66 +5078,88 @@ return( true );
 return( true );
 }
 
-GTextInfo *SLOfFont(SplineFont *sf) {
+uint64_t* SFScriptsLangs(SplineFont* sf) {
     uint32_t *scripttags, *langtags;
-    int s, l, i, k, cnt;
+    uint64_t* ret;
+    int s, l, cnt = 0;
+
+    scripttags = SFScriptsInLookups(sf);
+    if (scripttags == NULL) return (NULL);
+
+    for (s = 0; scripttags[s] != 0; ++s) {
+        langtags = SFLangsInScript(sf, -1, scripttags[s]);
+        for (l = 0; langtags[l] != 0; ++l) ++cnt;
+        free(langtags);
+    }
+
+    ret = calloc(cnt + 1, sizeof(uint64_t));
+    cnt = 0;
+    for (s = 0; scripttags[s] != 0; ++s) {
+        langtags = SFLangsInScript(sf, -1, scripttags[s]);
+        for (l = 0; langtags[l] != 0; ++l)
+            ret[cnt++] = ((uint64_t)scripttags[s] << 32) | langtags[l];
+        free(langtags);
+    }
+    free(scripttags);
+    return (ret);
+}
+
+GTextInfo *SLOfFont(SplineFont *sf) {
+    uint64_t *scriptlangs;
+    uint32_t scripttag, langtag;
+    int i, cnt;
     extern GTextInfo scripts[], languages[];
-    GTextInfo *ret = NULL;
-    char *sname=NULL, *lname, *temp;
+    GTextInfo *ret;
+    char *sname, *lname, *temp;
     char sbuf[8], lbuf[8];
 
     LookupUIInit();
-    scripttags = SFScriptsInLookups(sf);
-    if ( scripttags==NULL )
+    scriptlangs = SFScriptsLangs(sf);
+    if ( scriptlangs==NULL )
 return( NULL );
 
-    for ( k=0; k<2; ++k ) {
-	cnt = 0;
-	for ( s=0; scripttags[s]!=0; ++s ) {
-	    if ( k ) {
-		for ( i=0; scripts[i].text!=NULL; ++i )
-		    if ( scripttags[s] == (intptr_t) (scripts[i].userdata))
-		break;
-		sname = (char *) (scripts[i].text);
-		sbuf[0] = scripttags[s]>>24;
-		sbuf[1] = scripttags[s]>>16;
-		sbuf[2] = scripttags[s]>>8;
-		sbuf[3] = scripttags[s];
-		sbuf[4] = 0;
-		if ( sname==NULL )
-		    sname = sbuf;
-	    }
-	    langtags = SFLangsInScript(sf,-1,scripttags[s]);
-	    /* This one can't be NULL */
-	    for ( l=0; langtags[l]!=0; ++l ) {
-		if ( k ) {
-		    for ( i=0; languages[i].text!=NULL; ++i )
-			if ( langtags[l] == (intptr_t) (languages[i].userdata))
-		    break;
-		    lname = (char *) (languages[i].text);
-		    lbuf[0] = langtags[l]>>24;
-		    lbuf[1] = langtags[l]>>16;
-		    lbuf[2] = langtags[l]>>8;
-		    lbuf[3] = langtags[l];
-		    lbuf[4] = 0;
-		    if ( lname==NULL )
-			lname = lbuf;
-		    temp = malloc(strlen(sname)+strlen(lname)+3);
-		    strcpy(temp,sname); strcat(temp,"{"); strcat(temp,lname); strcat(temp,"}");
-		    ret[cnt].text = (unichar_t *) temp;
-		    ret[cnt].text_is_1byte = true;
-		    temp = malloc(11);
-		    strcpy(temp,sbuf); temp[4] = '{'; strcpy(temp+5,lbuf); temp[9]='}'; temp[10] = 0;
-		    ret[cnt].userdata = temp;
-		}
-		++cnt;
-	    }
-	    free(langtags);
-	}
-	if ( !k )
-	    ret = calloc((cnt+1),sizeof(GTextInfo));
+    for ( cnt=0; scriptlangs[cnt]!=0; ++cnt );
+    ret = calloc((cnt+1),sizeof(GTextInfo));
+
+    for ( cnt=0; scriptlangs[cnt]!=0; ++cnt ) {
+        scripttag = scriptlangs[cnt] >> 32;
+        langtag = scriptlangs[cnt];
+
+        for ( i=0; scripts[i].text!=NULL; ++i )
+            if ( scripttag == (intptr_t) (scripts[i].userdata))
+        break;
+        sname = (char *) (scripts[i].text);
+        sbuf[0] = scripttag>>24;
+        sbuf[1] = scripttag>>16;
+        sbuf[2] = scripttag>>8;
+        sbuf[3] = scripttag;
+        sbuf[4] = 0;
+        if ( sname==NULL )
+            sname = sbuf;
+
+        for ( i=0; languages[i].text!=NULL; ++i )
+            if ( langtag == (intptr_t) (languages[i].userdata))
+        break;
+        lname = (char *) (languages[i].text);
+        lbuf[0] = langtag>>24;
+        lbuf[1] = langtag>>16;
+        lbuf[2] = langtag>>8;
+        lbuf[3] = langtag;
+        lbuf[4] = 0;
+        if ( lname==NULL )
+            lname = lbuf;
+
+        temp = malloc(strlen(sname)+strlen(lname)+3);
+        strcpy(temp,sname); strcat(temp,"{"); strcat(temp,lname); strcat(temp,"}");
+        ret[cnt].text = (unichar_t *) temp;
+        ret[cnt].text_is_1byte = true;
+
+        temp = malloc(11);
+        strcpy(temp,sbuf); temp[4] = '{'; strcpy(temp+5,lbuf); temp[9]='}'; temp[10] = 0;
+        ret[cnt].userdata = temp;
     }
-    free(scripttags);
+
+    free(scriptlangs);
 return( ret );
 }
 

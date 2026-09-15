@@ -29,7 +29,7 @@ namespace ff::shapers {
 
 std::vector<MetricsCore> BuiltInShaper::apply_features(
     const std::vector<unichar_t>& ubuf, const std::map<Tag, bool>& feature_map,
-    Tag script, Tag lang, bool vertical) {
+    Tag script, Tag lang, bool vertical, bool /*mv*/) {
     std::vector<SplineChar*> glyphs;
 
     // ubuf is zero-terminated, ignore its last zero element.

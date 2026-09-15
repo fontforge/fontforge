@@ -56,6 +56,10 @@ typedef struct { /* Taken from spiro.h because I want */
 #define bigreal double
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct basepoint {
     real x;
     real y;
@@ -698,3 +702,8 @@ typedef struct splinechar {
 const char* SCNameCheck(const unichar_t* name, bool* questionable);
 const char* SCGetName(const SplineChar* sc);
 void SCGetEncoding(const SplineChar* sc, int* p_unicodeenc, int* p_ttf_glyph);
+void SCCharMetrics(SplineChar* sc, int16_t* width, int16_t* vwidth);
+
+#ifdef __cplusplus
+}
+#endif
