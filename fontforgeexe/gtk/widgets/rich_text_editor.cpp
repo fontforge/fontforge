@@ -271,10 +271,10 @@ guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
     return (guint8*)utf8_buffer;
 }
 
-const std::string RichTechEditor::rich_text_mime_type =
+const std::string RichTextEditor::rich_text_mime_type =
     "application/vnd.fontforge.rich-text+xml";
 
-RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes,
+RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
                                const RichTextFontList& font_list) {
     scale_css_provider_ = Gtk::CssProvider::create();
     text_view_.get_style_context()->add_provider(
@@ -302,9 +302,9 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes,
     text_view_.set_vexpand();
     text_view_.add_events(Gdk::SCROLL_MASK);
     text_view_.signal_scroll_event().connect(
-        sigc::mem_fun(*this, &RichTechEditor::on_text_view_scroll_event));
+        sigc::mem_fun(*this, &RichTextEditor::on_text_view_scroll_event));
     g_signal_connect(text_view_.gobj(), "paste-clipboard",
-                     G_CALLBACK(&RichTechEditor::on_text_view_paste_clipboard),
+                     G_CALLBACK(&RichTextEditor::on_text_view_paste_clipboard),
                      this);
 
     text_view_.get_buffer()->register_serialize_format(rich_text_mime_type,
@@ -317,7 +317,7 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes,
     attach(scrolled_, 0, 1);
 }
 
-void RichTechEditor::configure(bool bold_enabled, bool bold_value,
+void RichTextEditor::configure(bool bold_enabled, bool bold_value,
                                bool italic_enabled, bool italic_value,
                                bool stretch_enabled,
                                Pango::Stretch stretch_value,
@@ -348,7 +348,7 @@ void RichTechEditor::configure(bool bold_enabled, bool bold_value,
     weight_combo_->set_sensitive(weight_enabled);
 }
 
-void RichTechEditor::load_buffer(std::istream& istream) {
+void RichTextEditor::load_buffer(std::istream& istream) {
     ff::utils::ParsedRichText parsed = ff::utils::parse_xml_stream(istream);
 
     Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
@@ -387,9 +387,9 @@ void RichTechEditor::load_buffer(std::istream& istream) {
     }
 }
 
-void RichTechEditor::on_text_view_paste_clipboard(GtkTextView* text_view,
+void RichTextEditor::on_text_view_paste_clipboard(GtkTextView* text_view,
                                                   gpointer user_data) {
-    RichTechEditor* self = static_cast<RichTechEditor*>(user_data);
+    RichTextEditor* self = static_cast<RichTextEditor*>(user_data);
     if (self == nullptr) return;
 
     if (self->request_clipboard_rich_text()) {
@@ -397,7 +397,7 @@ void RichTechEditor::on_text_view_paste_clipboard(GtkTextView* text_view,
     }
 }
 
-bool RichTechEditor::on_text_view_scroll_event(GdkEventScroll* event) {
+bool RichTextEditor::on_text_view_scroll_event(GdkEventScroll* event) {
     static const double zoom_sensitivity = 0.1;
     if (!event || (event->state & GDK_CONTROL_MASK) == 0) {
         return false;
@@ -426,13 +426,13 @@ bool RichTechEditor::on_text_view_scroll_event(GdkEventScroll* event) {
     return true;
 }
 
-void RichTechEditor::refresh_scale_css() {
+void RichTextEditor::refresh_scale_css() {
     int relative_percent = static_cast<int>(global_scale_ * 100.0);
     scale_css_provider_->load_from_data(
         "textview {font-size: " + std::to_string(relative_percent) + "%;}");
 }
 
-bool RichTechEditor::request_clipboard_rich_text() {
+bool RichTextEditor::request_clipboard_rich_text() {
     Glib::RefPtr<Gtk::Clipboard> clipboard = Gtk::Clipboard::get();
     if (!clipboard) {
         return false;
@@ -442,13 +442,13 @@ bool RichTechEditor::request_clipboard_rich_text() {
         clipboard->request_rich_text(
             text_view_.get_buffer(),
             sigc::mem_fun(*this,
-                          &RichTechEditor::on_clipboard_rich_text_received));
+                          &RichTextEditor::on_clipboard_rich_text_received));
         return true;
     } else
         return false;
 }
 
-void RichTechEditor::on_clipboard_rich_text_received(
+void RichTextEditor::on_clipboard_rich_text_received(
     const Glib::ustring& format, const std::string& text) {
     Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
     if (!buffer || text.empty() || format.empty()) return;
@@ -469,7 +469,7 @@ void RichTechEditor::on_clipboard_rich_text_received(
     }
 }
 
-RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo() {
+RichTextEditor::TagComboBox* RichTextEditor::build_stretch_combo() {
     std::string default_id = "width|medium";
 
     // By convention, TextBuffer::Tag with name e.g. "width|condensed" will
@@ -513,7 +513,7 @@ RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo() {
                                           tag_map, labels);
 }
 
-RichTechEditor::TagComboBox* RichTechEditor::build_size_combo(
+RichTextEditor::TagComboBox* RichTextEditor::build_size_combo(
     const std::vector<double>& pointsizes) {
     double default_size = 36.0;
     std::string default_id = "size|36";
@@ -553,7 +553,7 @@ RichTechEditor::TagComboBox* RichTechEditor::build_size_combo(
                                           tag_map, labels);
 }
 
-RichTechEditor::TagComboBox* RichTechEditor::build_weight_combo() {
+RichTextEditor::TagComboBox* RichTextEditor::build_weight_combo() {
     std::string default_id = "weight|regular";
 
     // By convention, TextBuffer::Tag with name e.g. "weight|light" will
@@ -600,7 +600,7 @@ RichTechEditor::TagComboBox* RichTechEditor::build_weight_combo() {
                                           tag_map, labels);
 }
 
-RichTechEditor::TagComboBox* RichTechEditor::build_fonts_combo(
+RichTextEditor::TagComboBox* RichTextEditor::build_fonts_combo(
     const RichTextFontList& font_list) {
     // By convention, TextBuffer::Tag with name e.g. "font|New Century
     // Schoolbook" will be exported to XML tag as <font value="New Century
@@ -629,15 +629,15 @@ RichTechEditor::TagComboBox* RichTechEditor::build_fonts_combo(
                                           tag_map, labels);
 }
 
-Gtk::ToolButton* RichTechEditor::build_tools_menu() {
+Gtk::ToolButton* RichTextEditor::build_tools_menu() {
     Gtk::Menu* hamburger_menu = Gtk::make_managed<Gtk::Menu>();
     Gtk::MenuItem* load_item = Gtk::make_managed<Gtk::MenuItem>(_("Load XML"));
     load_item->signal_activate().connect(
-        sigc::mem_fun(*this, &RichTechEditor::on_load_buffer_from_xml));
+        sigc::mem_fun(*this, &RichTextEditor::on_load_buffer_from_xml));
     Gtk::MenuItem* save_item =
         Gtk::make_managed<Gtk::MenuItem>(_("Save as XML"));
     save_item->signal_activate().connect(
-        sigc::mem_fun(*this, &RichTechEditor::on_save_buffer_to_xml));
+        sigc::mem_fun(*this, &RichTextEditor::on_save_buffer_to_xml));
     hamburger_menu->append(*load_item);
     hamburger_menu->append(*save_item);
     hamburger_menu->show_all();
@@ -655,7 +655,7 @@ Gtk::ToolButton* RichTechEditor::build_tools_menu() {
     return hamburger_button;
 }
 
-Gtk::Toolbar* RichTechEditor::build_toolbar(const RichTextFontList& font_list) {
+Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
     fonts_combo_ = build_fonts_combo(font_list);
     fonts_combo_->set_tooltip_text(_("Font"));
 
@@ -691,7 +691,7 @@ Gtk::Toolbar* RichTechEditor::build_toolbar(const RichTextFontList& font_list) {
     return toolbar;
 }
 
-void RichTechEditor::on_load_buffer_from_xml() {
+void RichTextEditor::on_load_buffer_from_xml() {
     Gtk::FileChooserDialog dialog(_("Load sample from XML"),
                                   Gtk::FILE_CHOOSER_ACTION_OPEN);
     dialog.set_transient_for(*dynamic_cast<Gtk::Window*>(get_toplevel()));
@@ -716,7 +716,7 @@ void RichTechEditor::on_load_buffer_from_xml() {
     load_buffer(file);
 }
 
-void RichTechEditor::on_save_buffer_to_xml() {
+void RichTextEditor::on_save_buffer_to_xml() {
     Gtk::FileChooserDialog dialog(_("Save sample as XML"),
                                   Gtk::FILE_CHOOSER_ACTION_SAVE);
     dialog.set_transient_for(*dynamic_cast<Gtk::Window*>(get_toplevel()));
@@ -751,10 +751,10 @@ void RichTechEditor::on_save_buffer_to_xml() {
 }
 
 ///////////////////////////////////////////////////////////////////////
-///               RichTechEditor::ToggleTagButton                   ///
+///               RichTextEditor::ToggleTagButton                   ///
 ///////////////////////////////////////////////////////////////////////
 
-RichTechEditor::ToggleTagButton::ToggleTagButton(
+RichTextEditor::ToggleTagButton::ToggleTagButton(
     Glib::RefPtr<Gtk::TextBuffer> text_buffer, Glib::RefPtr<Gtk::TextTag> tag)
     : text_buffer_(text_buffer), tag_(tag) {
     // Called whenever the selection or the cursor position is changed. Sets the
@@ -774,7 +774,7 @@ RichTechEditor::ToggleTagButton::ToggleTagButton(
         });
 }
 
-void RichTechEditor::ToggleTagButton::toggle_tag(
+void RichTextEditor::ToggleTagButton::toggle_tag(
     const Gtk::TextBuffer::iterator& start,
     const Gtk::TextBuffer::iterator& end) {
     if (get_active()) {
@@ -784,14 +784,14 @@ void RichTechEditor::ToggleTagButton::toggle_tag(
     }
 }
 
-void RichTechEditor::ToggleTagButton::on_button_toggled() {
+void RichTextEditor::ToggleTagButton::on_button_toggled() {
     Gtk::TextBuffer::iterator start, end;
     if (text_buffer_->get_selection_bounds(start, end)) {
         toggle_tag(start, end);
     }
 }
 
-void RichTechEditor::ToggleTagButton::on_buffer_cursor_changed(
+void RichTextEditor::ToggleTagButton::on_buffer_cursor_changed(
     const Gtk::TextBuffer::iterator&,
     const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) {
     if (mark->get_name() != "insert") {
@@ -818,10 +818,10 @@ void RichTechEditor::ToggleTagButton::on_buffer_cursor_changed(
 }
 
 ///////////////////////////////////////////////////////////////////////
-///                 RichTechEditor::TagComboBox                     ///
+///                 RichTextEditor::TagComboBox                     ///
 ///////////////////////////////////////////////////////////////////////
 
-RichTechEditor::TagComboBox::TagComboBox(
+RichTextEditor::TagComboBox::TagComboBox(
     Glib::RefPtr<Gtk::TextBuffer> text_buffer, const std::string& default_id,
     const std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>>& tag_map,
     const std::vector<std::pair<std::string /*id*/, std::string /*label*/>>&
@@ -853,7 +853,7 @@ RichTechEditor::TagComboBox::TagComboBox(
         });
 }
 
-void RichTechEditor::TagComboBox::apply_tag(
+void RichTextEditor::TagComboBox::apply_tag(
     const Gtk::TextBuffer::iterator& start,
     const Gtk::TextBuffer::iterator& end) {
     // Remove all other tags from this group, except the new one.
@@ -866,14 +866,14 @@ void RichTechEditor::TagComboBox::apply_tag(
     }
 }
 
-void RichTechEditor::TagComboBox::on_box_changed() {
+void RichTextEditor::TagComboBox::on_box_changed() {
     Gtk::TextBuffer::iterator start, end;
     if (text_buffer_->get_selection_bounds(start, end)) {
         apply_tag(start, end);
     }
 }
 
-std::string RichTechEditor::TagComboBox::get_active_tag(
+std::string RichTextEditor::TagComboBox::get_active_tag(
     const Gtk::TextBuffer::iterator& start,
     const Gtk::TextBuffer::iterator& end) {
     // We are only interested in tags controlled by this widget. Check if any
@@ -911,7 +911,7 @@ std::string RichTechEditor::TagComboBox::get_active_tag(
     return default_id_;
 }
 
-void RichTechEditor::TagComboBox::on_buffer_cursor_changed(
+void RichTextEditor::TagComboBox::on_buffer_cursor_changed(
     const Gtk::TextBuffer::iterator&,
     const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) {
     if (mark->get_name() != "insert") {
@@ -942,17 +942,17 @@ void RichTechEditor::TagComboBox::on_buffer_cursor_changed(
 }
 
 ///////////////////////////////////////////////////////////////////////
-///             RichTechEditor::ClearFormattingButton               ///
+///             RichTextEditor::ClearFormattingButton               ///
 ///////////////////////////////////////////////////////////////////////
 
-RichTechEditor::ClearFormattingButton::ClearFormattingButton(
+RichTextEditor::ClearFormattingButton::ClearFormattingButton(
     Glib::RefPtr<Gtk::TextBuffer> text_buffer)
     : text_buffer_(text_buffer) {
     signal_clicked().connect(
         sigc::mem_fun(*this, &ClearFormattingButton::on_button_clicked));
 }
 
-void RichTechEditor::ClearFormattingButton::on_button_clicked() {
+void RichTextEditor::ClearFormattingButton::on_button_clicked() {
     Gtk::TextBuffer::iterator start, end;
     if (text_buffer_->get_selection_bounds(start, end)) {
         text_buffer_->remove_all_tags(start, end);

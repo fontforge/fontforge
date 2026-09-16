@@ -350,7 +350,7 @@ void PrintPreviewWidget::build_sample_text_editor() {
             font_props.full_name,
             make_rt_properties(font_props, font_list.front().family_name));
     }
-    sample_text_ = Gtk::make_managed<widget::RichTechEditor>(kMultiPointsizes,
+    sample_text_ = Gtk::make_managed<widget::RichTextEditor>(kMultiPointsizes,
                                                              rt_font_list);
     sample_text_->set_hexpand();
     sample_text_->set_vexpand();
@@ -567,8 +567,8 @@ void PrintPreviewWidget::reconfigure_text_popover(Gtk::Popover* text_popover) {
     // The scroller limits the text popover window. Without limitations the
     // TextView widget can expand until it covers the entire print dialog and
     // get unsigtly cut-off at the dialog window borders.
-    widget::RichTechEditor* rich_text =
-        dynamic_cast<widget::RichTechEditor*>(text_popover->get_child());
+    widget::RichTextEditor* rich_text =
+        dynamic_cast<widget::RichTextEditor*>(text_popover->get_child());
     Gtk::ScrolledWindow& scrolled = rich_text->get_scrolled();
 
     Gdk::Point size = calculate_text_popover_size();
@@ -638,7 +638,7 @@ void PrintPreviewWidget::activate_cairo_printer(
         gsize length = 0;
         Glib::RefPtr<Gtk::TextBuffer> buffer = sample_text_->get_buffer();
         char* out_buffer = (char*)buffer->serialize(
-            buffer, widget::RichTechEditor::rich_text_mime_type,
+            buffer, widget::RichTextEditor::rich_text_mime_type,
             buffer->begin(), buffer->end(), length);
         persistent.sample_text = out_buffer;
 

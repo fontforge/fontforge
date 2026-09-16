@@ -119,7 +119,7 @@ class PrintPreviewWidget : public Gtk::Grid {
     Gtk::ListViewText* feature_tags_list_;
     Gtk::Stack* stack_;
 
-    widget::RichTechEditor* sample_text_;
+    widget::RichTextEditor* sample_text_;
 
     // The default A4-based setup is used for preview when no printer has been
     // selected yet.

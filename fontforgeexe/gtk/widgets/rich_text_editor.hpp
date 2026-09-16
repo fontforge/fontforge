@@ -41,14 +41,14 @@ struct RichTextFontProperties {
 using RichTextFontList =
     std::vector<std::pair<std::string, RichTextFontProperties>>;
 
-class RichTechEditor : public Gtk::Grid {
+class RichTextEditor : public Gtk::Grid {
  public:
     // Create a rich text editor with the given list of point sizes. The point
     // sizes are used to populate the size combobox in the toolbar. The generic
     // flag indicates whether the editor is used for generic text editing
     // without font-specific context. If false, the editor allow selection from
     // predefined list of fonts.
-    RichTechEditor(const std::vector<double>& pointsizes,
+    RichTextEditor(const std::vector<double>& pointsizes,
                    const RichTextFontList& font_list);
 
     void configure(bool bold_enabled, bool bold_value, bool italic_enabled,
