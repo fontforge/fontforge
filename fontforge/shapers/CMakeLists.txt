@@ -7,7 +7,7 @@ set(shapers_sources
   shaper_shim.cpp
 )
 
-if(ENABLE_HARFBUZZ)
+if(ENABLE_HARFBUZZ_RESULT)
   list(APPEND shapers_sources
     harfbuzz.hpp
     harfbuzz.cpp
@@ -27,7 +27,7 @@ target_link_libraries(shapers PRIVATE
   gunicode
 )
 
-if(ENABLE_HARFBUZZ)
+if(ENABLE_HARFBUZZ_RESULT)
   target_link_libraries(shapers PRIVATE
     PkgConfig::HarfBuzz
   )
