@@ -868,9 +868,10 @@ return( true );
 	for ( i=0; i<rows; ++i ) {
 	    char *start = possub[cols*i+1].u.md_str;
 	    while ( *start== ' ' ) ++start;
-	    if ( *start=='\0' ) {
+	    struct lookup_subtable *sub = (struct lookup_subtable *) possub[cols*i+0].u.md_ival;
+	    if ( *start=='\0' && sub->lookup->lookup_type!=gsub_multiple ) {
 		ff_post_error( _("Missing glyph name"),_("You must specify a glyph name for subtable %s"),
-			((struct lookup_subtable *) possub[cols*i+0].u.md_ival)->subtable_name );
+			sub->subtable_name );
 return( false );
 	    }
 	    while ( *start ) {
@@ -882,7 +883,7 @@ return( false );
 		    buts[1] = _("_Cancel");
 		    buts[2] = NULL;
 		    if ( gwwv_ask(_("Missing glyph"),(const char **) buts,0,1,_("In lookup subtable %.30s you refer to a glyph named %.80s, which is not in the font yet. Was this intentional?"),
-			    ((struct lookup_subtable *) possub[cols*i+0].u.md_ival)->subtable_name,
+			    sub->subtable_name,
 			    start)==1 ) {
 			*pt = ch;
 return( false );
@@ -892,7 +893,7 @@ return( false );
 		    buts[1] = _("_Cancel");
 		    buts[2] = NULL;
 		    if ( gwwv_ask(_("Substitution generates itself"),(const char **) buts,0,1,_("In lookup subtable %.30s you replace a glyph with itself. Was this intentional?"),
-			    ((struct lookup_subtable *) possub[cols*i+0].u.md_ival)->subtable_name)==1 ) {
+			    sub->subtable_name)==1 ) {
 			*pt = ch;
 return( false );
 		    }
