@@ -28,8 +28,9 @@
 
 #include "intl.h"
 #include "builtin.hpp"
+#ifdef ENABLE_HARFBUZZ
 #include "harfbuzz.hpp"
-
+#endif
 using ff::Tag;
 
 // Default shaper, managed in preferences. Must point to one of strings in
