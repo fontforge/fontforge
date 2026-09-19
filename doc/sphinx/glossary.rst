@@ -402,7 +402,7 @@ Typographical glossary
       gothic, the style of the goths who helped destroy the roman empire.
 
    Graphite tables
-      `Graphite <http://scripts.sil.org/RenderingGraphite>`__ is an extension to
+      `Graphite <https://graphite.sil.org>`__ is an extension to
       TrueType which embeds several tables into a font containing rules for
       contextual shaping, ligatures, reordering, split glyphs, bidirectionality,
       stacking diacritics, complex positioning, etc.
@@ -417,7 +417,7 @@ Typographical glossary
       are supposed to be easier to build.
 
       SIL International provides a free
-      `Graphite compiler <http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&item_id=GraphiteCompilerDownload>`__
+      `Graphite compiler <https://graphite.sil.org/graphite_download.html>`__
       .
 
    Grotesque

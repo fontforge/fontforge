@@ -3346,15 +3346,15 @@ return( true );
 }
 
 static int GFI_HelpOFL(GGadget *g, GEvent *e) {
-/* F1 Help to open a browser to sil.org Open Source License and FAQ */
+/* F1 Help to open a browser to SIL Open Source License and FAQ */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	help("http://scripts.sil.org/OFL", NULL);
+	help("https://openfontlicense.org", NULL);
     }
 return( true );
 }
 
 static int GFI_AddOFL(GGadget *g, GEvent *e) {
-/* Add sil.org Open Source License (see ofl.c), and modify with current date */
+/* Add SIL Open Source License (see ofl.c), and modify with current date */
 /* Author, and Font Family Name for rows[0,1] of the license. You can access */
 /* this routine from GUI at Element->Font_Info->TTF_Names. info at PS_Names. */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -3412,7 +3412,7 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	GMatrixEditSet(tng, newtns, rows+extras, false);
 	ff_post_notice(_("Using the OFL for your open fonts"),_(
 	    "The OFL is a community-approved software license designed for libre/open font projects. \n"
-	    "Fonts under the OFL can be used, studied, copied, modified, embedded, merged and redistributed while giving authors enough control and artistic integrity. For more details including an FAQ see http://scripts.sil.org/OFL. \n\n"
+	    "Fonts under the OFL can be used, studied, copied, modified, embedded, merged and redistributed while giving authors enough control and artistic integrity. For more details including an FAQ see https://openfontlicense.org. \n\n"
 	    "This font metadata will help users, designers and distribution channels to know who you are, how to contact you and what rights you are granting. \n" 
 	    "When releasing modified versions, remember to add your additional notice, including any extra Reserved Font Name(s). FontForge used to add RFN's by default, but no longer does, as they are used by a minority of OFL fonts and FontForge's RFN's were often legally invalid. Please see the official SIL FAQ and FontForge GitHub issue №4434 for more information. \n\n"
 	    "Have fun designing open fonts! 🔣🔧🥳" ));
@@ -9737,7 +9737,7 @@ return;
     tngcd[5].creator = GButtonCreate;
 
     tngcd[6].gd.flags = gg_visible | gg_enabled;
-    tnlabel[6].text = (unichar_t *) S_("scripts.sil.org/OFL");
+    tnlabel[6].text = (unichar_t *) S_("openfontlicense.org");
     tnlabel[6].text_is_1byte = true;
     tnlabel[6].text_in_resource = true;
     tngcd[6].gd.label = &tnlabel[6];

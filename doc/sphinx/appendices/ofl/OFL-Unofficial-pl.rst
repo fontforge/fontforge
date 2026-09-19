@@ -10,7 +10,7 @@ Open Font License in Polish
    this translation will help users and designers not familiar with English to
    understand the SIL OFL better and use and release font families under this
    collaborative font design model. Please go to
-   `for the official version and the accompanying FAQ. <http://scripts.sil.org/OFL>`_
+   `for the official version and the accompanying FAQ. <https://openfontlicense.org>`_
 
 To jest nieoficjalne tłumaczenie Otwartej Licencji SIL dla Fontów (OFL) na język
 polski. Nie zostało opublikowane przez SIL International i pod względem prawnym
@@ -23,7 +23,7 @@ naszym opartym na współpracy modelu tworzenia fontów. Zachęcamy twórców
 rozważających wydanie swoich fontów na licencji OFL do przeczytania
 towarzyszącego FAQ w odpowiednim języku, jeśli takie istnieje.
 
-Prosimy odwiedzić http://scripts.sil.org/OFL w celu zapoznania się z oryginalną
+Prosimy odwiedzić https://openfontlicense.org w celu zapoznania się z oryginalną
 wersją Licencji i towarzyszącym FAQ.
 
 --------------------------------------------------------------------------------
@@ -37,7 +37,7 @@ wersją Licencji i towarzyszącym FAQ.
 | Ta Dystrybucja Fontu jest wydana na Otwartej Licencji SIL dla Fontów
 | w wersji 1.1. Kopia tej licencji jest przedstawiona poniżej, i jest także
 | dostępna razem z towarzyszącym FAQ pod adresem:
-| http://scripts.sil.org/OFL
+| https://openfontlicense.org
 
 --------------------------------------------------------------------------------
 
