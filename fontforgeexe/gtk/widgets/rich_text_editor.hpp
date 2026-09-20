@@ -51,11 +51,6 @@ class RichTextEditor : public Gtk::Grid {
     RichTextEditor(const std::vector<double>& pointsizes,
                    const RichTextFontList& font_list);
 
-    void configure(bool bold_enabled, bool bold_value, bool italic_enabled,
-                   bool italic_value, bool stretch_enabled,
-                   Pango::Stretch stretch_value, bool weight_enabled,
-                   Pango::Weight weight_value);
-
     // Load buffer from XML stream
     void load_buffer(std::istream& istream);
 
@@ -191,6 +186,7 @@ class RichTextEditor : public Gtk::Grid {
     Gtk::ToolButton* build_tools_menu();
 
     Gtk::Toolbar* build_toolbar(const RichTextFontList& font_list);
+    void configure_toolbar(const RichTextFontList& font_list);
 
     void on_load_buffer_from_xml();
     void on_save_buffer_to_xml();

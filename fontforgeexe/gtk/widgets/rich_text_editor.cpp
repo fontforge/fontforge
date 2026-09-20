@@ -317,37 +317,6 @@ RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
     attach(scrolled_, 0, 1);
 }
 
-void RichTextEditor::configure(bool bold_enabled, bool bold_value,
-                               bool italic_enabled, bool italic_value,
-                               bool stretch_enabled,
-                               Pango::Stretch stretch_value,
-                               bool weight_enabled,
-                               Pango::Weight weight_value) {
-    if (!bold_enabled) {
-        bold_button_->set_active(bold_value);
-    }
-    bold_button_->set_sensitive(bold_enabled);
-    if (!italic_enabled) {
-        italic_button_->set_active(italic_value);
-    }
-    italic_button_->set_sensitive(italic_enabled);
-    text_view_.get_buffer()->get_tag_table()->foreach (
-        [&](Glib::RefPtr<Gtk::TextTag> tag) {
-            if (!stretch_enabled && tag->property_stretch_set() &&
-                tag->property_stretch() == stretch_value) {
-                stretch_combo_->set_active_tag(tag->property_name());
-            }
-            if (!weight_enabled && tag->property_weight_set() &&
-                tag->property_weight() == weight_value) {
-                weight_combo_->set_active_tag(tag->property_name());
-            }
-        });
-    // NOTE: The stretch property is rather uncommon, and takes a lot of space,
-    // so we will hide the stretch combobox when it is not applicable.
-    stretch_combo_->set_visible_horizontal(stretch_enabled);
-    weight_combo_->set_sensitive(weight_enabled);
-}
-
 void RichTextEditor::load_buffer(std::istream& istream) {
     ff::utils::ParsedRichText parsed = ff::utils::parse_xml_stream(istream);
 
@@ -719,8 +688,53 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
     toolbar->append(*slanted_combo_);
     toolbar->append(*stretch_combo_);
     toolbar->append(*weight_combo_);
+    configure_toolbar(font_list);
 
     return toolbar;
+}
+
+void RichTextEditor::configure_toolbar(const RichTextFontList& font_list) {
+    // Configure availablity of weight UI elements.
+    std::set<Pango::Weight> unique_weights;
+    for (const auto& properties : font_list) {
+        unique_weights.insert(properties.second.weight);
+    }
+
+    if (unique_weights.size() == 1) {
+        bold_button_->set_active(*unique_weights.rbegin() >=
+                                 Pango::WEIGHT_SEMIBOLD);
+        bold_button_->set_sensitive(false);
+        weight_combo_->set_visible_horizontal(false);
+    } else if (unique_weights.size() == 2) {
+        weight_combo_->set_visible_horizontal(false);
+    } else {
+        bold_button_->set_visible_horizontal(false);
+    }
+
+    // Configure availablity of slanted UI elements.
+    std::set<Pango::Style> unique_styles;
+    for (const auto& properties : font_list) {
+        unique_styles.insert(properties.second.style);
+    }
+
+    if (unique_styles.size() == 1) {
+        italic_button_->set_active(*unique_styles.rbegin() !=
+                                   Pango::STYLE_NORMAL);
+        italic_button_->set_sensitive(false);
+        slanted_combo_->set_visible_horizontal(false);
+    } else if (unique_styles.size() == 2 &&
+               unique_styles.count(Pango::STYLE_NORMAL) > 0) {
+        slanted_combo_->set_visible_horizontal(false);
+    } else {
+        italic_button_->set_visible_horizontal(false);
+    }
+
+    // Configure availablity of stretched UI element.
+    std::set<Pango::Stretch> unique_widths;
+    for (const auto& properties : font_list) {
+        unique_widths.insert(properties.second.stretch);
+    }
+    stretch_combo_->set_visible_horizontal(unique_widths.size() > 1);
 }
 
 void RichTextEditor::on_load_buffer_from_xml() {

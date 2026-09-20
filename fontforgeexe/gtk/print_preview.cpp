@@ -372,32 +372,6 @@ void PrintPreviewWidget::build_sample_text_editor() {
                const Gtk::TextBuffer::iterator&) {
             preview_area.queue_draw();
         });
-
-    bool bold_value =
-        cairo_painter_.default_rec().props.os2_weight >= Pango::WEIGHT_SEMIBOLD;
-
-    bool enable_italic =
-        cairo_painter_.family_has_multiple(&SplineFontProperties::italic);
-    bool italic_value = cairo_painter_.default_rec().props.italic;
-
-    bool enable_stretch =
-        cairo_painter_.family_has_multiple(&SplineFontProperties::os2_width);
-    Pango::Stretch stretch_value =
-        kWidthMap.count(cairo_painter_.default_rec().props.os2_width)
-            ? kWidthMap.at(cairo_painter_.default_rec().props.os2_width)
-            : Pango::STRETCH_NORMAL;
-
-    bool enable_weight =
-        cairo_painter_.family_has_multiple(&SplineFontProperties::os2_weight);
-    Pango::Weight weight_value =
-        kWeightMap.count(cairo_painter_.default_rec().props.os2_weight)
-            ? kWeightMap.at(cairo_painter_.default_rec().props.os2_weight)
-            : Pango::WEIGHT_NORMAL;
-
-    if (generic)
-        sample_text_->configure(enable_weight, bold_value, enable_italic,
-                                italic_value, enable_stretch, stretch_value,
-                                enable_weight, weight_value);
 }
 
 Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
