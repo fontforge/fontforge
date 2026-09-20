@@ -168,6 +168,7 @@ class RichTextEditor : public Gtk::Grid {
 
     ToggleTagButton* bold_button_ = nullptr;
     ToggleTagButton* italic_button_ = nullptr;
+    TagComboBox* slanted_combo_ = nullptr;
     TagComboBox* stretch_combo_ = nullptr;
     TagComboBox* size_combo_ = nullptr;
     TagComboBox* weight_combo_ = nullptr;
@@ -182,6 +183,7 @@ class RichTextEditor : public Gtk::Grid {
     void on_clipboard_rich_text_received(const Glib::ustring& format,
                                          const std::string& text);
 
+    TagComboBox* build_slanted_combo();
     TagComboBox* build_stretch_combo();
     TagComboBox* build_size_combo(const std::vector<double>& pointsizes);
     TagComboBox* build_weight_combo();

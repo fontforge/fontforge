@@ -469,6 +469,34 @@ void RichTextEditor::on_clipboard_rich_text_received(
     }
 }
 
+RichTextEditor::TagComboBox* RichTextEditor::build_slanted_combo() {
+    std::string default_id = "slant|normal";
+    std::vector<
+        std::tuple<std::string /*id*/, std::string /*label*/, Pango::Style>>
+        property_vec{
+            {"slant|normal", _("Normal"), Pango::STYLE_NORMAL},
+            {"slant|oblique", _("Oblique"), Pango::STYLE_OBLIQUE},
+            {"slant|italic", _("Italic"), Pango::STYLE_ITALIC},
+        };
+
+    std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map;
+    std::vector<std::pair<std::string /*id*/, std::string /*label*/>> labels;
+
+    for (const auto& [tag_id, label, property] : property_vec) {
+        // Create and register tag
+        if (tag_id != default_id) {
+            auto tag = text_view_.get_buffer()->create_tag(tag_id);
+            tag->property_style() = property;
+            tag_map[tag_id] = tag;
+        }
+
+        labels.emplace_back(tag_id, label);
+    }
+
+    return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), default_id,
+                                          tag_map, labels);
+}
+
 RichTextEditor::TagComboBox* RichTextEditor::build_stretch_combo() {
     std::string default_id = "width|medium";
 
@@ -675,6 +703,9 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
     italic_button_->set_icon_name("format-text-italic");
     italic_button_->set_tooltip_text(_("Italic"));
 
+    slanted_combo_ = build_slanted_combo();
+    slanted_combo_->set_tooltip_text(_("Slant Style"));
+
     stretch_combo_ = build_stretch_combo();
     stretch_combo_->set_tooltip_text(_("Width Class"));
 
@@ -685,6 +716,7 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
     toolbar->append(*fonts_combo_);
     toolbar->append(*bold_button_);
     toolbar->append(*italic_button_);
+    toolbar->append(*slanted_combo_);
     toolbar->append(*stretch_combo_);
     toolbar->append(*weight_combo_);
 
