@@ -1,6 +1,7 @@
 # Distributed under the original FontForge BSD 3-clause license
 
 add_library(ffgtk_widgets STATIC
+  combo_text.hpp
   histogram.hpp
   histogram.cpp
   verified_entry.hpp
