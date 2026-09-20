@@ -237,7 +237,9 @@ extern char* str_replace_all( char* s, char* orig, char* replacement, int free_s
 
 int toint( char* v );
 char* tostr( int v );
-/* reallocate buffer and adjust its tail and intermediate processor if present
+/* Reallocate buffer and adjust its tail and intermediate processor if present.
+   p_tail is expected to point to the last allocated byte in the buffer, unless
+   it's NULL, in which case the buffer is assumed to be empty.
  */
 void realloc_tail(char** p_buf, size_t size_delta, char** p_tail,
                   char** p_proc);
