@@ -725,6 +725,8 @@ void RichTextEditor::configure_toolbar(const RichTextFontList& font_list) {
         slanted_combo_->set_visible_horizontal(false);
     } else {
         italic_button_->set_visible_horizontal(false);
+        slanted_combo_->set_enabled_items(&Gtk::TextTag::property_style,
+                                          unique_styles);
     }
 
     // Configure availablity of stretched UI element.
@@ -733,6 +735,8 @@ void RichTextEditor::configure_toolbar(const RichTextFontList& font_list) {
         unique_widths.insert(properties.second.stretch);
     }
     stretch_combo_->set_visible_horizontal(unique_widths.size() > 1);
+    stretch_combo_->set_enabled_items(&Gtk::TextTag::property_stretch,
+                                      unique_widths);
 }
 
 void RichTextEditor::on_load_buffer_from_xml() {
