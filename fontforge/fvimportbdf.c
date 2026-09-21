@@ -1695,10 +1695,15 @@ return( false );
     if ( PCF_GLYPH_PAD(format)==1 ) {
 	for ( i=0; i<cnt; ++i ) {
 	    BDFChar *bc = b->glyphs[i];
+	    int glyph_size = bc->bytes_per_line * (bc->ymax-bc->ymin+1);
+	    if ( offsets[i]<0 || offsets[i]>sizebitmaps ||
+		    glyph_size > sizebitmaps - offsets[i] ) {
+		IError("PCF glyph %d bitmap offset out of range", i);
+		continue;
+	    }
 	    if ( i<cnt-1 && offsets[i+1]-offsets[i]!=bc->bytes_per_line * (bc->ymax-bc->ymin+1))
 		IError("Bad PCF glyph bitmap size");
-	    memcpy(bc->bitmap,bitmap+offsets[i],
-		    bc->bytes_per_line * (bc->ymax-bc->ymin+1));
+	    memcpy(bc->bitmap,bitmap+offsets[i], glyph_size);
 	    ff_progress_next();
 	}
     } else {
@@ -1706,6 +1711,12 @@ return( false );
 	for ( i=0; i<cnt; ++i ) {
 	    BDFChar *bc = b->glyphs[i];
 	    int bpl = ((bc->bytes_per_line+pad-1)/pad)*pad;
+	    int glyph_extent = (bc->ymax-bc->ymin)*bpl + bc->bytes_per_line;
+	    if ( offsets[i]<0 || offsets[i]>sizebitmaps ||
+		    glyph_extent > sizebitmaps - offsets[i] ) {
+		IError("PCF glyph %d bitmap offset out of range", i);
+		continue;
+	    }
 	    for ( j=bc->ymin; j<=bc->ymax; ++j )
 		memcpy(bc->bitmap+(j-bc->ymin)*bc->bytes_per_line,
 			bitmap+offsets[i]+(j-bc->ymin)*bpl,

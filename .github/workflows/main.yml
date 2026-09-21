@@ -20,10 +20,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           path: repo
-      - uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '17'
       - name: Restore cached custom dependencies
         id: cache-dependencies
         uses: actions/cache@v5
@@ -82,7 +78,7 @@ jobs:
         working-directory: repo
         env:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
-        run: java -jar $DEPSPREFIX/crowdin-cli.jar upload -c .crowdin.yml
+        run: $DEPSPREFIX/crowdin-linux-${{ runner.arch }} upload -c .crowdin.yml
 
   mac:
     runs-on: ${{ matrix.runner }}
