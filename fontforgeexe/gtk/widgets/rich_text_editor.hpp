@@ -28,6 +28,8 @@
 
 #include <gtkmm.h>
 
+#include "combo_text.hpp"
+
 namespace ff::widget {
 
 struct RichTextFontProperties {
@@ -126,6 +128,20 @@ class RichTextEditor : public Gtk::Grid {
             combo_box_.set_active_id(tag_id);
         }
 
+        // Use Gtk::TextTag property getter to check and disable unused items in
+        // the combobox. See uses in RichTextEditor::configure_toolbar().
+        template <typename PropertyProxy, typename Tag>
+        void set_enabled_items(
+            PropertyProxy (Tag::*property)(),
+            const std::set<typename PropertyProxy::PropertyType>&
+                enabled_values) {
+            for (auto [id, tag] : tag_map_) {
+                bool is_enabled =
+                    enabled_values.count((tag.get()->*property)()) > 0;
+                combo_box_.set_item_sensitive(id, is_enabled);
+            }
+        }
+
         // Set the combobox active row when the buffer cursor or selection
         // changes.
         void on_buffer_cursor_changed(
@@ -138,7 +154,7 @@ class RichTextEditor : public Gtk::Grid {
 
         Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
 
-        Gtk::ComboBoxText combo_box_;
+        widgets::ComboText combo_box_;
     };
 
     class ClearFormattingButton : public Gtk::ToolButton {

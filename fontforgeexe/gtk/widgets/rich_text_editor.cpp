@@ -551,8 +551,6 @@ RichTextEditor::TagComboBox* RichTextEditor::build_size_combo(
 }
 
 RichTextEditor::TagComboBox* RichTextEditor::build_weight_combo() {
-    std::string default_id = "weight|regular";
-
     // By convention, TextBuffer::Tag with name e.g. "weight|light" will
     // be exported to XML tag as <weight value="light">. Unlike in XML,
     // TextBuffer tags must have unique names.
@@ -563,19 +561,19 @@ RichTextEditor::TagComboBox* RichTextEditor::build_weight_combo() {
     std::vector<std::tuple<std::string /*id*/, std::string /*label*/,
                            Pango::Weight, std::string /*color*/>>
         property_vec{
-            {"weight|thin", _("100 Thin"), Pango::WEIGHT_NORMAL, "gray"},
-            {"weight|extra-light", _("200 Extra-Light"), Pango::WEIGHT_NORMAL,
-             "dimgray"},
-            {"weight|light", _("300 Light"), Pango::WEIGHT_NORMAL,
+            {"weight|thin", _("100 Thin"), Pango::WEIGHT_THIN, "gray"},
+            {"weight|extra-light", _("200 Extra-Light"),
+             Pango::WEIGHT_ULTRALIGHT, "dimgray"},
+            {"weight|light", _("300 Light"), Pango::WEIGHT_LIGHT,
              "darkslategray"},
             {"weight|regular", _("400 Regular"), Pango::WEIGHT_NORMAL, "black"},
-            {"weight|medium", _("500 Medium"), Pango::WEIGHT_BOLD, "dimgray"},
-            {"weight|semi-bold", _("600 Semi-Bold"), Pango::WEIGHT_BOLD,
+            {"weight|medium", _("500 Medium"), Pango::WEIGHT_MEDIUM, "dimgray"},
+            {"weight|semi-bold", _("600 Semi-Bold"), Pango::WEIGHT_SEMIBOLD,
              "darkslategray"},
             {"weight|bold", _("700 Bold"), Pango::WEIGHT_BOLD, "black"},
-            {"weight|extra-bold", _("800 Extra-Bold"), Pango::WEIGHT_BOLD,
+            {"weight|extra-bold", _("800 Extra-Bold"), Pango::WEIGHT_ULTRABOLD,
              "blue"},
-            {"weight|black", _("900 Black"), Pango::WEIGHT_BOLD, "navy"},
+            {"weight|black", _("900 Black"), Pango::WEIGHT_HEAVY, "navy"},
         };
 
     std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map;
@@ -583,18 +581,16 @@ RichTextEditor::TagComboBox* RichTextEditor::build_weight_combo() {
 
     for (const auto& [tag_id, label, weight, color] : property_vec) {
         // Create and register tag
-        if (tag_id != default_id) {
-            auto tag = text_view_.get_buffer()->create_tag(tag_id);
-            tag->property_weight() = weight;
-            tag->property_foreground() = color;
-            tag_map[tag_id] = tag;
-        }
+        auto tag = text_view_.get_buffer()->create_tag(tag_id);
+        tag->property_weight() = weight;
+        tag->property_foreground() = color;
+        tag_map[tag_id] = tag;
 
         labels.emplace_back(tag_id, label);
     }
 
-    return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), default_id,
-                                          tag_map, labels);
+    return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), "", tag_map,
+                                          labels);
 }
 
 RichTextEditor::TagComboBox* RichTextEditor::build_fonts_combo(
@@ -695,7 +691,7 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
 
 void RichTextEditor::configure_toolbar(const RichTextFontList& font_list) {
     // Configure availablity of weight UI elements.
-    std::set<Pango::Weight> unique_weights;
+    std::set<int> unique_weights;
     for (const auto& properties : font_list) {
         unique_weights.insert(properties.second.weight);
     }
@@ -709,6 +705,8 @@ void RichTextEditor::configure_toolbar(const RichTextFontList& font_list) {
         weight_combo_->set_visible_horizontal(false);
     } else {
         bold_button_->set_visible_horizontal(false);
+        weight_combo_->set_enabled_items(&Gtk::TextTag::property_weight,
+                                         unique_weights);
     }
 
     // Configure availablity of slanted UI elements.
