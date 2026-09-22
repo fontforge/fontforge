@@ -3,14 +3,15 @@ Open Font License in French
 
 .. note::
 
-   This is an unofficial translation of the SIL Open Font License into French. It
-   was not published by SIL International, and does not legally state the
+   This is an unofficial translation of the SIL Open Font License into French.
+   It was not published by SIL International, and does not legally state the
    distribution terms for fonts that use the OFL. A release under the OFL is
    only valid when using the original English text. However, we recognize that
-   this translation will help users and designers not familiar with English to
-   understand the SIL OFL better and use and release font families under this
-   collaborative font design model. Please go to
-   `for the official version and the accompanying FAQ. <http://scripts.sil.org/OFL>`_
+   this unofficial translation will help users and designers not familiar with
+   English to better understand and use the OFL. We encourage designers who
+   consider releasing their creation under the OFL to read the OFL-FAQ in their
+   own language if it is available. Please go to https://openfontlicense.org
+   for the official version of the license and the accompanying OFL-FAQ.
 
 Avertissement légal
 
@@ -35,7 +36,7 @@ caractères selon son modèle de dessin collaboratif.»
 | Cette fonte informatique est licenciée sous la licence SIL Open Font Licence, Version 1.1
 |
 | Cette licence figure ci dessous, et est aussi disponible,
-| ainsi qu'une FAQ, à l'adresse: http://scripts.sil.org/OFL
+| ainsi qu'une FAQ, à l'adresse: https://openfontlicense.org
 
 --------------------------------------------------------------------------------
 

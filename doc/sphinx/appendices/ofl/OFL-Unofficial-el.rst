@@ -3,14 +3,15 @@ Open Font License in Greek
 
 .. note::
 
-   This is an unofficial translation of the SIL Open Font License into Greek. It
-   was not published by SIL International, and does not legally state the
+   This is an unofficial translation of the SIL Open Font License into Greek.
+   It was not published by SIL International, and does not legally state the
    distribution terms for fonts that use the OFL. A release under the OFL is
    only valid when using the original English text. However, we recognize that
-   this translation will help users and designers not familiar with English to
-   understand the SIL OFL better and use and release font families under this
-   collaborative font design model. Please go to
-   `for the official version and the accompanying FAQ. <http://scripts.sil.org/OFL>`_
+   this unofficial translation will help users and designers not familiar with
+   English to better understand and use the OFL. We encourage designers who
+   consider releasing their creation under the OFL to read the OFL-FAQ in their
+   own language if it is available. Please go to https://openfontlicense.org
+   for the official version of the license and the accompanying OFL-FAQ.
 
 «Αυτή είναι μια μη-πιστοποιημένη μετάφραση της άδειας ανοικτών γραμματοσειρών (ή
 απλά ΑΑΓ) της SIL στα ελληνικά. Δεν έχει δημοσιευθεί από την SIL International
@@ -25,7 +26,7 @@ Open Font License in Greek
 γραμματοσειρών. Ενθαρρύνουμε σχεδιαστές, που σκέφτονται να εκδόσουν τα
 δημιουργήματά τους σύμφωνα με την ΑΑΓ, να διαβάσουν το κείμενο των Συχνά
 Τιθόμενων Ερωτήσεων (ΣΤΕ) στην γλώσσα τους, αν αυτό είναι διαθέσιμο. Παρακαλούμε
-ανοίξτε την σελίδα `http://scripts.sil.org/OFL <http://scripts.sil.org/OFL>`_,
+ανοίξτε την σελίδα `https://openfontlicense.org <https://openfontlicense.org>`_,
 για να διαβάσετε την επίσημη έκδοση της αδείας και το σχετικό κείμενο των ΣΤΕ.»
 
 --------------------------------------------------------------------------------
@@ -39,7 +40,7 @@ Open Font License in Greek
 | Αυτό το λογισμικό γραμματοσειράς υπόκειται στην Άδεια Ανοικτών Γραμματοσειρών
 | της SIL, έκδοση 1.1. Η άδεια παρουσιάζεται παρακάτω και είναι
 | διαθέσιμη, μαζί με σχετικές απαντήσεις σε συχνές απορίες, από τον δικτυκό τόπο:
-| http://scripts.sil.org/OFL
+| https://openfontlicense.org
 
 --------------------------------------------------------------------------------
 

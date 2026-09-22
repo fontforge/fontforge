@@ -3,14 +3,15 @@ Open Font License in Polish
 
 .. note::
 
-   This is an unofficial translation of the SIL Open Font License into Polish. It
-   was not published by SIL International, and does not legally state the
+   This is an unofficial translation of the SIL Open Font License into Polish.
+   It was not published by SIL International, and does not legally state the
    distribution terms for fonts that use the OFL. A release under the OFL is
    only valid when using the original English text. However, we recognize that
-   this translation will help users and designers not familiar with English to
-   understand the SIL OFL better and use and release font families under this
-   collaborative font design model. Please go to
-   `for the official version and the accompanying FAQ. <http://scripts.sil.org/OFL>`_
+   this unofficial translation will help users and designers not familiar with
+   English to better understand and use the OFL. We encourage designers who
+   consider releasing their creation under the OFL to read the OFL-FAQ in their
+   own language if it is available. Please go to https://openfontlicense.org
+   for the official version of the license and the accompanying OFL-FAQ.
 
 To jest nieoficjalne tłumaczenie Otwartej Licencji SIL dla Fontów (OFL) na język
 polski. Nie zostało opublikowane przez SIL International i pod względem prawnym
@@ -23,7 +24,7 @@ naszym opartym na współpracy modelu tworzenia fontów. Zachęcamy twórców
 rozważających wydanie swoich fontów na licencji OFL do przeczytania
 towarzyszącego FAQ w odpowiednim języku, jeśli takie istnieje.
 
-Prosimy odwiedzić http://scripts.sil.org/OFL w celu zapoznania się z oryginalną
+Prosimy odwiedzić https://openfontlicense.org w celu zapoznania się z oryginalną
 wersją Licencji i towarzyszącym FAQ.
 
 --------------------------------------------------------------------------------
@@ -37,7 +38,7 @@ wersją Licencji i towarzyszącym FAQ.
 | Ta Dystrybucja Fontu jest wydana na Otwartej Licencji SIL dla Fontów
 | w wersji 1.1. Kopia tej licencji jest przedstawiona poniżej, i jest także
 | dostępna razem z towarzyszącym FAQ pod adresem:
-| http://scripts.sil.org/OFL
+| https://openfontlicense.org
 
 --------------------------------------------------------------------------------
 

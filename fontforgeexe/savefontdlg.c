@@ -849,7 +849,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.popup_msg = _(
 	"The FONTLOG is a text file containing relevant information\n"
 	"about the font including such things as its changelog.\n"
-	"(A general template is available in the OFL FAQ on http://scripts.sil.org/OFL-FAQ_web)\n"
+	"(A general template is available in the OFL FAQ on https://openfontlicense.org/ofl-faq/)\n"
 	"Usage within an open font project is highly recommended but not required.\n"
 	"If your font already contains a fontlog table (see the Element->Font Info)\n"
 	"and you check this box, then the internal fontlog information will be\n"

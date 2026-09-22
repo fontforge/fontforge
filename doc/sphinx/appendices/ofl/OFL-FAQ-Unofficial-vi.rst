@@ -7,7 +7,7 @@ Hỏi Đáp OFL - Các câu thường hỏi về Giấy Phép Phông Chữ Mở 
 
 Phiên bản 1.0 - ngày 22 tháng 11, năm 2005
 
-(Xem http://scripts.sil.org/OFL để tìm bản cập nhật)
+(Xem https://openfontlicense.org để tìm bản cập nhật)
 
 .. contents::
 
