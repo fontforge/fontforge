@@ -4,16 +4,6 @@ A light-mode SVG icon theme for FontForge's legacy UI, created by [Adolfo Ovalle
 
 Filenames follow the existing [Tango](../tango) icon set's naming convention, allowing this theme to serve as a drop-in SVG replacement. Icons are intended to work with FontForge's symbolic SVG support, where a single monochrome icon set adapts automatically to light/dark theme colors — removing the need for separate icon sets per theme.
 
-## Status
-
-The icon set has been reviewed. Redundant icons flagged during review have been removed. Merging is expected before symbolic SVG integration lands in FontForge's rendering code, which is deferred until after the next release for stability reasons.
-
-### Removed redundant icons
-
-The following icons were confirmed unused and removed from the set, since a differently-named file already covers the same UI element: `exclude`, `fliphor`, `flipvert`, `changeweight`, `extendcondense`, `inline`, `oblique`, `text12210`, `outline`, `wireframe`, `shadow`, `rotate180`, `rotateccw`, `rotatecw`, `skew`, `findinter`, `fileclose2`, `intersection`, `rmoverlap`.
-
-`rmoverlap` was also flagged as mistakenly referenced in Metrics View. That reference should be updated to point to `overlaprm` instead, which is the file kept in this set.
-
 ### Known placeholders
 
 `elementtilepath.svg` and `elementtilepattern.svg` (Element menu → Tile Path / Tile Pattern) are intentionally blank. These commands have been disabled in FontForge for years and are not currently reachable in the UI, so blank icons are acceptable here.

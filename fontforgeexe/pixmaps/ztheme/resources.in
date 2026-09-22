@@ -1,7 +1,7 @@
-fontforge.View.DefaultFont: 400 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.View.LabelFont: 400 12pt Deja Vu Sans,Lucida Grande,unifont,unifont upper
-fontforge.View.MonoFont: 400 12pt monospace,unifont
-fontforge.View.SerifFont: 400 12pt serif
+fontforge.View.DefaultFont: 12pt @FONTFORGE_UI_FAMILIES@
+fontforge.View.LabelFont: ^View.DefaultFont @FONTFORGE_LABEL_FAMILIES@
+fontforge.View.MonoFont: ^View.DefaultFont @FONTFORGE_MONO_FAMILIES@
+fontforge.View.SerifFont: ^View.DefaultFont @FONTFORGE_SERIF_FAMILIES@
 fontforge.View.Background: #f2f2f2
 
 fontforge.FontView.GlyphFGColor: #000000
@@ -23,7 +23,7 @@ fontforge.FontView.MetricsAdvanceToColor: #008000
 fontforge.FontView.MetricsBaselineColor: #0000c0
 fontforge.FontView.MetricsOriginColor: #c00000
 fontforge.FontView.MetricsGlyphContourColor: #a45a38
-fontforge.FontView.Font: 400 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
+fontforge.FontView.Font: ^View.LabelFont
 
 fontforge.CharView.PointColor: #ff0000
 fontforge.CharView.FirstPointColor: #0000ff
@@ -36,9 +36,9 @@ fontforge.CharView.NextCPColor: #007090
 fontforge.CharView.PrevCPColor: #ff0000
 fontforge.CharView.SelectedCPColor: #000000
 fontforge.CharView.AnchorColor: #0040ff
-fontforge.CharView.LabelFont: 400 10pt system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.CharView.IconFont: 400 24pt serif
-fontforge.CharView.PointNumberFont: 400 10px system-ui,Deja Vu Sans,Lucida Grande,sans
+fontforge.CharView.LabelFont: 10pt ^View.DefaultFont
+fontforge.CharView.IconFont: 24pt ^View.SerifFont
+fontforge.CharView.PointNumberFont: 10px ^View.DefaultFont
 
 fontforge.CharView.ForegroundOutlineColor: #000000
 fontforge.CharView.ForegroundThickOutlineColor: #20d0d0d0
@@ -60,7 +60,7 @@ fontforge.CharView.MetricsLabelColor: #000000
 fontforge.CharView.TemplateOutlineColor: #4581d3
 fontforge.CharView.RulerBigTickColor: #4581d3
 fontforge.CharView.RulerCurrentTickColor: #ff0000
-fontforge.CharView.Ruler Font: 400 10px system-ui,Deja Vu Sans,Lucida Grande,sans
+fontforge.CharView.RulerFont: 10px ^View.DefaultFont
 fontforge.CharView.GuideOutlineColor: #b0b0b0
 fontforge.CharView.GuideDragColor: #000000
 
@@ -76,7 +76,7 @@ fontforge.CharView.MeasureToolCanvasNumbersColor: #ff0000
 fontforge.CharView.MeasureToolCanvasNumbersSnappedColor: #00cc00
 fontforge.CharView.MeasureToolWindowForeground: #000000
 fontforge.CharView.MeasureToolWindowBackground: #f5f5f5
-fontforge.CharView.MeasureToolFont: 400 12px monospace,unifont
+fontforge.CharView.MeasureToolFont: 12px ^View.MonoFont
 
 fontforge.CharView.BlueValuesStippledColor: #808080ff
 fontforge.CharView.FamilyBlueStippledColor: #80ff7070
@@ -106,8 +106,8 @@ fontforge.CharView.CVPaletteBackgroundColor: #f5f5f5
 fontforge.CharView.Button3DEdgeLightColor: #e0e0e0
 fontforge.CharView.Button3DEdgeDarkColor: #707070
 fontforge.CharView.Button3d: True
-fontforge.CharView.LayersPalette.Font: 400 10px system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.CharView.ToolsPalette.Font: 400 10px system-ui,Deja Vu Sans,Lucida Grande,sans
+fontforge.CharView.LayersPalette.Font: 10px ^View.DefaultFont
+fontforge.CharView.ToolsPalette.Font: 10px ^View.DefaultFont
 
 fontforge.BitmapView.BitmapColor: #606060
 fontforge.BitmapView.OverviewColor: #2c2c2c
@@ -122,7 +122,7 @@ fontforge.BitmapView.SelectedReferenceColor: #106ad0
 fontforge.BitmapView.ReferenceBorderColor: #0f6bcf
 fontforge.BitmapView.SelectedReferenceBorderColor: #0f6bcf
 
-fontforge.MetricsView.Font: 400 12px system-ui,Deja Vu Sans,Lucida Grande,sans
+fontforge.MetricsView.Font: 12px ^View.DefaultFont
 fontforge.MetricsView.GlyphColor: #000000
 fontforge.MetricsView.SelectedGlyphColor: #e8e8e8
 fontforge.MetricsView.DividerColor: #2c2c2c
@@ -131,44 +131,44 @@ fontforge.MetricsView.ItalicAdvanceColor: #a0a0a0
 fontforge.MetricsView.KernLineColor: #5fa008
 fontforge.MetricsView.SideBearingLineColor: #2e5b9e
 
-fontforge.BDFProperties.Font: 400 10pt system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.Combinations.Font: 400 12px system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.CVT.Font: 400 12px monospace,unifont
+fontforge.BDFProperties.Font: 10pt ^View.DefaultFont
+fontforge.Combinations.Font: 12px ^View.DefaultFont
+fontforge.CVT.Font: 12px ^View.MonoFont
 fontforge.FontInfo.OriginLineColor: #808080
-fontforge.FontInfo.Font: 400 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.GlyphInfo.Font: 400 12pt monospace,unifont
-fontforge.Groups.Font: 400 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
+fontforge.FontInfo.Font: ^View.DefaultFont
+fontforge.GlyphInfo.Font: ^View.MonoFont
+fontforge.Groups.Font: ^View.DefaultFont
 fontforge.Histogram.GraphColor: #2020ff
-fontforge.Histogram.Font: 400 10pt system-ui,Deja Vu Sans,Lucida Grande,sans
+fontforge.Histogram.Font: 10pt ^View.DefaultFont
 fontforge.KernClass.TextColor: #006080
-fontforge.KernClass.Font: 400 12pt monospace,unifont
-fontforge.KernFormat.Font: 400 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.KernFormat.BoldFont: 700 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.Math.Font: 400 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.Math.BoldFont: 700 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
+fontforge.KernClass.Font: ^View.MonoFont
+fontforge.KernFormat.Font: ^View.DefaultFont
+fontforge.KernFormat.BoldFont: bold ^View.DefaultFont
+fontforge.Math.Font: ^View.DefaultFont
+fontforge.Math.BoldFont: bold ^Math.Font
 
-fontforge.Prefs.MonoFont: 400 12pt monospace,unifont
-fontforge.SearchView.Font: 400 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.SearchView.BoldFont: 700 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
+fontforge.Prefs.MonoFont: ^View.MonoFont
+fontforge.SearchView.Font: ^View.DefaultFont
+fontforge.SearchView.BoldFont: bold ^SearchView.Font
 fontforge.ShowAtt.SelectColor: #ff0000
 fontforge.ShowAtt.GlyphNameColor: #0000ff
-fontforge.ShowATT.Font: 400 12pt system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.ShowATT.MonoFont: 400 12pt monospace,unifont
-fontforge.StateMachine.Font: 400 12pt monospace,unifont
-fontforge.TTInstruction.Font: 400 12px monospace,unifont
-fontforge.Validate.Font: 400 11pt system-ui,Deja Vu Sans,Lucida Grande,sans
-fontforge.Warnings.Font: 400 10pt system-ui,Deja Vu Sans,Lucida Grande,sans
+fontforge.ShowATT.Font: ^View.DefaultFont
+fontforge.ShowATT.MonoFont: ^View.MonoFont
+fontforge.StateMachine.Font: ^View.MonoFont
+fontforge.TTInstruction.Font: 12px ^View.MonoFont
+fontforge.Validate.Font: 11pt ^View.DefaultFont
+fontforge.Warnings.Font: 10pt ^View.DefaultFont
 
 fontforge.Splash.Foreground: #2c2c2c
 fontforge.Splash.Background: #f5f5f5
-fontforge.Splash.Font: 400 10pt serif
-fontforge.Splash.ItalicFont: 400 10pt italic serif
-fontforge.Splash.MonoFont: 400 10pt monospace,unifont
+fontforge.Splash.Font: 10pt ^View.SerifFont
+fontforge.Splash.ItalicFont: italic ^Splash.Font
+fontforge.Splash.MonoFont: 10pt ^View.MonoFont
 fontforge.Splash.Image: splash2019.png
 
 fontforge.SFTextArea.Box.ActiveInner: True
 fontforge.SFTextArea.Box.Padding: 1
-fontforge.SFTextArea.Font: 400 10pt monospace,unifont
+fontforge.SFTextArea.Font: 10pt ^View.MonoFont
 
 Gdraw.Background: #f5f5f5
 Gdraw.Foreground: #2c2c2c
@@ -181,13 +181,13 @@ Gdraw.TwoButtonFixup: True
 Gdraw.MacOSXCmd: True
 Gdraw.Synchronize: False
 
-Gdraw.GGadget.Popup.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GGadget.Popup.Font: 10pt ^View.DefaultFont
 Gdraw.GGadget.Popup.Foreground: #2c2c2c
 Gdraw.GGadget.Popup.Background: #ffffff
 Gdraw.GGadget.Popup.Delay: 1000
 Gdraw.GGadget.Popup.LifeTime: 20000
 
-Gdraw.GProgress.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GProgress.Font: 10pt ^View.DefaultFont
 Gdraw.GProgress.Foreground: #2c2c2c
 Gdraw.GProgress.FillColor: #4581d3
 Gdraw.GProgress.Background: #f5f5f5
@@ -217,7 +217,7 @@ Gdraw.GGadget.Box.BorderShape: rect
 Gdraw.GGadget.Box.BorderWidth: 0
 Gdraw.GGadget.Box.Padding: 2
 Gdraw.GGadget.Box.Radius: 0
-Gdraw.GGadget.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GGadget.Font: 10pt ^View.DefaultFont
 
 Gdraw.GGadget.Skip: 6
 Gdraw.GGadget.LineSkip: 3
@@ -236,7 +236,7 @@ Gdraw.GListMark.Width: 6
 Gdraw.GLabel.Box.BorderType: none
 Gdraw.GLabel.Box.BorderWidth: 1
 Gdraw.GLabel.Box.Padding: 0
-Gdraw.GLabel.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GLabel.Font: 10pt ^View.DefaultFont
 
 Gdraw.GButton.Box.BorderInner: True
 Gdraw.GButton.Box.BorderOuter: False
@@ -246,7 +246,7 @@ Gdraw.GButton.Box.BorderInnerCol: #b0b0b0
 Gdraw.GButton.Box.BorderType: box
 Gdraw.GButton.Box.BorderShape: roundrect
 Gdraw.GButton.Box.Radius: 3
-Gdraw.GButton.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GButton.Font: 10pt ^View.DefaultFont
 Gdraw.GButton.ShiftOnPress: False
 
 
@@ -277,7 +277,7 @@ Gdraw.GRadioOff.DisabledImage: radio_off_disabled.svg
 
 Gdraw.GCheckBox.Box.BorderType: box
 Gdraw.GCheckBox.Box.Padding: 0
-Gdraw.GCheckBox.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GCheckBox.Font: 10pt ^View.DefaultFont
 
 Gdraw.GCheckBoxOn.Box.DoDepressedBackground: False
 Gdraw.GCheckBoxOn.Box.PressedBackground: #4581d3
@@ -314,7 +314,7 @@ Gdraw.GTextField.Box.DisabledBackground: #ffffff
 Gdraw.GTextField.Box.BorderShape: roundrect
 Gdraw.GTextField.Box.Padding: 2
 Gdraw.GTextField.Box.Radius: 3
-Gdraw.GTextField.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GTextField.Font: 10pt ^View.DefaultFont
 
 
 Gdraw.GComboBoxMenu.Box.Padding: 2
@@ -331,7 +331,7 @@ Gdraw.GList.Box.DisabledBackground: #ffffff
 Gdraw.GList.Box.BorderType: box
 Gdraw.GList.Box.BorderShape: roundrect
 Gdraw.GList.Box.Radius: 3
-Gdraw.GList.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GList.Font: 10pt ^View.DefaultFont
 
 Gdraw.GScrollBar.Box.BorderOuter: False
 Gdraw.GScrollBar.Box.NormalBackground: #ffffff
@@ -386,13 +386,13 @@ Gdraw.GMenuBar.Box.BorderOuter: False
 Gdraw.GMenuBar.Box.NormalBackground: #ffffff
 Gdraw.GMenuBar.Box.BorderShape: rect
 Gdraw.GMenuBar.Box.BorderWidth: 4
-Gdraw.GMenuBar.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GMenuBar.Font: 10pt ^View.DefaultFont
 
 Gdraw.GMenu.Box.BorderOuter: True
 Gdraw.GMenu.Box.BorderOuterCol: #d0d0d0
 Gdraw.GMenu.Box.BorderShape: rect
 Gdraw.GMenu.Box.Padding: 6
-Gdraw.GMenu.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GMenu.Font: 10pt ^View.DefaultFont
 Gdraw.GMenu.MacIcons: False
 Gdraw.GMenu.3DLook: True
 Gdraw.GMenu.Grab: True
@@ -403,7 +403,7 @@ Gdraw.GMatrixEdit.Box.BorderType: box
 Gdraw.GMatrixEdit.Box.BorderShape: rect
 Gdraw.GMatrixEdit.Box.BorderWidth: 3
 Gdraw.GMatrixEdit.Box.Padding: 0
-Gdraw.GMatrixEdit.Font: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GMatrixEdit.Font: 10pt ^View.DefaultFont
 
 Gdraw.GMatrixEdit.TitleBG: #e8e8e8
 Gdraw.GMatrixEdit.TitleFG: #2c2c2c
@@ -412,7 +412,7 @@ Gdraw.GMatrixEdit.RuleCol: #d0d0d0
 Gdraw.GMatrixEdit.FrozenCol: #ff4f69
 Gdraw.GMatrixEdit.ActiveCol: #2c2c2c
 Gdraw.GMatrixEdit.ActiveBG: #c5e0f4
-Gdraw.GMatrixEdit.TitleFont: 400 10pt Sans, Lucida Grande, Arial, Helvetica Neue
+Gdraw.GMatrixEdit.TitleFont: 10pt ^View.DefaultFont
 
 Gdraw.GMatrixEditButton.Box.BorderInner: True
 Gdraw.GMatrixEditButton.Box.NormalBackground: #ffffff
@@ -429,7 +429,5 @@ Gdraw.GTabSet.Box.BorderType: box
 Gdraw.GTabSet.Box.BorderShape: roundrect
 Gdraw.GTabSet.Box.BorderWidth: 0
 Gdraw.GTabSet.Box.Radius: 3
-Gdraw.GTabSet.Font: 400 10pt system-ui,Deja Vu Sans,Lucida Grande,sans
+Gdraw.GTabSet.Font: 10pt ^View.DefaultFont
 Gdraw.GTabSet.CloseColor: #ff0000
-
-
