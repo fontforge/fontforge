@@ -1,12 +1,21 @@
 # Distributed under the original FontForge BSD 3-clause license
 
-add_library(shapers OBJECT
+set(shapers_sources
   builtin.hpp
   builtin.cpp
-  harfbuzz.hpp
-  harfbuzz.cpp
   shaper_shim.hpp
   shaper_shim.cpp
+)
+
+if(ENABLE_HARFBUZZ_RESULT)
+  list(APPEND shapers_sources
+    harfbuzz.hpp
+    harfbuzz.cpp
+  )
+endif()
+
+add_library(shapers OBJECT
+  ${shapers_sources}
 )
 
 if(BUILD_SHARED_LIBS)
@@ -18,7 +27,7 @@ target_link_libraries(shapers PRIVATE
   gunicode
 )
 
-if(ENABLE_HARFBUZZ)
+if(ENABLE_HARFBUZZ_RESULT)
   target_link_libraries(shapers PRIVATE
     PkgConfig::HarfBuzz
   )
