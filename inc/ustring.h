@@ -129,7 +129,7 @@ extern unichar_t *cu_strstartmatch(const char *initial, const unichar_t *full);
 #define utf82u_strncpy utf82U_strncpy
 extern int32_t utf8_ildb(const char **utf8_text);
 #define UTF8IDPB_NOZERO 1	/* Allow for 0 encoded as a non-zero utf8 0xc0:0x80 char */
-#define UTF8IDPB_OLDLIMIT 2	/* Today's utf8 is agreed to be limited to {0..0x10FFFF} */
+#define UTF8IDPB_NOLIMIT 2	/* utf8 is agreed to be limited to {0..0x10FFFF} */
 #define UTF8IDPB_UCS2 8		/* Encode {0...0xffff} as 16bit ucs2 type values */
 #define UTF8IDPB_UTF16 16	/* Encode {0...0x10ffff} as 16bit utf16 type values */
 #define UTF8IDPB_UTF32 32	/* Encode {0...0x10ffff} as 32bit utf32 type values */
@@ -155,7 +155,7 @@ extern void       utf82u_strcat(unichar_t *ubuf,const char *utf8buf);
 extern unichar_t *utf82u_copyn(const char *utf8buf,int len);
 extern unichar_t *utf82u_copy(const char *utf8buf);
 extern char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf);
-extern char *u2utf8_strncpy(char *utf8buf,const unichar_t *ubuf,int len);
+extern char *u2utf8_strncpy(char *utf8buf,const unichar_t *ubuf,int len, int idpb_flags);
 extern char *u2utf8_copy(const unichar_t *ubuf);
 extern char *u2utf8_copyn(const unichar_t *ubuf,int len);
 extern unichar_t *def2u_strncpy(unichar_t *uto, const char *from, size_t n);

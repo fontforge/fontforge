@@ -165,3 +165,21 @@ uint32_t* shaper_default_features(cpp_IShaper* shaper, uint32_t script,
 
     return stds;
 }
+
+namespace ff::shapers {
+
+std::shared_ptr<IShaper> Factory(std::shared_ptr<ShaperContext> context) {
+    const char* name = get_default_shaper();
+#ifdef ENABLE_HARFBUZZ
+    if (strcmp(name, "harfbuzz") == 0) {
+        return std::make_shared<HarfBuzzShaper>(context);
+    }
+#endif
+    if (strcmp(name, "builtin") == 0) {
+        return std::make_shared<BuiltInShaper>(context);
+    } else {
+        return nullptr;
+    }
+}
+
+}  // namespace ff::shapers

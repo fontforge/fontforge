@@ -8698,7 +8698,7 @@ static PyObject *PyFFGlyph_genericGlyphChange(PyFF_Glyph *self, PyObject *args,
 	return NULL;
 
     SmallCapsFindConstants(&small,sc->parent,self->layer);
-    genchange.small = &small;
+    genchange.smallcaps = &small;
     genchange.italic_angle = small.italic_angle;
     genchange.tan_ia = small.tan_ia;
 
@@ -18893,7 +18893,7 @@ return (NULL);
     fv = self->fv;
     memset(&genchange,0,sizeof(genchange));
     SmallCapsFindConstants(&small,fv->sf,fv->active_layer);
-    genchange.small = &small;
+    genchange.smallcaps = &small;
     genchange.gc = gc_smallcaps;
     genchange.extension_for_letters = "sc";
     genchange.extension_for_symbols = "taboldstyle";
@@ -19164,7 +19164,7 @@ static PyObject *PyFFFont_genericGlyphChange(PyFF_Font *self, PyObject *args,
 	return NULL;
 
     SmallCapsFindConstants(&small,fv->sf,fv->active_layer);
-    genchange.small = &small;
+    genchange.smallcaps = &small;
 
     FVGenericChange( fv, &genchange );
     free(genchange.m.maps);

@@ -28,6 +28,7 @@
 
 #include "dialog_base.hpp"
 
+#include "widgets/combo_text.hpp"
 #include "widgets/verified_entry.hpp"
 
 namespace ff::dlg {
@@ -65,11 +66,11 @@ class BitmapsDlg final : public DialogBase {
  private:
     static Glib::ustring last_scope_;
 
-    Gtk::ComboBoxText glyphs_combo_;
+    widgets::ComboText* glyphs_combo_ = nullptr;
     widgets::VerifiedEntry pixels_entry_;
     Gtk::CheckButton rasterize_check_;
 
-    Gtk::ComboBoxText build_glyphs_combo(bool has_current_char) const;
+    widgets::ComboText* build_glyphs_combo(bool has_current_char) const;
 
     static bool pixel_size_verifier(const Glib::ustring& text, int& start_pos,
                                     int& end_pos);

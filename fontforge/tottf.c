@@ -6001,7 +6001,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at) {
     /* ttfcopyfile closed all the files (except ttf) */
 }
 
-static SplineCharTTFMap* MakeGlyphTTFMap(SplineFont *sf) {
+SplineCharTTFMap* MakeGlyphTTFMap(SplineFont *sf) {
     int i,k,max, map_idx;
     SplineChar *sc;
     SplineCharTTFMap *map = NULL;
