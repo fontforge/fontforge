@@ -713,10 +713,10 @@ static void ParseSaveTablesPref(struct ttfinfo *info) {
         for ( pt=spt=SaveTablesPref, cnt=0; ; ++pt ) {
             if ( *pt==',' || *pt=='\0' ) {
                 uint32_t tag;
-                tag  = ( ( spt  <pt )? spt[0] : ' ' )<<24;
-                tag |= ( ( spt+1<pt )? spt[1] : ' ' )<<16;
-                tag |= ( ( spt+2<pt )? spt[2] : ' ' )<<8 ;
-                tag |= ( ( spt+3<pt )? spt[3] : ' ' )    ;
+                tag = CHR(( spt  <pt )? spt[0] : ' ',
+                          ( spt+1<pt )? spt[1] : ' ',
+                          ( spt+2<pt )? spt[2] : ' ',
+                          ( spt+3<pt )? spt[3] : ' ');
                 info->savetab[cnt++].tag = tag;
                 if ( *pt )
                     spt = pt+1;
@@ -2829,7 +2829,7 @@ return( 1 );
 return( 1 );
     } else if ( ch==29 ) {
 	/* 4 byte integers exist in dict data but not in type2 strings */
-	ival = getc(ttf)<<24;
+	ival = (int)((uint32_t)getc(ttf)<<24);
 	ival = ival | getc(ttf)<<16;
 	ival = ival | getc(ttf)<<8;
 	*_ival = (int) (ival | getc(ttf));

@@ -397,7 +397,7 @@ return( NULL );
 		    ch1 >>= 8;
 		    prev_cnt = 1;
 		} else /* if ( prev_cnt == 1 ) */ {
-		    ch1 |= (prev<<24);
+		    ch1 |= (int)((uint32_t)prev<<24);
 		    prev = (ch1&0xffff);
 		    ch1 = (ch1>>16)&0xffff;
 		    prev_cnt = 2;
@@ -440,7 +440,7 @@ struct enc85 {
 static void SFDEnc85(struct enc85 *enc,int ch) {
     enc->sofar[enc->pos++] = ch;
     if ( enc->pos==4 ) {
-	unsigned int val = (enc->sofar[0]<<24)|(enc->sofar[1]<<16)|(enc->sofar[2]<<8)|enc->sofar[3];
+	unsigned int val = CHR(enc->sofar[0],enc->sofar[1],enc->sofar[2],enc->sofar[3]);
 	if ( val==0 ) {
 	    fputc('z',enc->sfd);
 	    ++enc->ccnt;
@@ -474,7 +474,7 @@ static void SFDEnc85EndEnc(struct enc85 *enc) {
 return;
     for ( i=enc->pos; i<4; ++i )
 	enc->sofar[i] = 0;
-    val = (enc->sofar[0]<<24)|(enc->sofar[1]<<16)|(enc->sofar[2]<<8)|enc->sofar[3];
+    val = CHR(enc->sofar[0],enc->sofar[1],enc->sofar[2],enc->sofar[3]);
     if ( val==0 ) {
 	fputc('z',enc->sfd);
     } else {
@@ -3302,8 +3302,8 @@ static uint32_t gettag(FILE *sfd) {
 
     while ( (ch=nlgetc(sfd))==' ' );
     if ( (quoted = (ch=='\'')) ) ch = nlgetc(sfd);
-    tag = (ch<<24)|(nlgetc(sfd)<<16);
-    tag |= nlgetc(sfd)<<8;
+    tag = (int)(((uint32_t)ch<<24)|((uint32_t)nlgetc(sfd)<<16));
+    tag |= (int)((uint32_t)nlgetc(sfd)<<8);
     tag |= nlgetc(sfd);
     if ( quoted ) (void) nlgetc(sfd);
 return( tag );
@@ -3634,7 +3634,7 @@ static ImageList *SFDGetImage(FILE *sfd) {
 		    r = Dec85(&dec);
 		    g = Dec85(&dec);
 		    b = Dec85(&dec);
-		    *ipt++ = (a<<24)|(r<<16)|(g<<8)|b;
+		    *ipt++ = CHR(a,r,g,b);
 		}
 	    } else if ( image_type==it_true ) {
 		int *ipt = (int *) (base->data + i*base->bytes_per_line);
@@ -8658,7 +8658,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 			if ( tok[1]=='\0' ) { tok[1]=' '; tok[2] = 0; }
 			if ( tok[2]=='\0' ) { tok[2]=' '; tok[3] = 0; }
 			if ( tok[3]=='\0' ) { tok[3]=' '; tok[4] = 0; }
-			((AnchorClass1 *) an)->feature_tag = (tok[0]<<24) | (tok[1]<<16) | (tok[2]<<8) | tok[3];
+			((AnchorClass1 *) an)->feature_tag = CHR(tok[0], tok[1], tok[2], tok[3]);
 		    }
 		    while ( (ch=nlgetc(sfd))==' ' || ch=='\t' );
 		    ungetc(ch,sfd);

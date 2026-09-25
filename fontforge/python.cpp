@@ -469,7 +469,7 @@ return( BAD_TAG );
 	    }
 	}
     }
-return( (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3] );
+return( CHR(foo[0], foo[1], foo[2], foo[3]) );
 }
 
 static uint32_t StrObjToTag(PyObject *obj, int *was_mac) {
