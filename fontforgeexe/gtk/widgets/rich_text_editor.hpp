@@ -116,10 +116,17 @@ class RichTextEditor : public Gtk::Grid {
         void apply_tag(const Gtk::TextBuffer::iterator& start,
                        const Gtk::TextBuffer::iterator& end);
 
+        void apply_property_tag(const Gtk::TextBuffer::iterator& start,
+                                const Gtk::TextBuffer::iterator& end);
+
         // Apply the tag to the current selection, if there is any. We don't
         // want to override Gtk::ComboBox::on_changed(), we want to be able to
         // disconnect it.
         void on_box_changed();
+
+        // TODO(iorsh): properly separate logic. True for weight, stretch,
+        // slant.
+        bool property_box() { return default_id_ == ""; }
 
         std::string get_active_tag(const Gtk::TextBuffer::iterator& start,
                                    const Gtk::TextBuffer::iterator& end);
