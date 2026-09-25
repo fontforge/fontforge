@@ -87,6 +87,16 @@ int SaveEditorState = 1;
 
 static const char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static const char *caps[] = { "butt", "round", "square", "inher", NULL };
+
+/* LayerCount: comes straight from the file and is used to size an allocation of
+ * sizeof(LayerInfo) bytes per layer, via calloc/realloc/memset.  A value large
+ * enough for the multiplication to wrap, or simply too large to allocate, must not
+ * be trusted; SFAddLayer() already refuses to grow a font past BACK_LAYER_MAX.
+ */
+static int SFD_LayerCountInRange(int layer_cnt)
+{
+    return layer_cnt >= 0 && layer_cnt <= BACK_LAYER_MAX;
+}
 static const char *spreads[] = { "pad", "reflect", "repeat", NULL };
 
 int prefRevisionsToRetain = 32;
@@ -5445,6 +5455,10 @@ return( NULL );
 	    lastgl = NULL;
 	} else if ( strmatch(tok,"LayerCount:")==0 ) {
 	    getint(sfd,&temp);
+	    if ( !SFD_LayerCountInRange(temp) ) {
+		LogError( _("Bad font, invalid LayerCount.") );
+		temp = BACK_LAYER_MAX;
+	    }
 	    if ( temp>sc->layer_cnt ) {
 		sc->layers = (Layer *)realloc(sc->layers,temp*sizeof(Layer));
 		memset(sc->layers+sc->layer_cnt,0,(temp-sc->layer_cnt)*sizeof(Layer));
@@ -5459,6 +5473,10 @@ return( NULL );
 	    DashType dashes[DASH_MAX];
 	    int i;
 	    getint(sfd,&layer);
+	    if ( !SFD_LayerCountInRange(layer+1) ) {
+		LogError( _("Bad font, invalid layer index.") );
+		layer = BACK_LAYER_MAX - 1;
+	    }
 	    if ( layer>=sc->layer_cnt ) {
 		sc->layers = (Layer *)realloc(sc->layers,(layer+1)*sizeof(Layer));
 		memset(sc->layers+sc->layer_cnt,0,(layer+1-sc->layer_cnt)*sizeof(Layer));
@@ -7956,7 +7974,9 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	d->had_layer_cnt = true;
 	int layer_cnt_tmp;
 	getint(sfd,&layer_cnt_tmp);
-	if ( layer_cnt_tmp>2 ) {
+	if ( !SFD_LayerCountInRange(layer_cnt_tmp) )
+	    LogError( _("Bad font, invalid LayerCount.") );
+	else if ( layer_cnt_tmp>2 ) {
 	    sf->layer_cnt = layer_cnt_tmp;
 	    sf->layers = (LayerInfo *)realloc(sf->layers,sf->layer_cnt*sizeof(LayerInfo));
 	    memset(sf->layers+2,0,(sf->layer_cnt-2)*sizeof(LayerInfo));
@@ -7967,6 +7987,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
         // TODO: Read the U. F. O. path.
 	int layer, o2, bk;
 	getint(sfd,&layer);
+	if ( !SFD_LayerCountInRange(layer+1) ) {
+	    LogError( _("Bad font, invalid layer index.") );
+	    layer = BACK_LAYER_MAX - 1;
+	}
 	if ( layer>=sf->layer_cnt ) {
 	    sf->layers = (LayerInfo *)realloc(sf->layers,(layer+1)*sizeof(LayerInfo));
 	    memset(sf->layers+sf->layer_cnt,0,((layer+1)-sf->layer_cnt)*sizeof(LayerInfo));
@@ -9150,7 +9174,9 @@ return( NULL );
 	    } else if ( strmatch(tok,"LayerCount:")==0 ) {
 		had_layer_cnt = true;
 		getint(sfd,&sf.layer_cnt);
-		if ( sf.layer_cnt>2 ) {
+		if ( !SFD_LayerCountInRange(sf.layer_cnt) )
+		    LogError( _("Bad font, invalid LayerCount.") );
+		else if ( sf.layer_cnt>2 ) {
 		    sf.layers = (LayerInfo *)calloc(sf.layer_cnt,sizeof(LayerInfo));
 		}
 	    } else if ( strmatch(tok,"Layer:")==0 ) {
@@ -9237,6 +9263,10 @@ return( false );
     temp.map = sf->map;
     if ( strcmp(tok,"LayerCount:")==0 ) {
 	getint(asfd,&layercnt);
+	if ( !SFD_LayerCountInRange(layercnt) ) {
+	    LogError( _("Bad font, invalid LayerCount.") );
+	    return( false );
+	}
 	if ( layercnt>sf->layer_cnt ) {
 	    sf->layers = (LayerInfo *)realloc(sf->layers,layercnt*sizeof(LayerInfo));
 	    memset(sf->layers+sf->layer_cnt,0,(layercnt-sf->layer_cnt)*sizeof(LayerInfo));
