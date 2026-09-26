@@ -2120,7 +2120,7 @@ static int PrevOnContour(int *contourends, int p) {
 
     if (p == 0) return contourends[0];
     else {
-        for (i=0; contourends[i+1]; i++)
+        for (i=0; contourends[i+1] != -1; i++)
             if (contourends[i]+1 == p)
                 return contourends[i+1];
 
@@ -2132,16 +2132,13 @@ static int PrevOnContour(int *contourends, int p) {
 static int NextOnContour(int *contourends, int p) {
     int i;
 
-    if (p == 0) return 1;
-    else {
-        for (i=0; contourends[i]; i++) {
-            if (contourends[i] == p) {
-                if (i==0) return 0;
-                else return contourends[i-1]+1;
-            }
+    for (i=0; contourends[i] != -1; i++) {
+        if (contourends[i] == p) {
+            if (i==0) return 0;
+            else return contourends[i-1]+1;
         }
-        return p+1;
     }
+    return p+1;
 }
 
 /* For hinting stems, I found it needed to check if candidate point for
@@ -5235,7 +5232,10 @@ return;
         contourends[contourcnt] = cnt-1;
         clockwise[contourcnt++] = SplinePointListIsClockwise(ss);
     }
-    contourends[contourcnt] = 0;
+    /* 0 is a valid contour end -- a one-point contour at the start of the
+     * glyph produces it -- so it cannot double as the end-of-array marker.
+     * stemdb.c uses -1 for its own contourends for the same reason. */
+    contourends[contourcnt] = -1;
 
     for (i=0; i<gic->bluecnt; i++)
         gic->blues[i].highest = gic->blues[i].lowest = -1;
