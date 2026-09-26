@@ -34,7 +34,7 @@
 int32_t memlong(uint8_t *data,int len, int offset) {
 	if (offset>=0 && offset+3<len) {
 		int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
-		return (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4;
+		return CHR(ch1,ch2,ch3,ch4);
 	} else {
 		LogError( _("Bad font, offset out of bounds.") );
 		return 0;
@@ -87,7 +87,7 @@ int32_t getlong(FILE *ttf) {
 	if (ch4==EOF)
 		return EOF;
 
-	return (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4;
+	return CHR(ch1,ch2,ch3,ch4);
 }
 
 real getfixed(FILE *ttf) {

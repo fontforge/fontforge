@@ -3677,7 +3677,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 			len = 0;
 			break;
 		}
-		int val = (*type1<<24) | (type1[1]<<16) | (type1[2]<<8) | type1[3];
+		int val = CHR(type1[0], type1[1], type1[2], type1[3]);
 		stack[sp++] = val;
 		type1 += 4;
 		len -= 4;
