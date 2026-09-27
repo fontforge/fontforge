@@ -802,6 +802,81 @@ void RichTextEditor::on_save_buffer_to_xml() {
 ///               RichTextEditor::ToggleTagButton                   ///
 ///////////////////////////////////////////////////////////////////////
 
+template <typename PROPERTY_PROXY>
+void apply_property_tag(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+                        const Gtk::TextBuffer::iterator& start,
+                        const Gtk::TextBuffer::iterator& end,
+                        typename PROPERTY_PROXY::PropertyType target_value,
+                        PROPERTY_PROXY (Gtk::TextTag::*property)()) {
+    // Collect "font" tags.
+    auto tag_table = text_buffer->get_tag_table();
+    std::vector<Glib::RefPtr<Gtk::TextTag>> font_tags;
+    tag_table->foreach ([&font_tags](const Glib::RefPtr<Gtk::TextTag>& tag) {
+        Glib::ustring tag_name = tag->property_name();
+        if (tag_name.find("font|") == 0) {
+            font_tags.push_back(tag);
+        }
+    });
+
+    // For each "font" tag traverse all ranges tagged with it and apply the new
+    // weight to them.
+    for (const auto& tag : font_tags) {
+        // Define distance between tags. Same family and the target weight are
+        // enforced.
+        auto distance = [tag, property](
+                            const Glib::RefPtr<Gtk::TextTag>& other_tag,
+                            typename PROPERTY_PROXY::PropertyType target_prop) {
+            if (tag->property_family() != other_tag->property_family())
+                return std::numeric_limits<int>::max();
+            if ((tag.get()->*property)() != target_prop)
+                return std::numeric_limits<int>::max();
+
+            int dist =
+                (tag->property_style() != other_tag->property_style() ? 1 : 0) +
+                (tag->property_stretch() != other_tag->property_stretch() ? 1
+                                                                          : 0) +
+                ((tag.get()->*property)() != (other_tag.get()->*property)()
+                     ? 1
+                     : 0);
+
+            return dist;
+        };
+
+        // Find the closest "font" tag which would replace the current one and
+        // has the desired weight.
+        auto closest_font_tag = *std::min_element(
+            font_tags.begin(), font_tags.end(),
+            [&target_value, distance](const auto& a, const auto& b) {
+                return distance(a, target_value) < distance(b, target_value);
+            });
+
+        // Locate the first range tagged with this font tag.
+        Gtk::TextBuffer::iterator tag_start = start;
+        if (!start.has_tag(tag)) {
+            tag_start.forward_to_tag_toggle(tag);
+        }
+        Gtk::TextBuffer::iterator tag_end = tag_start;
+        tag_end.forward_to_tag_toggle(tag);
+
+        while (tag_start < end) {
+            // Apply the new weight to the range tagged with this font tag.
+            if (tag_end > end) {
+                tag_end = end;
+            }
+            text_buffer->apply_tag(closest_font_tag, tag_start, tag_end);
+
+            // Advance to the next range tagged with this font tag.
+            tag_start = tag_end;
+            tag_start.forward_to_tag_toggle(tag);
+            tag_end = tag_start;
+            tag_end.forward_to_tag_toggle(tag);
+        }
+    }
+
+    // TODO(iorsh): Determine the new state of all relevant widgets based on the
+    // current selection.
+}
+
 RichTextEditor::ToggleTagButton::ToggleTagButton(
     Glib::RefPtr<Gtk::TextBuffer> text_buffer, Glib::RefPtr<Gtk::TextTag> tag)
     : text_buffer_(text_buffer), tag_(tag) {
@@ -905,7 +980,15 @@ void RichTextEditor::TagComboBox::apply_tag(
     const Gtk::TextBuffer::iterator& start,
     const Gtk::TextBuffer::iterator& end) {
     if (property_box()) {
-        apply_property_tag(start, end);
+        if (combo_box_.get_active_id() == "") {
+            // No tag is selected, nothing to apply.
+            return;
+        }
+        int target_value =
+            tag_map_[combo_box_.get_active_id()]->property_weight();
+
+        apply_property_tag(text_buffer_, start, end, target_value,
+                           &Gtk::TextTag::property_weight);
     }
 
     // Remove all other tags from this group, except the new one.
@@ -916,83 +999,6 @@ void RichTextEditor::TagComboBox::apply_tag(
             text_buffer_->apply_tag(tag, start, end);
         }
     }
-}
-
-void RichTextEditor::TagComboBox::apply_property_tag(
-    const Gtk::TextBuffer::iterator& start,
-    const Gtk::TextBuffer::iterator& end) {
-    if (combo_box_.get_active_id() == "") {
-        // No tag is selected, nothing to apply.
-        return;
-    }
-    Pango::Weight target_weight =
-        (Pango::Weight)(int)(tag_map_[combo_box_.get_active_id()]
-                                 ->property_weight());
-    // Collect "font" tags.
-    auto tag_table = text_buffer_->get_tag_table();
-    std::vector<Glib::RefPtr<Gtk::TextTag>> font_tags;
-    tag_table->foreach ([&font_tags](const Glib::RefPtr<Gtk::TextTag>& tag) {
-        Glib::ustring tag_name = tag->property_name();
-        if (tag_name.find("font|") == 0) {
-            font_tags.push_back(tag);
-        }
-    });
-
-    // For each "font" tag traverse all ranges tagged with it and apply the new
-    // weight to them.
-    for (const auto& tag : font_tags) {
-        // Define distance between tags. Same family and the target weight are
-        // enforced.
-        auto distance = [tag](const Glib::RefPtr<Gtk::TextTag>& other_tag,
-                              Pango::Weight target_weight) {
-            if (tag->property_family() != other_tag->property_family())
-                return std::numeric_limits<int>::max();
-            if (tag->property_weight() != target_weight)
-                return std::numeric_limits<int>::max();
-
-            int dist =
-                (tag->property_style() != other_tag->property_style() ? 1 : 0) +
-                (tag->property_stretch() != other_tag->property_stretch() ? 1
-                                                                          : 0) +
-                (tag->property_weight() != other_tag->property_weight() ? 1
-                                                                        : 0);
-
-            return dist;
-        };
-
-        // Find the closest "font" tag which would replace the current one and
-        // has the desired weight.
-        auto closest_font_tag = *std::min_element(
-            font_tags.begin(), font_tags.end(),
-            [&target_weight, distance](const auto& a, const auto& b) {
-                return distance(a, target_weight) < distance(b, target_weight);
-            });
-
-        // Locate the first range tagged with this font tag.
-        Gtk::TextBuffer::iterator tag_start = start;
-        if (!start.has_tag(tag)) {
-            tag_start.forward_to_tag_toggle(tag);
-        }
-        Gtk::TextBuffer::iterator tag_end = tag_start;
-        tag_end.forward_to_tag_toggle(tag);
-
-        while (tag_start < end) {
-            // Apply the new weight to the range tagged with this font tag.
-            if (tag_end > end) {
-                tag_end = end;
-            }
-            text_buffer_->apply_tag(closest_font_tag, tag_start, tag_end);
-
-            // Advance to the next range tagged with this font tag.
-            tag_start = tag_end;
-            tag_start.forward_to_tag_toggle(tag);
-            tag_end = tag_start;
-            tag_end.forward_to_tag_toggle(tag);
-        }
-    }
-
-    // TODO(iorsh): Determine the new state of all relevant widgets based on the
-    // current selection.
 }
 
 void RichTextEditor::TagComboBox::on_box_changed() {
