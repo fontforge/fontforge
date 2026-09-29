@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 16:52+0300\n"
-"PO-Revision-Date: 2026-06-24 06:08\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Language: vi_VN\n"
@@ -1369,6 +1369,9 @@ msgstr ""
 "Một số nguyên của vùng chọn sẽ được dùng để trải ra đường dẫn.\n"
 "Nếu chiều dài của đường dẫn không chia được cho bề cao vùng chọn,\n"
 "vùng chọn nên được co giãn một ít."
+
+msgid "An outline font editor"
+msgstr "Một trình biên tập viền chữ"
 
 msgid "An range in the \"Sizes\" field is incorrectly ordered."
 msgstr "Trường « Kích cỡ » chứa một phạm vi sai thứ tự."
@@ -5251,6 +5254,9 @@ msgstr "Chữ và tháng đã bao bọc tiếng Trung/Nhật/Hàn"
 
 msgid "Encoding Too Large"
 msgstr "Bảng mã quá lớn"
+
+msgid "Encoding name"
+msgstr "Tên bảng mã"
 
 #, c-format
 msgid ""
@@ -12344,6 +12350,10 @@ msgstr "Không nên làm đó"
 
 msgid "Please identify a glyph by name, and FontForge will add an anchor to that glyph."
 msgstr "Nhận diện hình tượng theo tên để FontForge thêm neo vào hình tượng đó."
+
+#, c-format
+msgid "Please name encoding %d in this file"
+msgstr "Hãy đặt tên bảng mã %d trong tập tin này"
 
 msgid "Please name this contour"
 msgstr "Hãy nhập tên cho đường viền này"
@@ -21035,6 +21045,9 @@ msgstr "Khô_ng có"
 
 msgid "_Normal"
 msgstr "Chuẩ_n"
+
+msgid "_OK"
+msgstr "Được (_O)"
 
 msgid "_OS/2 Version"
 msgstr "Phiên bản _OS/2"

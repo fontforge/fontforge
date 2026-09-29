@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 16:52+0300\n"
-"PO-Revision-Date: 2026-06-24 06:08\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -2395,6 +2395,10 @@ msgid "Expected glyph or glyphclass (after cursive) on line %d of %s"
 msgstr "Atteso glifo o classe di glifi (dopo cursive) alla riga %d di %s"
 
 #, c-format
+msgid "Expected glyph or glyphclass (after ligature) on line %d of %s"
+msgstr "Atteso glifo o classe di glifi (dopo la legatura) alla riga %d di %s"
+
+#, c-format
 msgid "Expected integer in anchor on line %d of %s"
 msgstr "Atteso intero nell'ancora alla riga %d di %s"
 
@@ -3374,6 +3378,10 @@ msgstr "Istruzioni obsolete"
 
 msgid "Intermediate Points:"
 msgstr "Punti intermedi:"
+
+#, c-format
+msgid "Internal state messed up on line %d of %s"
+msgstr "Stato interno compromesso alla riga %d di %s"
 
 msgid "Interpo_late Fonts..."
 msgstr "Interpo_la i font..."
@@ -7549,6 +7557,10 @@ msgstr "Gallese"
 
 msgid "What is the pixel size of the font in this file?"
 msgstr "Qual è il corpo in pixel del font contenuto in questo file?"
+
+#, c-format
+msgid "When a single substitution is specified by glyph classes, those classes must be of the same length on line %d of %s"
+msgstr "Quando viene specificata una singola sostituzione da classi di glifi, tali classi devono avere la stessa lunghezza alla riga %d di %s"
 
 msgid ""
 "When generating a set of BDF fonts ask the user\n"
