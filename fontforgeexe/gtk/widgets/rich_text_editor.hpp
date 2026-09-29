@@ -65,28 +65,18 @@ class RichTextEditor : public Gtk::Grid {
     Gtk::ScrolledWindow& get_scrolled() { return scrolled_; }
 
     // Special widget class for toggling tags on TextBuffer contents. This
-    // widget is responsible for applying classes, such as "bold", "italic" etc.
-    // to the TextView buffer.
-    //
-    // The desired behavior is as follows (using Bold style as example):
-    //
-    // When a text range is selected, the button in "on" if the entire selected
-    // range is Bold. Otherwise the button is "off". When there is no selection,
-    // the button state is according the character right before the cursor. So
-    // if the character before the cursor is Bold, the button will be "on", and
-    // newly typed characters will be Bold too.
-    //
-    // When the user clicks the button, its state changes. Accordingly, if there
-    // was a selection, the selection style changes accordingly. If there was no
-    // selection, the newly typed characters would have the style according to
-    // the button state.
+    // widget is a simplified substitution for a more general font property
+    // combo box when the available fonts require only two values of that style.
+    // See the description of the combo box for detailed behavior.
+    template <typename PROPERTY_PROXY>
     class ToggleTagButton : public Gtk::ToggleToolButton {
      public:
-        ToggleTagButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
-                        Glib::RefPtr<Gtk::TextTag> tag);
+        using STYLE = typename PROPERTY_PROXY::PropertyType;
+        using PROPERTY_GETTER = PROPERTY_PROXY (Gtk::TextTag::*)();
 
-        void toggle_tag(const Gtk::TextBuffer::iterator& start,
-                        const Gtk::TextBuffer::iterator& end);
+        ToggleTagButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+                        PROPERTY_GETTER proxy_caller,
+                        std::array<STYLE, 2> styles);
 
         // Toggle the current selection, if there is any. We don't want to
         // override Gtk::ToggleToolButton::on_toggled(), we want to be able to
@@ -100,9 +90,11 @@ class RichTextEditor : public Gtk::Grid {
 
      protected:
         Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
-        Glib::RefPtr<Gtk::TextTag> tag_;
+        PROPERTY_GETTER proxy_caller_;
+        std::array<STYLE, 2> styles_;
     };
 
+    // TODO(iorsh): Add detailed description of behavior.
     class TagComboBox : public Gtk::ToolItem {
      public:
         TagComboBox(
@@ -181,8 +173,9 @@ class RichTextEditor : public Gtk::Grid {
     Gtk::ScrolledWindow scrolled_;
     Gtk::TextView text_view_;
 
-    ToggleTagButton* bold_button_ = nullptr;
-    ToggleTagButton* italic_button_ = nullptr;
+    ToggleTagButton<Glib::PropertyProxy<int>>* bold_button_ = nullptr;
+    ToggleTagButton<Glib::PropertyProxy<Pango::Style>>* italic_button_ =
+        nullptr;
     TagComboBox* slanted_combo_ = nullptr;
     TagComboBox* stretch_combo_ = nullptr;
     TagComboBox* size_combo_ = nullptr;

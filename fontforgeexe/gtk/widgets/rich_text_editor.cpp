@@ -606,14 +606,13 @@ RichTextEditor::TagComboBox* RichTextEditor::build_fonts_combo(
         std::string tag_id = "font|" + font_name;
         if (default_id.empty()) {
             default_id = tag_id;
-        } else {
-            auto tag = text_view_.get_buffer()->create_tag(tag_id);
-            tag->property_weight() = properties.weight;
-            tag->property_style() = properties.style;
-            tag->property_stretch() = properties.stretch;
-            tag->property_underline() = properties.underline;
-            tag_map[tag_id] = tag;
         }
+        auto tag = text_view_.get_buffer()->create_tag(tag_id);
+        tag->property_weight() = properties.weight;
+        tag->property_style() = properties.style;
+        tag->property_stretch() = properties.stretch;
+        tag->property_underline() = properties.underline;
+        tag_map[tag_id] = tag;
 
         labels.emplace_back(tag_id, font_name);
     }
@@ -655,16 +654,19 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
     auto bold_tag = text_view_.get_buffer()->create_tag("bold");
     bold_tag->property_weight() = 700;
 
-    bold_button_ =
-        Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), bold_tag);
+    // TODO(iorsh): Pass actual available weight values.
+    bold_button_ = Gtk::manage(new ToggleTagButton(
+        text_view_.get_buffer(), &Gtk::TextTag::property_weight,
+        {(int)Pango::WEIGHT_LIGHT, (int)Pango::WEIGHT_SEMIBOLD}));
     bold_button_->set_icon_name("format-text-bold");
     bold_button_->set_tooltip_text(_("Bold"));
 
     auto italic_tag = text_view_.get_buffer()->create_tag("italic");
     italic_tag->property_style() = Pango::STYLE_ITALIC;
 
-    italic_button_ =
-        Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), italic_tag);
+    italic_button_ = Gtk::manage(new ToggleTagButton(
+        text_view_.get_buffer(), &Gtk::TextTag::property_style,
+        {Pango::STYLE_NORMAL, Pango::STYLE_ITALIC}));
     italic_button_->set_icon_name("format-text-italic");
     italic_button_->set_tooltip_text(_("Italic"));
 
@@ -822,22 +824,21 @@ void apply_property_tag(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
     // weight to them.
     for (const auto& tag : font_tags) {
         // Define distance between tags. Same family and the target weight are
-        // enforced.
+        // enforced on other_tag.
         auto distance = [tag, property](
                             const Glib::RefPtr<Gtk::TextTag>& other_tag,
                             typename PROPERTY_PROXY::PropertyType target_prop) {
-            if (tag->property_family() != other_tag->property_family())
+            if (other_tag->property_family() != tag->property_family())
                 return std::numeric_limits<int>::max();
-            if ((tag.get()->*property)() != target_prop)
+            if ((other_tag.get()->*property)() != target_prop)
                 return std::numeric_limits<int>::max();
 
             int dist =
                 (tag->property_style() != other_tag->property_style() ? 1 : 0) +
                 (tag->property_stretch() != other_tag->property_stretch() ? 1
                                                                           : 0) +
-                ((tag.get()->*property)() != (other_tag.get()->*property)()
-                     ? 1
-                     : 0);
+                (tag->property_weight() != other_tag->property_weight() ? 1
+                                                                        : 0);
 
             return dist;
         };
@@ -849,6 +850,7 @@ void apply_property_tag(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
             [&target_value, distance](const auto& a, const auto& b) {
                 return distance(a, target_value) < distance(b, target_value);
             });
+        if (closest_font_tag == tag) continue;
 
         // Locate the first range tagged with this font tag.
         Gtk::TextBuffer::iterator tag_start = start;
@@ -863,6 +865,7 @@ void apply_property_tag(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
             if (tag_end > end) {
                 tag_end = end;
             }
+            text_buffer->remove_tag(tag, tag_start, tag_end);
             text_buffer->apply_tag(closest_font_tag, tag_start, tag_end);
 
             // Advance to the next range tagged with this font tag.
@@ -877,61 +880,69 @@ void apply_property_tag(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
     // current selection.
 }
 
-RichTextEditor::ToggleTagButton::ToggleTagButton(
-    Glib::RefPtr<Gtk::TextBuffer> text_buffer, Glib::RefPtr<Gtk::TextTag> tag)
-    : text_buffer_(text_buffer), tag_(tag) {
-    // Called whenever the selection or the cursor position is changed. Sets the
-    // correct visual state of the widget
+template <typename PropertyProxy, typename Tag>
+bool tags_have_property(const std::vector<Glib::RefPtr<Gtk::TextTag>>& tags,
+                        PropertyProxy (Tag::*property)(),
+                        const typename PropertyProxy::PropertyType& value) {
+    for (const auto& tag : tags) {
+        Glib::ustring tag_name = tag->property_name();
+        if (tag_name.find("font|") == 0) {
+            if ((tag.get()->*property)().get_value() != value) {
+                return false;
+                break;
+            }
+        }
+    }
+    return true;
+}
+
+template <typename PROPERTY_PROXY>
+RichTextEditor::ToggleTagButton<PROPERTY_PROXY>::ToggleTagButton(
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer, PROPERTY_GETTER proxy_caller,
+    std::array<STYLE, 2> styles)
+    : text_buffer_(text_buffer), proxy_caller_(proxy_caller), styles_(styles) {
+    // Called whenever the selection or the cursor position is changed.
+    // Sets the correct visual state of the widget
     text_buffer_->signal_mark_set().connect(
         sigc::mem_fun(*this, &ToggleTagButton::on_buffer_cursor_changed));
-
-    // Called whenever a character is typed into the buffer. Set the tag on this
-    // character according to the widget state.
-    text_buffer_->signal_insert().connect(
-        [this](const Gtk::TextBuffer::iterator& pos, const Glib::ustring& text,
-               int bytes) {
-            Gtk::TextBuffer::iterator start = pos;
-            if (start.backward_chars(text.size())) {
-                toggle_tag(start, pos);
-            }
-        });
 }
 
-void RichTextEditor::ToggleTagButton::toggle_tag(
-    const Gtk::TextBuffer::iterator& start,
-    const Gtk::TextBuffer::iterator& end) {
-    if (get_active()) {
-        text_buffer_->apply_tag(tag_, start, end);
-    } else {
-        text_buffer_->remove_tag(tag_, start, end);
-    }
-}
-
-void RichTextEditor::ToggleTagButton::on_button_toggled() {
+template <typename PROPERTY_PROXY>
+void RichTextEditor::ToggleTagButton<PROPERTY_PROXY>::on_button_toggled() {
     Gtk::TextBuffer::iterator start, end;
     if (text_buffer_->get_selection_bounds(start, end)) {
-        toggle_tag(start, end);
+        apply_property_tag(text_buffer_, start, end,
+                           styles_[get_active() ? 1 : 0], proxy_caller_);
     }
 }
 
-void RichTextEditor::ToggleTagButton::on_buffer_cursor_changed(
+template <typename PROPERTY_PROXY>
+void RichTextEditor::ToggleTagButton<PROPERTY_PROXY>::on_buffer_cursor_changed(
     const Gtk::TextBuffer::iterator&,
     const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) {
     if (mark->get_name() != "insert") {
         return;
     }
 
+    // To determine the state of the button, we check if every "font" tag has
+    // the style equal to styles_[1].
     Gtk::TextBuffer::iterator start, end;
-    bool button_active = false;
+    bool button_active = true;
 
     if (!text_buffer_->get_selection_bounds(start, end)) {
         start--;
     }
 
-    if (start.has_tag(tag_) && start.forward_to_tag_toggle(tag_)) {
-        if (start >= end) {
-            button_active = true;
-        }
+    // Check tags which are active at the start of the selection.
+    auto start_tags = start.get_tags();
+    button_active = tags_have_property(start_tags, proxy_caller_, styles_[1]);
+
+    while (button_active && start < end) {
+        start.forward_to_tag_toggle(Glib::RefPtr<Gtk::TextTag>());
+        if (start >= end) break;
+
+        auto tags_on = start.get_toggled_tags(true);
+        button_active = tags_have_property(tags_on, proxy_caller_, styles_[1]);
     }
 
     ui_utils::gtk_set_widget_state_without_event(
