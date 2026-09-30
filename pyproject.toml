@@ -89,7 +89,7 @@ wheel.packages = []
 wheel.install-dir = "."
 
 # Minimum CMake version
-cmake.version = ">=3.15"
+cmake.version = ">=3.16"
 
 [tool.scikit-build.cmake.define]
 # These can be overridden via environment variables if needed

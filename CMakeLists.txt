@@ -1,6 +1,6 @@
 # Distributed under the original FontForge BSD 3-clause license
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.16)
 
 # Update the version for each new release
 project(fontforge VERSION 20251009 LANGUAGES C CXX)
@@ -33,10 +33,6 @@ endif()
 
 # Add folder for custom cmake modules
 list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake ${PROJECT_SOURCE_DIR}/cmake/packages)
-if(${CMAKE_VERSION} VERSION_LESS "3.15.7")
-  # This could be more targeted, but keep it simple
-  list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/backports/3.15.7)
-endif()
 
 # Include any required modules
 include(BuildUtils)
