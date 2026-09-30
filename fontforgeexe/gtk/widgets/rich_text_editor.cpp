@@ -31,6 +31,7 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <optional>
 
 #include "intl.h"
 #include "../utils.hpp"
@@ -801,7 +802,7 @@ void RichTextEditor::on_save_buffer_to_xml() {
 }
 
 ///////////////////////////////////////////////////////////////////////
-///               RichTextEditor::ToggleTagButton                   ///
+///                        Templated helpers                        ///
 ///////////////////////////////////////////////////////////////////////
 
 template <typename PROPERTY_PROXY>
@@ -880,21 +881,55 @@ void apply_property_tag(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
     // current selection.
 }
 
-template <typename PropertyProxy, typename Tag>
-bool tags_have_property(const std::vector<Glib::RefPtr<Gtk::TextTag>>& tags,
-                        PropertyProxy (Tag::*property)(),
-                        const typename PropertyProxy::PropertyType& value) {
+template <typename PROPERTY_PROXY>
+std::set<typename PROPERTY_PROXY::PropertyType> collect_property_values(
+    const std::vector<Glib::RefPtr<Gtk::TextTag>>& tags,
+    PROPERTY_PROXY (Gtk::TextTag::*property)()) {
+    std::set<typename PROPERTY_PROXY::PropertyType> result;
     for (const auto& tag : tags) {
         Glib::ustring tag_name = tag->property_name();
-        if (tag_name.find("font|") == 0) {
-            if ((tag.get()->*property)().get_value() != value) {
-                return false;
-                break;
-            }
-        }
+        if (tag_name.find("font|") == 0)
+            result.insert((tag.get()->*property)().get_value());
     }
-    return true;
+    return result;
 }
+
+// Check if the selected range has consistent property values for all "font"
+// tags. If the selection is empty, check the cursor position instead. Return
+// std::nullopt if the selection contains more than one value for the property,
+// otherwise return the consistent value.
+template <typename PROPERTY_PROXY>
+std::optional<typename PROPERTY_PROXY::PropertyType> is_consistent_selection(
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+    PROPERTY_PROXY (Gtk::TextTag::*property)()) {
+    // To determine the state of the button, we check if every "font" tag has
+    // the style equal to styles_[1].
+    Gtk::TextBuffer::iterator start, end;
+    std::optional<typename PROPERTY_PROXY::PropertyType> value;
+
+    if (!text_buffer->get_selection_bounds(start, end)) {
+        start--;
+    }
+
+    // Check tags which are active at the start of the selection.
+    auto start_tags = start.get_tags();
+    auto property_values = collect_property_values(start_tags, property);
+
+    while (property_values.size() < 2 && start < end) {
+        start.forward_to_tag_toggle(Glib::RefPtr<Gtk::TextTag>());
+        if (start >= end) break;
+
+        auto tags_on = start.get_toggled_tags(true);
+        property_values.merge(collect_property_values(tags_on, property));
+    }
+
+    if (property_values.size() == 1) value = *property_values.begin();
+    return value;
+}
+
+///////////////////////////////////////////////////////////////////////
+///                 RichTextEditor::ToggleTagButton                 ///
+///////////////////////////////////////////////////////////////////////
 
 template <typename PROPERTY_PROXY>
 RichTextEditor::ToggleTagButton<PROPERTY_PROXY>::ToggleTagButton(
@@ -924,26 +959,9 @@ void RichTextEditor::ToggleTagButton<PROPERTY_PROXY>::on_buffer_cursor_changed(
         return;
     }
 
-    // To determine the state of the button, we check if every "font" tag has
-    // the style equal to styles_[1].
-    Gtk::TextBuffer::iterator start, end;
-    bool button_active = true;
-
-    if (!text_buffer_->get_selection_bounds(start, end)) {
-        start--;
-    }
-
-    // Check tags which are active at the start of the selection.
-    auto start_tags = start.get_tags();
-    button_active = tags_have_property(start_tags, proxy_caller_, styles_[1]);
-
-    while (button_active && start < end) {
-        start.forward_to_tag_toggle(Glib::RefPtr<Gtk::TextTag>());
-        if (start >= end) break;
-
-        auto tags_on = start.get_toggled_tags(true);
-        button_active = tags_have_property(tags_on, proxy_caller_, styles_[1]);
-    }
+    auto selected_value = is_consistent_selection(text_buffer_, proxy_caller_);
+    bool button_active =
+        selected_value.has_value() && *selected_value == styles_[1];
 
     ui_utils::gtk_set_widget_state_without_event(
         (Gtk::ToggleToolButton*)this, &ToggleTagButton::signal_toggled,
