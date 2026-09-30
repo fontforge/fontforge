@@ -656,7 +656,7 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
     bold_tag->property_weight() = 700;
 
     // TODO(iorsh): Pass actual available weight values.
-    bold_button_ = Gtk::manage(new ToggleTagButton(
+    bold_button_ = Gtk::manage(new TogglePropButton(
         text_view_.get_buffer(), &Gtk::TextTag::property_weight,
         {(int)Pango::WEIGHT_LIGHT, (int)Pango::WEIGHT_SEMIBOLD}));
     bold_button_->set_icon_name("format-text-bold");
@@ -665,7 +665,7 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
     auto italic_tag = text_view_.get_buffer()->create_tag("italic");
     italic_tag->property_style() = Pango::STYLE_ITALIC;
 
-    italic_button_ = Gtk::manage(new ToggleTagButton(
+    italic_button_ = Gtk::manage(new TogglePropButton(
         text_view_.get_buffer(), &Gtk::TextTag::property_style,
         {Pango::STYLE_NORMAL, Pango::STYLE_ITALIC}));
     italic_button_->set_icon_name("format-text-italic");
@@ -928,22 +928,22 @@ std::optional<typename PROPERTY_PROXY::PropertyType> is_consistent_selection(
 }
 
 ///////////////////////////////////////////////////////////////////////
-///                 RichTextEditor::ToggleTagButton                 ///
+///                 RichTextEditor::TogglePropButton                ///
 ///////////////////////////////////////////////////////////////////////
 
 template <typename PROPERTY_PROXY>
-RichTextEditor::ToggleTagButton<PROPERTY_PROXY>::ToggleTagButton(
+RichTextEditor::TogglePropButton<PROPERTY_PROXY>::TogglePropButton(
     Glib::RefPtr<Gtk::TextBuffer> text_buffer, PROPERTY_GETTER proxy_caller,
     std::array<STYLE, 2> styles)
     : text_buffer_(text_buffer), proxy_caller_(proxy_caller), styles_(styles) {
     // Called whenever the selection or the cursor position is changed.
     // Sets the correct visual state of the widget
     text_buffer_->signal_mark_set().connect(
-        sigc::mem_fun(*this, &ToggleTagButton::on_buffer_cursor_changed));
+        sigc::mem_fun(*this, &TogglePropButton::on_buffer_cursor_changed));
 }
 
 template <typename PROPERTY_PROXY>
-void RichTextEditor::ToggleTagButton<PROPERTY_PROXY>::on_button_toggled() {
+void RichTextEditor::TogglePropButton<PROPERTY_PROXY>::on_button_toggled() {
     Gtk::TextBuffer::iterator start, end;
     if (text_buffer_->get_selection_bounds(start, end)) {
         apply_property_tag(text_buffer_, start, end,
@@ -952,7 +952,7 @@ void RichTextEditor::ToggleTagButton<PROPERTY_PROXY>::on_button_toggled() {
 }
 
 template <typename PROPERTY_PROXY>
-void RichTextEditor::ToggleTagButton<PROPERTY_PROXY>::on_buffer_cursor_changed(
+void RichTextEditor::TogglePropButton<PROPERTY_PROXY>::on_buffer_cursor_changed(
     const Gtk::TextBuffer::iterator&,
     const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) {
     if (mark->get_name() != "insert") {
@@ -964,8 +964,8 @@ void RichTextEditor::ToggleTagButton<PROPERTY_PROXY>::on_buffer_cursor_changed(
         selected_value.has_value() && *selected_value == styles_[1];
 
     ui_utils::gtk_set_widget_state_without_event(
-        (Gtk::ToggleToolButton*)this, &ToggleTagButton::signal_toggled,
-        sigc::mem_fun(*this, &ToggleTagButton::on_button_toggled),
+        (Gtk::ToggleToolButton*)this, &TogglePropButton::signal_toggled,
+        sigc::mem_fun(*this, &TogglePropButton::on_button_toggled),
         [this, button_active]() { set_active(button_active); });
 }
 

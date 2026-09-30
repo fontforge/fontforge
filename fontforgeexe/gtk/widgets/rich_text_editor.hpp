@@ -69,14 +69,14 @@ class RichTextEditor : public Gtk::Grid {
     // combo box when the available fonts require only two values of that style.
     // See the description of the combo box for detailed behavior.
     template <typename PROPERTY_PROXY>
-    class ToggleTagButton : public Gtk::ToggleToolButton {
+    class TogglePropButton : public Gtk::ToggleToolButton {
      public:
         using STYLE = typename PROPERTY_PROXY::PropertyType;
         using PROPERTY_GETTER = PROPERTY_PROXY (Gtk::TextTag::*)();
 
-        ToggleTagButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
-                        PROPERTY_GETTER proxy_caller,
-                        std::array<STYLE, 2> styles);
+        TogglePropButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+                         PROPERTY_GETTER proxy_caller,
+                         std::array<STYLE, 2> styles);
 
         // Toggle the current selection, if there is any. We don't want to
         // override Gtk::ToggleToolButton::on_toggled(), we want to be able to
@@ -173,8 +173,8 @@ class RichTextEditor : public Gtk::Grid {
     Gtk::ScrolledWindow scrolled_;
     Gtk::TextView text_view_;
 
-    ToggleTagButton<Glib::PropertyProxy<int>>* bold_button_ = nullptr;
-    ToggleTagButton<Glib::PropertyProxy<Pango::Style>>* italic_button_ =
+    TogglePropButton<Glib::PropertyProxy<int>>* bold_button_ = nullptr;
+    TogglePropButton<Glib::PropertyProxy<Pango::Style>>* italic_button_ =
         nullptr;
     TagComboBox* slanted_combo_ = nullptr;
     TagComboBox* stretch_combo_ = nullptr;
