@@ -45,7 +45,6 @@ extern "C" {
 	/* Solaris wants to define extended to be unsigned [3] unless we do this*/
 #define _EXTENDED
 
-#define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
 /* The maximum number of layers allowed in a normal font (this includes the */
 /*  default foreground and background layers) -- this does not limit type3  */

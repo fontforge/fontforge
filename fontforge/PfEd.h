@@ -28,6 +28,8 @@
 #ifndef FONTFORGE_PFED_H
 #define FONTFORGE_PFED_H
 
+#include "basics.h"	/* for CHR */
+
 /* The PfEd table (from PfaEdit, former name of FontForge) is designed to   */
 /*  store information useful for editing the font. This includes stuff like */
 /*  guidelines, background layers, spiro layers, comments, lookup names, etc*/
@@ -38,9 +40,6 @@
 /*  added as I, or others, think of more things worth preserving.           */
 
 
-# ifndef CHR
-#  define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
-# endif
 
 /* 'PfEd' table format is as follows...				 */
 /* uint32_t  version number 0x00010000				 */
