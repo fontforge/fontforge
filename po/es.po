@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 17:21+0300\n"
-"PO-Revision-Date: 2026-06-24 14:20\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -1116,6 +1116,9 @@ msgstr "Un short para ser empujado en la pila"
 
 msgid "A style may not have both condense and extend set (it makes no sense)"
 msgstr "Un estilo no puede ser simultáneamente condensado y extendido (no tiene sentido)"
+
+msgid "A subset of Unicode ranges explicitly recognized by Microsoft. Select the ranges which you consider functional."
+msgstr "Un subconjunto de rangos Unicode explícitamente reconocidos por Microsoft. Seleccione los rangos que considere funcionales."
 
 msgid "A tag must be 4 ASCII characters"
 msgstr "Una etiqueta debe tener 4 caracteres ASCII"
@@ -3526,6 +3529,9 @@ msgstr "Bandjalang"
 msgid "Bar Width:"
 msgstr "Ancho de barra:"
 
+msgid "Bar width:"
+msgstr "Ancho de barra:"
+
 msgid "Base"
 msgstr "Base"
 
@@ -5903,6 +5909,14 @@ msgstr "No se pudo abrir el archivo %.200s"
 
 msgid "Couldn't open font"
 msgstr "No se pudo abrir fuente"
+
+#, c-format
+msgid "Count: %u"
+msgstr "Conteo: %u"
+
+#, c-format
+msgid "Count: %u (average: %.2f)"
+msgstr "Conteo: %u (promedio: %.2f)"
 
 msgid "Counter Addition"
 msgstr "Adición de los contadores"
@@ -12914,6 +12928,12 @@ msgstr "Misceláneos MS"
 msgid "MS Script"
 msgstr "MS, Sistema de escritura"
 
+msgid "MS Unicode Ranges"
+msgstr "Rangos Unicode de MS"
+
+msgid "MS Unicode Ranges:"
+msgstr "Rangos Unicode de MS:"
+
 msgid ""
 "MS has changed (in August 2006) the inner workings of their Indic shaping\n"
 "engine, and to disambiguate this change has created a parallel set of script\n"
@@ -13324,6 +13344,10 @@ msgstr "El glifo marcado es del tipo Kashida"
 
 msgid "Marks"
 msgstr "Marcas"
+
+#, c-format
+msgid "Marks within a ligature are usually ordered with the direction of writing. This one and %d are out of order."
+msgstr "Las marcas dentro de una ligadura generalmente se ordenan según la dirección de escritura. Esta y %d están desordenadas."
 
 #, c-format
 msgid ""
@@ -16943,6 +16967,10 @@ msgstr "Alemán de Pensilvania"
 msgid "Per glyph baseline data"
 msgstr "Por cada dato de la línea base del glifo"
 
+#, c-format
+msgid "Percentage of Max: %d%%"
+msgstr "Porcentaje de máximo: %d%%"
+
 msgid "Percentage scale down for script level 1"
 msgstr "Porcentaje de reducción para el nivel de escritura 1"
 
@@ -17271,6 +17299,10 @@ msgstr "Portugués (Portugal)"
 
 msgid "Pos"
 msgstr "Pos"
+
+#, c-format
+msgid "Position: %d"
+msgstr "Posición: %d"
 
 #, c-format
 msgid ""
@@ -20496,6 +20528,9 @@ msgstr "Variantes de formas pequeñas"
 
 msgid "Small Kana Extension"
 msgstr "Kana pequeño, extensión"
+
+msgid "Smoothing window:"
+msgstr "Ventana de suavización:"
 
 msgid "Snap Outlines to Pi_xel Grid"
 msgstr "Acoplar contornos a cuadrícula de pí_xeles"
@@ -26232,6 +26267,10 @@ msgid "Warning Foreground"
 msgstr "Primer plano de advertencia"
 
 #, c-format
+msgid "Warning in rule %d: \"%s\""
+msgstr "Advertencia en la regla %d: \"%s\""
+
+#, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
 msgstr "Advertencia: El valor del eje %dº (%g) está fuera del rango permitido [%g,%g]"
 
@@ -26935,6 +26974,10 @@ msgstr "Ancho/altura de astas delgadas:"
 
 msgid "Width:"
 msgstr "Ancho:"
+
+#, c-format
+msgid "Width: %d"
+msgstr "Ancho: %d"
 
 #, c-format
 msgid ""

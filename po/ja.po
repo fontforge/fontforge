@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 16:52+0300\n"
-"PO-Revision-Date: 2026-06-24 06:08\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -4975,6 +4975,9 @@ msgstr "デフォルトの背景"
 
 msgid "Default Baseline"
 msgstr "デフォルトのベースライン"
+
+msgid "Default Button"
+msgstr "標準ボタン"
 
 msgid "Default Foreground"
 msgstr "デフォルトのフォアグラウンド"
@@ -11840,6 +11843,9 @@ msgstr "スタック上に印字できる物が何もありません"
 msgid "Nothing to trace"
 msgstr "トレースする物がありません"
 
+msgid "Nothng found."
+msgstr "見つかりませんでした."
+
 msgid "Novial"
 msgstr "ノヴィアル語"
 
@@ -17927,6 +17933,9 @@ msgstr "下線の太さ。"
 
 msgid "Things could be better..."
 msgstr "もう少し改善できそうです…"
+
+msgid "Thinking..."
+msgstr "思考中..."
 
 msgid "Third Widths"
 msgstr "幅の1/3の位置"
