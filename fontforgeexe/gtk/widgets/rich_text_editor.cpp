@@ -282,8 +282,8 @@ RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
         scale_css_provider_, GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
     refresh_scale_css();
 
-    size_combo_ = build_size_combo(pointsizes);
-    size_combo_->set_tooltip_text(_("Font Size"));
+    auto size_combo = build_size_combo(pointsizes);
+    size_combo->set_tooltip_text(_("Font Size"));
 
     ClearFormattingButton* clear_button =
         Gtk::make_managed<ClearFormattingButton>(text_view_.get_buffer());
@@ -292,7 +292,7 @@ RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
     Gtk::ToolButton* hamburger_button = build_tools_menu();
 
     toolbar_ = build_toolbar(font_list);
-    toolbar_->append(*size_combo_);
+    toolbar_->append(*size_combo);
     toolbar_->append(*clear_button);
     toolbar_->append(*hamburger_button);
 
@@ -615,9 +615,9 @@ collect_properties(const RichTextFontList& font_list) {
 Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
     Gtk::Toolbar* toolbar = Gtk::make_managed<Gtk::Toolbar>();
 
-    fonts_combo_ = build_fonts_combo(font_list);
-    fonts_combo_->set_tooltip_text(_("Font"));
-    toolbar->append(*fonts_combo_);
+    auto fonts_combo = build_fonts_combo(font_list);
+    fonts_combo->set_tooltip_text(_("Font"));
+    toolbar->append(*fonts_combo);
 
     auto [weights, styles, stretches] = collect_properties(font_list);
 

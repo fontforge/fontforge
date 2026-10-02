@@ -200,9 +200,6 @@ class RichTextEditor : public Gtk::Grid {
 
     Gtk::ScrolledWindow scrolled_;
     Gtk::TextView text_view_;
-
-    TagComboBox* size_combo_ = nullptr;
-    TagComboBox* fonts_combo_ = nullptr;
     Gtk::Toolbar* toolbar_ = nullptr;
 
     static void on_text_view_paste_clipboard(GtkTextView* text_view,
