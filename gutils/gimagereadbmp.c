@@ -239,6 +239,11 @@ static int readpixels(FILE *file,struct bmpheader *head) {
 	int ii = 0;
 	while ( ii<head->height*head->width ) {
 	    int cnt = getc(file);
+	    /* Each iteration below writes two nibbles, so a run writes
+	       cnt rounded up to an even number of pixels. */
+	    if ( cnt < 0 || ii + cnt + (cnt&1) > head->height * head->width ) {
+		return 0;
+	    }
 	    if ( cnt!=0 ) {
 		int ch = getc(file);
 		while ( (cnt-=2)>=-1 ) {
@@ -249,6 +254,9 @@ static int readpixels(FILE *file,struct bmpheader *head) {
 	    } else {
 		cnt = getc(file);
 		if ( cnt>= 3 ) {
+		    if ( ii + cnt + (cnt&1) > head->height * head->width ) {
+			return 0;
+		    }
 		    int odd = cnt&2;
 		    while ( (cnt-=2)>=-1 ) {
 		    	int ch = getc(file);
