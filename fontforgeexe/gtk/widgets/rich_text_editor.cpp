@@ -450,48 +450,21 @@ RichTextEditor::SlantComboBox* RichTextEditor::build_slanted_combo() {
         text_view_.get_buffer(), &Gtk::TextTag::property_style, labels));
 }
 
-RichTextEditor::TagComboBox* RichTextEditor::build_stretch_combo() {
-    std::string default_id = "width|medium";
+RichTextEditor::StretchComboBox* RichTextEditor::build_stretch_combo() {
+    std::map<Pango::Stretch, std::string /*label*/> labels{
+        {Pango::STRETCH_ULTRA_CONDENSED, _("Ultra-Condensed (50%)")},
+        {Pango::STRETCH_EXTRA_CONDENSED, _("Extra-Condensed (62.5%)")},
+        {Pango::STRETCH_CONDENSED, _("Condensed (75%)")},
+        {Pango::STRETCH_SEMI_CONDENSED, _("Semi-Condensed (87.5%)")},
+        {Pango::STRETCH_NORMAL, _("Medium (100%)")},
+        {Pango::STRETCH_SEMI_EXPANDED, _("Semi-Expanded (112.5%)")},
+        {Pango::STRETCH_EXPANDED, _("Expanded (125%)")},
+        {Pango::STRETCH_EXTRA_EXPANDED, _("Extra-Expanded (150%)")},
+        {Pango::STRETCH_ULTRA_EXPANDED, _("Ultra-Expanded (200%)")},
+    };
 
-    // By convention, TextBuffer::Tag with name e.g. "width|condensed" will
-    // be exported to XML tag as <width value="condensed">. Unlike in XML,
-    // TextBuffer tags must have unique names.
-    std::vector<
-        std::tuple<std::string /*id*/, std::string /*label*/, Pango::Stretch>>
-        property_vec{
-            {"width|ultra-condensed", _("Ultra-Condensed (50%)"),
-             Pango::STRETCH_ULTRA_CONDENSED},
-            {"width|extra-condensed", _("Extra-Condensed (62.5%)"),
-             Pango::STRETCH_EXTRA_CONDENSED},
-            {"width|condensed", _("Condensed (75%)"), Pango::STRETCH_CONDENSED},
-            {"width|semi-condensed", _("Semi-Condensed (87.5%)"),
-             Pango::STRETCH_SEMI_CONDENSED},
-            {"width|medium", _("Medium (100%)"), Pango::STRETCH_NORMAL},
-            {"width|semi-expanded", _("Semi-Expanded (112.5%)"),
-             Pango::STRETCH_SEMI_EXPANDED},
-            {"width|expanded", _("Expanded (125%)"), Pango::STRETCH_EXPANDED},
-            {"width|extra-expanded", _("Extra-Expanded (150%)"),
-             Pango::STRETCH_EXTRA_EXPANDED},
-            {"width|ultra-expanded", _("Ultra-Expanded (200%)"),
-             Pango::STRETCH_ULTRA_EXPANDED},
-        };
-
-    std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map;
-    std::vector<std::pair<std::string /*id*/, std::string /*label*/>> labels;
-
-    for (const auto& [tag_id, label, property] : property_vec) {
-        // Create and register tag
-        if (tag_id != default_id) {
-            auto tag = text_view_.get_buffer()->create_tag(tag_id);
-            tag->property_stretch() = property;
-            tag_map[tag_id] = tag;
-        }
-
-        labels.emplace_back(tag_id, label);
-    }
-
-    return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), default_id,
-                                          tag_map, labels);
+    return Gtk::manage(new RichTextEditor::StretchComboBox(
+        text_view_.get_buffer(), &Gtk::TextTag::property_stretch, labels));
 }
 
 RichTextEditor::TagComboBox* RichTextEditor::build_size_combo(
@@ -698,23 +671,15 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
         toolbar->append(*slanted_combo);
     }
 
-    stretch_combo_ = build_stretch_combo();
-    stretch_combo_->set_tooltip_text(_("Width Class"));
-
-    toolbar->append(*stretch_combo_);
-    configure_toolbar(font_list);
+    // Configure availablity of stretched UI element.
+    if (stretches.size() > 1) {
+        auto stretch_combo = build_stretch_combo();
+        stretch_combo->set_tooltip_text(_("Width Class"));
+        stretch_combo->set_enabled_items(stretches);
+        toolbar->append(*stretch_combo);
+    }
 
     return toolbar;
-}
-
-void RichTextEditor::configure_toolbar(const RichTextFontList& font_list) {
-    // Configure availablity of stretched UI element.
-    std::set<Pango::Stretch> unique_widths;
-    for (const auto& properties : font_list) {
-        unique_widths.insert(properties.second.stretch);
-    }
-    stretch_combo_->set_visible_horizontal(unique_widths.size() > 1);
-    // stretch_combo_->set_enabled_items(unique_widths);
 }
 
 void RichTextEditor::on_load_buffer_from_xml() {

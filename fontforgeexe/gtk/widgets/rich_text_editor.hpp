@@ -135,6 +135,7 @@ class RichTextEditor : public Gtk::Grid {
     };
     using WeightComboBox = PropComboBox<Glib::PropertyProxy<int>>;
     using SlantComboBox = PropComboBox<Glib::PropertyProxy<Pango::Style>>;
+    using StretchComboBox = PropComboBox<Glib::PropertyProxy<Pango::Stretch>>;
 
     class TagComboBox : public Gtk::ToolItem {
      public:
@@ -200,7 +201,6 @@ class RichTextEditor : public Gtk::Grid {
     Gtk::ScrolledWindow scrolled_;
     Gtk::TextView text_view_;
 
-    TagComboBox* stretch_combo_ = nullptr;
     TagComboBox* size_combo_ = nullptr;
     TagComboBox* fonts_combo_ = nullptr;
     Gtk::Toolbar* toolbar_ = nullptr;
@@ -214,14 +214,13 @@ class RichTextEditor : public Gtk::Grid {
                                          const std::string& text);
 
     SlantComboBox* build_slanted_combo();
-    TagComboBox* build_stretch_combo();
+    StretchComboBox* build_stretch_combo();
     TagComboBox* build_size_combo(const std::vector<double>& pointsizes);
     WeightComboBox* build_weight_combo();
     TagComboBox* build_fonts_combo(const RichTextFontList& font_list);
     Gtk::ToolButton* build_tools_menu();
 
     Gtk::Toolbar* build_toolbar(const RichTextFontList& font_list);
-    void configure_toolbar(const RichTextFontList& font_list);
 
     void on_load_buffer_from_xml();
     void on_save_buffer_to_xml();
