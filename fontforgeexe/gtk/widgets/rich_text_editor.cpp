@@ -552,10 +552,6 @@ RichTextEditor::TagComboBox* RichTextEditor::build_size_combo(
 }
 
 RichTextEditor::WeightComboBox* RichTextEditor::build_weight_combo() {
-    // TODO(iorsh): Define tag color when building "font|" tags.
-    // UI fonts normally don't have a multitude of weights, so we emulate
-    // weights by color instead. The user shall check actual rendering in the
-    // preview panel.
     std::map<int /*weight*/, std::string /*label*/> labels{
         {Pango::WEIGHT_THIN, _("100 Thin")},
         {Pango::WEIGHT_ULTRALIGHT, _("200 Extra-Light")},
@@ -574,6 +570,21 @@ RichTextEditor::WeightComboBox* RichTextEditor::build_weight_combo() {
 
 RichTextEditor::TagComboBox* RichTextEditor::build_fonts_combo(
     const RichTextFontList& font_list) {
+    // UI fonts normally don't have a multitude of weights, so we emulate
+    // weights by color instead. The user shall check actual rendering in the
+    // preview panel.
+    static const std::map<Pango::Weight, std::string> weight_color_map{
+        {Pango::WEIGHT_THIN, "gray"},
+        {Pango::WEIGHT_ULTRALIGHT, "dimgray"},
+        {Pango::WEIGHT_LIGHT, "darkslategray"},
+        {Pango::WEIGHT_NORMAL, "black"},
+        {Pango::WEIGHT_MEDIUM, "dimgray"},
+        {Pango::WEIGHT_SEMIBOLD, "darkslategray"},
+        {Pango::WEIGHT_BOLD, "black"},
+        {Pango::WEIGHT_ULTRABOLD, "blue"},
+        {Pango::WEIGHT_HEAVY, "navy"},
+    };
+
     // By convention, TextBuffer::Tag with name e.g. "font|New Century
     // Schoolbook" will be exported to XML tag as <font value="New Century
     // Schoolbook">. Unlike in XML, TextBuffer tags must have unique names.
@@ -591,6 +602,9 @@ RichTextEditor::TagComboBox* RichTextEditor::build_fonts_combo(
         tag->property_style() = properties.style;
         tag->property_stretch() = properties.stretch;
         tag->property_underline() = properties.underline;
+        if (weight_color_map.count(properties.weight) > 0) {
+            tag->property_foreground() = weight_color_map.at(properties.weight);
+        }
         tag_map[tag_id] = tag;
 
         labels.emplace_back(tag_id, font_name);
