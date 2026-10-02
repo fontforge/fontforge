@@ -68,6 +68,7 @@ set(FONTFORGE_NOINST_HEADERS
   winfonts.h
   woff.h
   zapfnomen.h
+  wordlistparser.h
 )
 
 set(FONTFORGE_INST_HEADERS
@@ -217,8 +218,10 @@ add_library(fontforge
   winfonts.c
   woff.c
   zapfnomen.c
+  wordlistparser.c
 )
 
+add_subdirectory(layout)
 add_subdirectory(shapers)
 
 if(ENABLE_WOFF2_RESULT)
@@ -249,6 +252,7 @@ set_target_properties(fontforge PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_link_libraries(fontforge
   PUBLIC
     fontforge_common_headers
+    layout
     shapers
     Freetype::Freetype
     LibXml2::LibXml2

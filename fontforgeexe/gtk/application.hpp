@@ -62,4 +62,8 @@ class ColorManager {
     Glib::RefPtr<Gtk::CssProvider> custom_color_provider_;
 };
 
+// UI fonts usually don't come in condensed / expanded variants. Register
+// FontConfig filter to emulate them with affine transformation.
+void register_stretched_ui_fonts();
+
 }  // namespace ff::app

@@ -62,13 +62,6 @@ char *printcommand=NULL;
 int printtype = pt_unknown;
 int use_gv;
 
-struct printdefaults pdefs[] = {
-    { &custom, pt_fontdisplay, 0, NULL },
-    { &custom, pt_chars, 0, NULL },
-    { &custom, pt_fontdisplay, 0, NULL }
-};
-
-
 /* ************************************************************************** */
 /* ***************************** Printing Stuff ***************************** */
 /* ************************************************************************** */
@@ -3009,7 +3002,6 @@ void PI_Init(PI *pi,FontViewBase *fv,SplineChar *sc) {
     if ( pi->mainsf->cidmaster )
 	pi->mainsf = pi->mainsf->cidmaster;
     PIGetPrinterDefs(pi);
-    pi->pointsize = pdefs[di].pointsize;
     if ( pi->pointsize==0 )
 	pi->pointsize = pi->mainsf->subfontcnt!=0?18:20;		/* 18 fits 20 across, 20 fits 16 */
 }

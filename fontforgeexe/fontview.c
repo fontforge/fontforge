@@ -49,6 +49,7 @@
 #include "mm.h"
 #include "namelist.h"
 #include "nonlineartrans.h"
+#include "print.h"
 #include "psfont.h"
 #include "pua.h"
 #include "scripting.h"
@@ -819,7 +820,6 @@ void _FVCloseWindows(FontView *fv) {
     MetricsView *mv, *mnext;
     SplineFont *sf = fv->b.cidmaster?fv->b.cidmaster:fv->b.sf->mm!=NULL?fv->b.sf->mm->normal : fv->b.sf;
 
-    PrintWindowClose();
     if ( fv->b.nextsame==NULL && fv->b.sf->fv==&fv->b && fv->b.sf->kcld!=NULL )
 	KCLD_End(fv->b.sf->kcld);
     if ( fv->b.nextsame==NULL && fv->b.sf->fv==&fv->b && fv->b.sf->vkcld!=NULL )
@@ -1409,12 +1409,17 @@ return;
     MetricsViewCreate(fv,NULL,fv->filled==fv->show?NULL:fv->show);
 }
 
-static void FVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+static void FVMenuGtkPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
     if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
-    PrintFFDlg(fv,NULL,NULL);
+    unichar_t *u_sample_text = PrtBuildDef(fv->b.sf, NULL, NULL);
+    char *sample_text = u2utf8_copy(u_sample_text);
+    free(u_sample_text);
+
+    print_dialog(gw, fv->b.sf, &fv->b, sample_text);
+    free(sample_text);
 }
 
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
@@ -4452,7 +4457,7 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Revert Gl_yph"), (GImage *) "filerevertglyph.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|No Shortcut"), NULL, NULL, FVMenuRevertGlyph, FV_MID_RevertGlyph },
     { { (unichar_t *) N_("Clear Special Data"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Clear Special Data|No Shortcut"), NULL, NULL, FVMenuClearSpecialData, FV_MID_ClearSpecialData },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Print..."), (GImage *) "fileprint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|No Shortcut"), NULL, NULL, FVMenuPrint, FV_MID_Print },
+    { { (unichar_t *) N_("_Print..."), (GImage *) "fileprint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|No Shortcut"), NULL, NULL, FVMenuGtkPrint, FV_MID_Print },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
 #if !defined(_NO_PYTHON)
     { { (unichar_t *) N_("E_xecute Script..."), (GImage *) "python.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|No Shortcut"), NULL, NULL, FVMenuExecute, 0 },
