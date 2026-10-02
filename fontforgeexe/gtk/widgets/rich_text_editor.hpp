@@ -164,20 +164,6 @@ class RichTextEditor : public Gtk::Grid {
             combo_box_.set_active_id(tag_id);
         }
 
-        // Use Gtk::TextTag property getter to check and disable unused items in
-        // the combobox. See uses in RichTextEditor::configure_toolbar().
-        template <typename PropertyProxy, typename Tag>
-        void set_enabled_items(
-            PropertyProxy (Tag::*property)(),
-            const std::set<typename PropertyProxy::PropertyType>&
-                enabled_values) {
-            for (auto [id, tag] : tag_map_) {
-                bool is_enabled =
-                    enabled_values.count((tag.get()->*property)()) > 0;
-                combo_box_.set_item_sensitive(id, is_enabled);
-            }
-        }
-
         // Set the combobox active row when the buffer cursor or selection
         // changes.
         void on_buffer_cursor_changed(
@@ -219,7 +205,7 @@ class RichTextEditor : public Gtk::Grid {
     TagComboBox* slanted_combo_ = nullptr;
     TagComboBox* stretch_combo_ = nullptr;
     TagComboBox* size_combo_ = nullptr;
-    TagComboBox* weight_combo_ = nullptr;
+    WeightComboBox* weight_combo_ = nullptr;
     TagComboBox* fonts_combo_ = nullptr;
     Gtk::Toolbar* toolbar_ = nullptr;
 
@@ -234,7 +220,7 @@ class RichTextEditor : public Gtk::Grid {
     TagComboBox* build_slanted_combo();
     TagComboBox* build_stretch_combo();
     TagComboBox* build_size_combo(const std::vector<double>& pointsizes);
-    TagComboBox* build_weight_combo();
+    WeightComboBox* build_weight_combo();
     TagComboBox* build_fonts_combo(const RichTextFontList& font_list);
     Gtk::ToolButton* build_tools_menu();
 

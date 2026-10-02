@@ -190,6 +190,8 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
         std::istringstream istream(persistent.sample_text);
         sample_text_->load_buffer(istream);
     }
+    sample_text_->get_buffer()->place_cursor(
+        sample_text_->get_buffer()->begin());
 
     stack_ = Gtk::make_managed<Gtk::Stack>();
     stack_->set_vhomogeneous(false);
