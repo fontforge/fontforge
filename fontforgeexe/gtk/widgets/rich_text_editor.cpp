@@ -439,32 +439,15 @@ void RichTextEditor::on_clipboard_rich_text_received(
     }
 }
 
-RichTextEditor::TagComboBox* RichTextEditor::build_slanted_combo() {
-    std::string default_id = "slant|normal";
-    std::vector<
-        std::tuple<std::string /*id*/, std::string /*label*/, Pango::Style>>
-        property_vec{
-            {"slant|normal", _("Normal"), Pango::STYLE_NORMAL},
-            {"slant|oblique", _("Oblique"), Pango::STYLE_OBLIQUE},
-            {"slant|italic", _("Italic"), Pango::STYLE_ITALIC},
-        };
+RichTextEditor::SlantComboBox* RichTextEditor::build_slanted_combo() {
+    std::map<Pango::Style, std::string /*label*/> labels{
+        {Pango::STYLE_NORMAL, _("Normal")},
+        {Pango::STYLE_OBLIQUE, _("Oblique")},
+        {Pango::STYLE_ITALIC, _("Italic")},
+    };
 
-    std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map;
-    std::vector<std::pair<std::string /*id*/, std::string /*label*/>> labels;
-
-    for (const auto& [tag_id, label, property] : property_vec) {
-        // Create and register tag
-        if (tag_id != default_id) {
-            auto tag = text_view_.get_buffer()->create_tag(tag_id);
-            tag->property_style() = property;
-            tag_map[tag_id] = tag;
-        }
-
-        labels.emplace_back(tag_id, label);
-    }
-
-    return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), default_id,
-                                          tag_map, labels);
+    return Gtk::manage(new RichTextEditor::SlantComboBox(
+        text_view_.get_buffer(), &Gtk::TextTag::property_style, labels));
 }
 
 RichTextEditor::TagComboBox* RichTextEditor::build_stretch_combo() {
@@ -690,23 +673,34 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
         toolbar->append(*weight_combo);
     }
 
-    auto italic_tag = text_view_.get_buffer()->create_tag("italic");
-    italic_tag->property_style() = Pango::STYLE_ITALIC;
-
-    italic_button_ = Gtk::manage(new TogglePropButton(
-        text_view_.get_buffer(), &Gtk::TextTag::property_style,
-        {Pango::STYLE_NORMAL, Pango::STYLE_ITALIC}));
-    italic_button_->set_icon_name("format-text-italic");
-    italic_button_->set_tooltip_text(_("Italic"));
-
-    slanted_combo_ = build_slanted_combo();
-    slanted_combo_->set_tooltip_text(_("Slant Style"));
+    // Build slant UI elements.
+    if (styles.size() == 1 ||
+        (styles.size() == 2 && styles.count(Pango::STYLE_NORMAL) > 0)) {
+        Gtk::ToggleToolButton* italic_button = nullptr;
+        if (styles.size() == 1) {
+            // Show a disabled "Italic" button just for visualization.
+            italic_button = Gtk::make_managed<Gtk::ToggleToolButton>();
+            italic_button->set_active(*styles.rbegin() != Pango::STYLE_NORMAL);
+            italic_button->set_sensitive(false);
+        } else {
+            // Show an "Italic" toggle button with the available styles.
+            italic_button = Gtk::manage(new TogglePropButton(
+                text_view_.get_buffer(), &Gtk::TextTag::property_style,
+                {*styles.begin(), *styles.rbegin()}));
+        }
+        italic_button->set_icon_name("format-text-italic");
+        italic_button->set_tooltip_text(_("Italic"));
+        toolbar->append(*italic_button);
+    } else {
+        auto slanted_combo = build_slanted_combo();
+        slanted_combo->set_tooltip_text(_("Slant Style"));
+        slanted_combo->set_enabled_items(styles);
+        toolbar->append(*slanted_combo);
+    }
 
     stretch_combo_ = build_stretch_combo();
     stretch_combo_->set_tooltip_text(_("Width Class"));
 
-    toolbar->append(*italic_button_);
-    toolbar->append(*slanted_combo_);
     toolbar->append(*stretch_combo_);
     configure_toolbar(font_list);
 
@@ -714,25 +708,6 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
 }
 
 void RichTextEditor::configure_toolbar(const RichTextFontList& font_list) {
-    // Configure availablity of slanted UI elements.
-    std::set<Pango::Style> unique_styles;
-    for (const auto& properties : font_list) {
-        unique_styles.insert(properties.second.style);
-    }
-
-    if (unique_styles.size() == 1) {
-        italic_button_->set_active(*unique_styles.rbegin() !=
-                                   Pango::STYLE_NORMAL);
-        italic_button_->set_sensitive(false);
-        slanted_combo_->set_visible_horizontal(false);
-    } else if (unique_styles.size() == 2 &&
-               unique_styles.count(Pango::STYLE_NORMAL) > 0) {
-        slanted_combo_->set_visible_horizontal(false);
-    } else {
-        italic_button_->set_visible_horizontal(false);
-        // slanted_combo_->set_enabled_items(unique_styles);
-    }
-
     // Configure availablity of stretched UI element.
     std::set<Pango::Stretch> unique_widths;
     for (const auto& properties : font_list) {
