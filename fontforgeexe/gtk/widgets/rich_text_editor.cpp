@@ -640,19 +640,55 @@ Gtk::ToolButton* RichTextEditor::build_tools_menu() {
     return hamburger_button;
 }
 
+static std::tuple<std::set<int>, std::set<Pango::Style>,
+                  std::set<Pango::Stretch>>
+collect_properties(const RichTextFontList& font_list) {
+    std::set<int> weights;
+    std::set<Pango::Style> styles;
+    std::set<Pango::Stretch> stretches;
+
+    for (const auto& [font_name, properties] : font_list) {
+        weights.insert(properties.weight);
+        styles.insert(properties.style);
+        stretches.insert(properties.stretch);
+    }
+
+    return {weights, styles, stretches};
+}
+
 Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
+    Gtk::Toolbar* toolbar = Gtk::make_managed<Gtk::Toolbar>();
+
     fonts_combo_ = build_fonts_combo(font_list);
     fonts_combo_->set_tooltip_text(_("Font"));
+    toolbar->append(*fonts_combo_);
 
-    auto bold_tag = text_view_.get_buffer()->create_tag("bold");
-    bold_tag->property_weight() = 700;
+    auto [weights, styles, stretches] = collect_properties(font_list);
 
-    // TODO(iorsh): Pass actual available weight values.
-    bold_button_ = Gtk::manage(new TogglePropButton(
-        text_view_.get_buffer(), &Gtk::TextTag::property_weight,
-        {(int)Pango::WEIGHT_LIGHT, (int)Pango::WEIGHT_SEMIBOLD}));
-    bold_button_->set_icon_name("format-text-bold");
-    bold_button_->set_tooltip_text(_("Bold"));
+    // Build weight UI elements.
+    if (weights.size() <= 2) {
+        Gtk::ToggleToolButton* bold_button = nullptr;
+        if (weights.size() == 1) {
+            // Show a disabled "Bold" button just for visualization.
+            bold_button = Gtk::make_managed<Gtk::ToggleToolButton>();
+            bold_button->set_active(*weights.rbegin() >=
+                                    Pango::WEIGHT_SEMIBOLD);
+            bold_button->set_sensitive(false);
+        } else {
+            // Show a "Bold" toggle button with the available weights.
+            bold_button = Gtk::manage(new TogglePropButton(
+                text_view_.get_buffer(), &Gtk::TextTag::property_weight,
+                {*weights.begin(), *weights.rbegin()}));
+        }
+        bold_button->set_icon_name("format-text-bold");
+        bold_button->set_tooltip_text(_("Bold"));
+        toolbar->append(*bold_button);
+    } else {
+        auto weight_combo = build_weight_combo();
+        weight_combo->set_tooltip_text(_("Weight Class"));
+        weight_combo->set_enabled_items(weights);
+        toolbar->append(*weight_combo);
+    }
 
     auto italic_tag = text_view_.get_buffer()->create_tag("italic");
     italic_tag->property_style() = Pango::STYLE_ITALIC;
@@ -669,40 +705,15 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
     stretch_combo_ = build_stretch_combo();
     stretch_combo_->set_tooltip_text(_("Width Class"));
 
-    weight_combo_ = build_weight_combo();
-    weight_combo_->set_tooltip_text(_("Weight Class"));
-
-    Gtk::Toolbar* toolbar = Gtk::make_managed<Gtk::Toolbar>();
-    toolbar->append(*fonts_combo_);
-    toolbar->append(*bold_button_);
     toolbar->append(*italic_button_);
     toolbar->append(*slanted_combo_);
     toolbar->append(*stretch_combo_);
-    toolbar->append(*weight_combo_);
     configure_toolbar(font_list);
 
     return toolbar;
 }
 
 void RichTextEditor::configure_toolbar(const RichTextFontList& font_list) {
-    // Configure availablity of weight UI elements.
-    std::set<int> unique_weights;
-    for (const auto& properties : font_list) {
-        unique_weights.insert(properties.second.weight);
-    }
-
-    if (unique_weights.size() == 1) {
-        bold_button_->set_active(*unique_weights.rbegin() >=
-                                 Pango::WEIGHT_SEMIBOLD);
-        bold_button_->set_sensitive(false);
-        weight_combo_->set_visible_horizontal(false);
-    } else if (unique_weights.size() == 2) {
-        weight_combo_->set_visible_horizontal(false);
-    } else {
-        bold_button_->set_visible_horizontal(false);
-        weight_combo_->set_enabled_items(unique_weights);
-    }
-
     // Configure availablity of slanted UI elements.
     std::set<Pango::Style> unique_styles;
     for (const auto& properties : font_list) {

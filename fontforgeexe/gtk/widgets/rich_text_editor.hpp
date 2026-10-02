@@ -199,13 +199,11 @@ class RichTextEditor : public Gtk::Grid {
     Gtk::ScrolledWindow scrolled_;
     Gtk::TextView text_view_;
 
-    TogglePropButton<Glib::PropertyProxy<int>>* bold_button_ = nullptr;
     TogglePropButton<Glib::PropertyProxy<Pango::Style>>* italic_button_ =
         nullptr;
     TagComboBox* slanted_combo_ = nullptr;
     TagComboBox* stretch_combo_ = nullptr;
     TagComboBox* size_combo_ = nullptr;
-    WeightComboBox* weight_combo_ = nullptr;
     TagComboBox* fonts_combo_ = nullptr;
     Gtk::Toolbar* toolbar_ = nullptr;
 
