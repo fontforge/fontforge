@@ -67,7 +67,7 @@ class RichTextEditor : public Gtk::Grid {
     // Special widget class for toggling tags on TextBuffer contents. This
     // widget is a simplified substitution for a more general font property
     // combo box when the available fonts require only two values of that style.
-    // See the description of the combo box for detailed behavior.
+    // See the description of the PropComboBox for detailed behavior.
     template <typename PROPERTY_PROXY>
     class TogglePropButton : public Gtk::ToggleToolButton {
      public:
@@ -94,7 +94,47 @@ class RichTextEditor : public Gtk::Grid {
         std::array<STYLE, 2> styles_;
     };
 
-    // TODO(iorsh): Add detailed description of behavior.
+    // Allow user to select a font property and adjust the selected text range
+    // accordingly. Note that the changes are not as straightforward as in a
+    // text editor. In a simple case, when the user selectes "Semi-Bold"
+    // property, the selected text becomes semi-bold, while retaining all its
+    // other properties such as slanting and stretch. In a more compex case,
+    // some font variations are not available, and other properties may change
+    // too. For example, the user may select italic text and apply bold weight
+    // to it, but the bold-italic variant is not present. In that case font may
+    // be changed to upright bold, and the slanting property is overridden to
+    // satisfy user's request.
+    template <typename PROPERTY_PROXY>
+    class PropComboBox : public Gtk::ToolItem {
+     public:
+        using STYLE = typename PROPERTY_PROXY::PropertyType;
+        using PROPERTY_GETTER = PROPERTY_PROXY (Gtk::TextTag::*)();
+
+        PropComboBox(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+                     PROPERTY_GETTER proxy_caller,
+                     const std::map<STYLE, std::string /*label*/>& labels);
+
+        // Check and disable unused items in the combobox.
+        void set_enabled_items(const std::set<STYLE>& enabled_values);
+
+        // Apply the property to the current selection, if there is any.
+        void on_box_changed();
+
+        // Set the combobox active row when the buffer cursor or selection
+        // changes.
+        void on_buffer_cursor_changed(
+            const Gtk::TextBuffer::iterator&,
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark);
+
+     protected:
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+        PROPERTY_GETTER proxy_caller_;
+        std::map<STYLE, std::string /*label*/> labels_;
+
+        widgets::ComboText combo_box_;
+    };
+    using WeightComboBox = PropComboBox<Glib::PropertyProxy<int>>;
+
     class TagComboBox : public Gtk::ToolItem {
      public:
         TagComboBox(

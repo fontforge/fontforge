@@ -970,6 +970,83 @@ void RichTextEditor::TogglePropButton<PROPERTY_PROXY>::on_buffer_cursor_changed(
 }
 
 ///////////////////////////////////////////////////////////////////////
+///                   RichTextEditor::PropComboBox                  ///
+///////////////////////////////////////////////////////////////////////
+
+template <typename PROPERTY_PROXY>
+RichTextEditor::PropComboBox<PROPERTY_PROXY>::PropComboBox(
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer, PROPERTY_GETTER proxy_caller,
+    const std::map<STYLE, std::string /*label*/>& labels)
+    : text_buffer_(text_buffer), proxy_caller_(proxy_caller), labels_(labels) {
+    // Add entries to combo box
+    for (const auto& [prop_value, label] : labels) {
+        combo_box_.append(label, label);
+    }
+
+    combo_box_.set_focus_on_click(false);
+    add(combo_box_);
+
+    // Called whenever the selection or the cursor position is changed. Sets the
+    // correct visual state of the widget
+    text_buffer_->signal_mark_set().connect(
+        sigc::mem_fun(*this, &PropComboBox::on_buffer_cursor_changed));
+}
+
+template <typename PROPERTY_PROXY>
+void RichTextEditor::PropComboBox<PROPERTY_PROXY>::set_enabled_items(
+    const std::set<STYLE>& enabled_values) {
+    for (const auto& [prop_value, label] : labels_) {
+        bool is_enabled = enabled_values.count(prop_value) > 0;
+        combo_box_.set_item_sensitive(label, is_enabled);
+    }
+}
+
+template <typename PROPERTY_PROXY>
+void RichTextEditor::PropComboBox<PROPERTY_PROXY>::on_box_changed() {
+    // Locate the property value corresponding to the active label and apply it
+    // to the selection.
+    for (const auto& [prop_value, label] : labels_) {
+        if (combo_box_.get_active_id() == label) {
+            Gtk::TextBuffer::iterator start, end;
+            if (text_buffer_->get_selection_bounds(start, end)) {
+                apply_property_tag(text_buffer_, start, end, prop_value,
+                                   proxy_caller_);
+            }
+            break;
+        }
+    }
+}
+
+template <typename PROPERTY_PROXY>
+void RichTextEditor::PropComboBox<PROPERTY_PROXY>::on_buffer_cursor_changed(
+    const Gtk::TextBuffer::iterator&,
+    const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) {
+    if (mark->get_name() != "insert") {
+        return;
+    }
+
+    auto selected_value = is_consistent_selection(text_buffer_, proxy_caller_);
+    std::string active_label = "";
+    if (selected_value.has_value() && labels_.count(*selected_value) > 0)
+        active_label = labels_.at(*selected_value);
+
+    ui_utils::gtk_set_widget_state_without_event(
+        (Gtk::ComboBox*)&combo_box_, &Gtk::ComboBox::signal_changed,
+        sigc::mem_fun(*this, &PropComboBox::on_box_changed),
+        [this, active_label]() {
+            if (active_label.empty()) {
+                // Gtk::ComboBox continues to show the last active item even
+                // after it was unset. The following hack addresses it.
+                combo_box_.insert(0, "empty", "");
+                combo_box_.set_active_id("empty");
+                combo_box_.remove_text(0);
+            } else {
+                combo_box_.set_active_id(active_label);
+            }
+        });
+}
+
+///////////////////////////////////////////////////////////////////////
 ///                 RichTextEditor::TagComboBox                     ///
 ///////////////////////////////////////////////////////////////////////
 
