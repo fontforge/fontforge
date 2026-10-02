@@ -5259,6 +5259,10 @@ return( NULL );
 	    } else {
 		sc->orig_pos = orig_pos++;
 	    }
+	    if (sf->save_to_dir && enc >= sf->map->enccount) {
+		/* SFDIR doesn't save "BeginChars", so just allocate whatever is necessary. */
+		SFDSizeMap(sf->map,sf->glyphcnt,enc+1);
+	    }
 	    if (enc != -1 && sf->map && sf->map->map[enc] != -1) {
 		/* Multiple glyphs with same encoding are not accessible from
 		   FontView, and we consider them corrupted. */
@@ -7054,7 +7058,7 @@ static void SFDSizeMap(EncMap *map,int glyphcnt,int enccnt) {
     }
     if ( enccnt>map->encmax ) {
 	map->map = (int32_t *)realloc(map->map,enccnt*sizeof(int));
-	memset(map->map+map->backmax,-1,(enccnt-map->encmax)*sizeof(int));
+	memset(map->map+map->encmax,-1,(enccnt-map->encmax)*sizeof(int));
 	map->encmax = map->enccount = enccnt;
     }
 }
@@ -8919,7 +8923,6 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	    getint(sfd,&charcnt);
 	    if (charcnt<enc->char_cnt) {
 		IError("SFD file specifies too few slots for its encoding.\n" );
-exit( 1 );
 	    }
 	    if ( getint(sfd,&realcnt)!=1 || realcnt==-1 )
 		realcnt = charcnt;
