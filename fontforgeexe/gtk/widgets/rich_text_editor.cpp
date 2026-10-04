@@ -546,14 +546,11 @@ RichTextEditor::TagComboBox* RichTextEditor::build_fonts_combo(
     // Schoolbook">. Unlike in XML, TextBuffer tags must have unique names.
     std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map;
     std::vector<std::pair<std::string /*id*/, std::string /*label*/>> labels;
-    std::string default_id;
 
     for (const auto& [font_name, properties] : font_list) {
         std::string tag_id = "font|" + font_name;
-        if (default_id.empty()) {
-            default_id = tag_id;
-        }
         auto tag = text_view_.get_buffer()->create_tag(tag_id);
+
         tag->property_weight() = properties.weight;
         tag->property_style() = properties.style;
         tag->property_stretch() = properties.stretch;
@@ -566,8 +563,8 @@ RichTextEditor::TagComboBox* RichTextEditor::build_fonts_combo(
         labels.emplace_back(tag_id, font_name);
     }
 
-    return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), default_id,
-                                          tag_map, labels);
+    return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), "", tag_map,
+                                          labels);
 }
 
 Gtk::ToolButton* RichTextEditor::build_tools_menu() {
@@ -1001,7 +998,10 @@ RichTextEditor::TagComboBox::TagComboBox(
         combo_box_.append(tag_id, label);
     }
 
-    combo_box_.set_active_id(default_id_);
+    if (default_id_.empty())
+        combo_box_.set_active_id(labels.front().first);
+    else
+        combo_box_.set_active_id(default_id_);
     combo_box_.set_focus_on_click(false);
     add(combo_box_);
 
@@ -1025,18 +1025,6 @@ RichTextEditor::TagComboBox::TagComboBox(
 void RichTextEditor::TagComboBox::apply_tag(
     const Gtk::TextBuffer::iterator& start,
     const Gtk::TextBuffer::iterator& end) {
-    if (property_box()) {
-        if (combo_box_.get_active_id() == "") {
-            // No tag is selected, nothing to apply.
-            return;
-        }
-        int target_value =
-            tag_map_[combo_box_.get_active_id()]->property_weight();
-
-        apply_property_tag(text_buffer_, start, end, target_value,
-                           &Gtk::TextTag::property_weight);
-    }
-
     // Remove all other tags from this group, except the new one.
     for (const auto& [tag_id, tag] : tag_map_) {
         if (tag_id != default_id_ && tag_id != combo_box_.get_active_id()) {
