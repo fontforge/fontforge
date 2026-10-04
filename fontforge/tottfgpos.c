@@ -3153,7 +3153,7 @@ static void dump_script_table(FILE *g___,struct scriptset *ss,struct ginfo *ginf
 	if ( ss->langsys[lcnt].same_as==-1 ) {
 	    req_index = -1;
 	    for ( j=0; j<ss->langsys[lcnt].fc; ++j ) {
-		if ( ginfo->feat_lookups[ ss->langsys[lcnt].feature_id[j] ].tag == REQUIRED_FEATURE ) {
+		if ( ginfo->feat_lookups[ ss->langsys[lcnt].feature_id[j] ].tag == REQUIRED_FEATURE_ ) {
 		    req_index = ss->langsys[lcnt].feature_id[j];
 	    break;
 		}

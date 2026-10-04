@@ -1,0 +1,222 @@
+/* Copyright 2025 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
+
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
+
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+#pragma once
+
+#include <gtkmm.h>
+
+#include "combo_text.hpp"
+
+namespace ff::widget {
+
+struct RichTextFontProperties {
+    Pango::Weight weight = Pango::WEIGHT_NORMAL;
+    Pango::Style style = Pango::STYLE_NORMAL;
+    Pango::Stretch stretch = Pango::STRETCH_NORMAL;
+    Pango::Underline underline = Pango::UNDERLINE_NONE;
+};
+
+// Each font name is associated with a set of properties.
+using RichTextFontList =
+    std::vector<std::pair<std::string, RichTextFontProperties>>;
+
+class RichTextEditor : public Gtk::Grid {
+ public:
+    // Create a rich text editor with the given list of point sizes. The point
+    // sizes are used to populate the size combobox in the toolbar. The generic
+    // flag indicates whether the editor is used for generic text editing
+    // without font-specific context. If false, the editor allow selection from
+    // predefined list of fonts.
+    RichTextEditor(const std::vector<double>& pointsizes,
+                   const RichTextFontList& font_list);
+
+    // Load buffer from XML stream
+    void load_buffer(std::istream& istream);
+
+    static const std::string rich_text_mime_type;
+
+    // TextView accessors
+    Glib::RefPtr<Gtk::TextBuffer> get_buffer() {
+        return text_view_.get_buffer();
+    }
+    Gtk::ScrolledWindow& get_scrolled() { return scrolled_; }
+
+    // Special widget class for toggling tags on TextBuffer contents. This
+    // widget is a simplified substitution for a more general font property
+    // combo box when the available fonts require only two values of that style.
+    // See the description of the PropComboBox for detailed behavior.
+    template <typename PROPERTY_PROXY>
+    class TogglePropButton : public Gtk::ToggleToolButton {
+     public:
+        using STYLE = typename PROPERTY_PROXY::PropertyType;
+        using PROPERTY_GETTER = PROPERTY_PROXY (Gtk::TextTag::*)();
+
+        TogglePropButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+                         PROPERTY_GETTER proxy_caller,
+                         std::array<STYLE, 2> styles);
+
+        // Toggle the current selection, if there is any. We don't want to
+        // override Gtk::ToggleToolButton::on_toggled(), we want to be able to
+        // disconnect it.
+        void on_button_toggled();
+
+        // Set the button state when the buffer cursor or selection changes.
+        void on_buffer_cursor_changed(
+            const Gtk::TextBuffer::iterator&,
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark);
+
+     protected:
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+        PROPERTY_GETTER proxy_caller_;
+        std::array<STYLE, 2> styles_;
+    };
+
+    // Allow user to select a font property and adjust the selected text range
+    // accordingly. Note that the changes are not as straightforward as in a
+    // text editor. In a simple case, when the user selectes "Semi-Bold"
+    // property, the selected text becomes semi-bold, while retaining all its
+    // other properties such as slanting and stretch. In a more compex case,
+    // some font variations are not available, and other properties may change
+    // too. For example, the user may select italic text and apply bold weight
+    // to it, but the bold-italic variant is not present. In that case font may
+    // be changed to upright bold, and the slanting property is overridden to
+    // satisfy user's request.
+    template <typename PROPERTY_PROXY>
+    class PropComboBox : public Gtk::ToolItem {
+     public:
+        using STYLE = typename PROPERTY_PROXY::PropertyType;
+        using PROPERTY_GETTER = PROPERTY_PROXY (Gtk::TextTag::*)();
+
+        PropComboBox(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+                     PROPERTY_GETTER proxy_caller,
+                     const std::map<STYLE, std::string /*label*/>& labels);
+
+        // Check and disable unused items in the combobox.
+        void set_enabled_items(const std::set<STYLE>& enabled_values);
+
+        // Apply the property to the current selection, if there is any.
+        void on_box_changed();
+
+        // Set the combobox active row when the buffer cursor or selection
+        // changes.
+        void on_buffer_cursor_changed(
+            const Gtk::TextBuffer::iterator&,
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark);
+
+     protected:
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+        PROPERTY_GETTER proxy_caller_;
+        std::map<STYLE, std::string /*label*/> labels_;
+
+        widgets::ComboText combo_box_;
+    };
+    using WeightComboBox = PropComboBox<Glib::PropertyProxy<int>>;
+    using SlantComboBox = PropComboBox<Glib::PropertyProxy<Pango::Style>>;
+    using StretchComboBox = PropComboBox<Glib::PropertyProxy<Pango::Stretch>>;
+
+    class TagComboBox : public Gtk::ToolItem {
+     public:
+        TagComboBox(
+            Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+            const std::string& default_id,
+            const std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>>&
+                tag_map,
+            const std::vector<
+                std::pair<std::string /*id*/, std::string /*label*/>>& labels);
+
+        void apply_tag(const Gtk::TextBuffer::iterator& start,
+                       const Gtk::TextBuffer::iterator& end);
+
+        // Apply the tag to the current selection, if there is any. We don't
+        // want to override Gtk::ComboBox::on_changed(), we want to be able to
+        // disconnect it.
+        void on_box_changed();
+
+        std::string get_active_tag(const Gtk::TextBuffer::iterator& start,
+                                   const Gtk::TextBuffer::iterator& end);
+
+        void set_active_tag(const Glib::ustring& tag_id) {
+            combo_box_.set_active_id(tag_id);
+        }
+
+        // Set the combobox active row when the buffer cursor or selection
+        // changes.
+        void on_buffer_cursor_changed(
+            const Gtk::TextBuffer::iterator&,
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark);
+
+     protected:
+        std::string default_id_;
+        std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map_;
+
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+
+        widgets::ComboText combo_box_;
+    };
+
+    class ClearFormattingButton : public Gtk::ToolButton {
+     public:
+        ClearFormattingButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
+
+        void on_button_clicked();
+
+     protected:
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+    };
+
+ protected:
+    // The global scale controls the display size of all text in the editor. It
+    // is convenient when the user wants to set the entire sample in a large or
+    // a small size, but still have a resonably scaled text in UI.
+    double global_scale_ = 1.0;
+    Glib::RefPtr<Gtk::CssProvider> scale_css_provider_;
+
+    Gtk::ScrolledWindow scrolled_;
+    Gtk::TextView text_view_;
+    Gtk::Toolbar* toolbar_ = nullptr;
+
+    static void on_text_view_paste_clipboard(GtkTextView* text_view,
+                                             gpointer user_data);
+    bool on_text_view_scroll_event(GdkEventScroll* event);
+    void refresh_scale_css();
+    bool request_clipboard_rich_text();
+    void on_clipboard_rich_text_received(const Glib::ustring& format,
+                                         const std::string& text);
+
+    SlantComboBox* build_slanted_combo();
+    StretchComboBox* build_stretch_combo();
+    TagComboBox* build_size_combo(const std::vector<double>& pointsizes);
+    WeightComboBox* build_weight_combo();
+    TagComboBox* build_fonts_combo(const RichTextFontList& font_list);
+    Gtk::ToolButton* build_tools_menu();
+
+    Gtk::Toolbar* build_toolbar(const RichTextFontList& font_list);
+
+    void on_load_buffer_from_xml();
+    void on_save_buffer_to_xml();
+};
+
+}  // namespace ff::widget

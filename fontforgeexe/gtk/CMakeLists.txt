@@ -17,14 +17,28 @@ add_library(ffgtk OBJECT
   language_list.cpp
   show_histogram.hpp
   show_histogram.cpp
+  print_dialog.cpp
+  print_preview.hpp
+  print_preview.cpp
   simple_dialogs.hpp
   simple_dialogs.cpp
   utils.hpp
   utils.cpp
+  win32_utils.hpp
+  win32_utils.cpp
+  widgets/aspect_frame_bg.hpp
+  widgets/rich_text_editor.hpp
+  widgets/rich_text_editor.cpp
 )
 
 target_link_libraries(ffgtk PUBLIC
   fontforge_common_headers
   ffgtk_widgets
+  fontforge
   PkgConfig::GTKMM
+  PkgConfig::FontConfig
 )
+
+# FontConfig must be found before Mono's bundled fontconfig headers (injected
+# transitively by GTKMM on macOS). Force the pkg-config include path first.
+target_include_directories(ffgtk BEFORE PUBLIC ${FontConfig_INCLUDE_DIRS})

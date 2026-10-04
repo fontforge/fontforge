@@ -1,0 +1,51 @@
+{
+	// Use IntelliSense to learn about possible attributes.
+	// Hover to view descriptions of existing attributes.
+	// For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"name": "(gdb) Launch",
+			"type": "cppdbg",
+			"request": "launch",
+			"program": "${workspaceFolder}/build/bin/fontforge",
+			"showDisplayString": true,
+			"args": [],
+			// Example: open one or more font files.
+			// "args": ["${workspaceFolder}/tests/fonts/Ambrosia.sfd"],
+			// Example: run a script against a test font.
+			// "args": ["-script", "${workspaceFolder}/tests/test_printing.py", "${workspaceFolder}/tests/fonts/Ambrosia.sfd"],
+			"stopAtEntry": false,
+			"cwd": "${workspaceFolder}",
+			"environment": [
+				{
+					"name": "G_DEBUG",
+					"value": "fatal-criticals"
+				}
+				// Example display override for remote/X11 sessions:
+				// ,{"name": "DISPLAY", "value": ":0"}
+				// Example locale override:
+				// ,{"name": "LANGUAGE", "value": "en"}
+			],
+			"externalConsole": false,
+			"MIMode": "gdb",
+			"setupCommands": [
+			    {
+				"description": "Enable pretty-printing for gdb",
+				"text": "-enable-pretty-printing",
+				"ignoreFailures": true
+			    },
+			    {
+				"description": "Load FontForge gdb pretty-printers",
+				"text": "-interpreter-exec console \"source ${workspaceFolder}/.vscode/gdb_ff_printers.py\"",
+				"ignoreFailures": true
+			    },
+			    {
+				"description": "Set Disassembly Flavor to Intel",
+				"text": "-gdb-set disassembly-flavor intel",
+				"ignoreFailures": true
+			    }
+			]
+		},
+	]
+}

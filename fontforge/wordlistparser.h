@@ -25,31 +25,14 @@
 *******************************************************************************
 *******************************************************************************
 ******************************************************************************/
+#pragma once
 
-#ifndef FONTFORGE_WORDLISTPARSER_H
-#define FONTFORGE_WORDLISTPARSER_H
-
-#include "ffglib.h"
 #include "splinefont.h"
 
 const char* Wordlist_getSCName( SplineChar* sc );
 
 typedef int (*WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc)( SplineChar *sc, void* udata );
 extern int WordlistEscapedInputStringToRealString_getFakeUnicodeAsScUnicodeEnc( SplineChar *sc, void* udata );
-
-
-extern unichar_t* WordlistEscapedInputStringToRealStringBasic(
-    SplineFont* sf,
-    unichar_t* input_const,
-    GArray** selected_out );
-
-extern GTextInfo** WordlistLoadFileToGTextInfo( int type, int words_max );
-extern GTextInfo** WordlistLoadFileToGTextInfoBasic( int words_max );
-
-extern void Wordlist_MoveByOffset( GGadget* g, int* idx, int offset );
-extern void Wordlist_touch( GGadget* g );
-
-extern void WordlistLoadToGTextInfo( GGadget* g, int* idx  );
 
 extern void WordlistTrimTrailingSingleSlash( unichar_t* txt );
 
@@ -88,6 +71,8 @@ typedef struct wordlistchar {
 
 typedef WordListChar* WordListLine;
 
+extern int WordlistSCFakeUnicode(SplineChar *sc);
+extern int WordlistSCFakeUnicode_cb( SplineChar *sc, void* );
 extern bool Wordlist_selectionsEqual( unichar_t* s1, unichar_t* s2 );
 extern WordListLine WordListLine_end( WordListLine wll );
 extern int WordListLine_size( WordListLine wll );
@@ -118,4 +103,6 @@ extern WordListLine WordlistEscapedInputStringToParsedDataComplex(
     WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc getUnicodeFunc,
     void* udata );
 
-#endif /* FONTFORGE_WORDLISTPARSER_H */
+/* The unput may contain unencoded glyphs references as \<glyph_name>. These
+ * glyphs are recoded to fake values above the Unicode range. */
+extern char* WordlistEscapedInputStringToUTF8(SplineFont* sf, const char* input);
