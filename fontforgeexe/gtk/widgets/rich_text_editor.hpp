@@ -26,7 +26,9 @@
  */
 #pragma once
 
+#include <memory>
 #include <gtkmm.h>
+#include <vector>
 
 #include "combo_text.hpp"
 
@@ -64,12 +66,45 @@ class RichTextEditor : public Gtk::Grid {
     }
     Gtk::ScrolledWindow& get_scrolled() { return scrolled_; }
 
+    class ToolbarStateSync {
+     public:
+        explicit ToolbarStateSync(Glib::RefPtr<Gtk::TextBuffer> text_buffer)
+            : text_buffer_(text_buffer) {}
+        virtual ~ToolbarStateSync() = default;
+
+        virtual void on_buffer_cursor_changed(
+            const Gtk::TextBuffer::iterator&,
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) = 0;
+
+        void add_group(std::shared_ptr<std::vector<ToolbarStateSync*>> group) {
+            group_ = group;
+            group_->push_back(this);
+        }
+
+        void refresh_toolbar_state() {
+            auto mark = text_buffer_->get_insert();
+            if (!mark) {
+                return;
+            }
+
+            auto pos = text_buffer_->get_iter_at_mark(mark);
+            for (auto* widget : *group_) {
+                if (widget != this) widget->on_buffer_cursor_changed(pos, mark);
+            }
+        }
+
+     protected:
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+        std::shared_ptr<std::vector<ToolbarStateSync*>> group_;
+    };
+
     // Special widget class for toggling tags on TextBuffer contents. This
     // widget is a simplified substitution for a more general font property
     // combo box when the available fonts require only two values of that style.
     // See the description of the PropComboBox for detailed behavior.
     template <typename PROPERTY_PROXY>
-    class TogglePropButton : public Gtk::ToggleToolButton {
+    class TogglePropButton : public Gtk::ToggleToolButton,
+                             public ToolbarStateSync {
      public:
         using STYLE = typename PROPERTY_PROXY::PropertyType;
         using PROPERTY_GETTER = PROPERTY_PROXY (Gtk::TextTag::*)();
@@ -86,10 +121,9 @@ class RichTextEditor : public Gtk::Grid {
         // Set the button state when the buffer cursor or selection changes.
         void on_buffer_cursor_changed(
             const Gtk::TextBuffer::iterator&,
-            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark);
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) override;
 
      protected:
-        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
         PROPERTY_GETTER proxy_caller_;
         std::array<STYLE, 2> styles_;
     };
@@ -105,7 +139,7 @@ class RichTextEditor : public Gtk::Grid {
     // be changed to upright bold, and the slanting property is overridden to
     // satisfy user's request.
     template <typename PROPERTY_PROXY>
-    class PropComboBox : public Gtk::ToolItem {
+    class PropComboBox : public Gtk::ToolItem, public ToolbarStateSync {
      public:
         using STYLE = typename PROPERTY_PROXY::PropertyType;
         using PROPERTY_GETTER = PROPERTY_PROXY (Gtk::TextTag::*)();
@@ -124,10 +158,9 @@ class RichTextEditor : public Gtk::Grid {
         // changes.
         void on_buffer_cursor_changed(
             const Gtk::TextBuffer::iterator&,
-            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark);
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) override;
 
      protected:
-        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
         PROPERTY_GETTER proxy_caller_;
         std::map<STYLE, std::string /*label*/> labels_;
 
@@ -137,7 +170,7 @@ class RichTextEditor : public Gtk::Grid {
     using SlantComboBox = PropComboBox<Glib::PropertyProxy<Pango::Style>>;
     using StretchComboBox = PropComboBox<Glib::PropertyProxy<Pango::Stretch>>;
 
-    class TagComboBox : public Gtk::ToolItem {
+    class TagComboBox : public Gtk::ToolItem, public ToolbarStateSync {
      public:
         TagComboBox(
             Glib::RefPtr<Gtk::TextBuffer> text_buffer,
@@ -166,13 +199,11 @@ class RichTextEditor : public Gtk::Grid {
         // changes.
         void on_buffer_cursor_changed(
             const Gtk::TextBuffer::iterator&,
-            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark);
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) override;
 
      protected:
         std::string default_id_;
         std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map_;
-
-        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
 
         widgets::ComboText combo_box_;
     };

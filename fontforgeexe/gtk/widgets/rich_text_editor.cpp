@@ -611,10 +611,13 @@ collect_properties(const RichTextFontList& font_list) {
 
 Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
     Gtk::Toolbar* toolbar = Gtk::make_managed<Gtk::Toolbar>();
+    std::shared_ptr<std::vector<ToolbarStateSync*>> toolbar_state_widgets =
+        std::make_shared<std::vector<ToolbarStateSync*>>();
 
     auto fonts_combo = build_fonts_combo(font_list);
     fonts_combo->set_tooltip_text(_("Font"));
     toolbar->append(*fonts_combo);
+    fonts_combo->add_group(toolbar_state_widgets);
 
     auto [weights, styles, stretches] = collect_properties(font_list);
 
@@ -629,9 +632,11 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
             bold_button->set_sensitive(false);
         } else {
             // Show a "Bold" toggle button with the available weights.
-            bold_button = Gtk::manage(new TogglePropButton(
+            auto bold_prop_button = Gtk::manage(new TogglePropButton(
                 text_view_.get_buffer(), &Gtk::TextTag::property_weight,
                 {*weights.begin(), *weights.rbegin()}));
+            bold_prop_button->add_group(toolbar_state_widgets);
+            bold_button = bold_prop_button;
         }
         bold_button->set_icon_name("format-text-bold");
         bold_button->set_tooltip_text(_("Bold"));
@@ -641,6 +646,7 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
         weight_combo->set_tooltip_text(_("Weight Class"));
         weight_combo->set_enabled_items(weights);
         toolbar->append(*weight_combo);
+        weight_combo->add_group(toolbar_state_widgets);
     }
 
     // Build slant UI elements.
@@ -654,9 +660,11 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
             italic_button->set_sensitive(false);
         } else {
             // Show an "Italic" toggle button with the available styles.
-            italic_button = Gtk::manage(new TogglePropButton(
+            auto italic_prop_button = Gtk::manage(new TogglePropButton(
                 text_view_.get_buffer(), &Gtk::TextTag::property_style,
                 {*styles.begin(), *styles.rbegin()}));
+            italic_prop_button->add_group(toolbar_state_widgets);
+            italic_button = italic_prop_button;
         }
         italic_button->set_icon_name("format-text-italic");
         italic_button->set_tooltip_text(_("Italic"));
@@ -666,6 +674,7 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
         slanted_combo->set_tooltip_text(_("Slant Style"));
         slanted_combo->set_enabled_items(styles);
         toolbar->append(*slanted_combo);
+        slanted_combo->add_group(toolbar_state_widgets);
     }
 
     // Configure availablity of stretched UI element.
@@ -674,6 +683,7 @@ Gtk::Toolbar* RichTextEditor::build_toolbar(const RichTextFontList& font_list) {
         stretch_combo->set_tooltip_text(_("Width Class"));
         stretch_combo->set_enabled_items(stretches);
         toolbar->append(*stretch_combo);
+        stretch_combo->add_group(toolbar_state_widgets);
     }
 
     return toolbar;
@@ -872,7 +882,9 @@ template <typename PROPERTY_PROXY>
 RichTextEditor::TogglePropButton<PROPERTY_PROXY>::TogglePropButton(
     Glib::RefPtr<Gtk::TextBuffer> text_buffer, PROPERTY_GETTER proxy_caller,
     std::array<STYLE, 2> styles)
-    : text_buffer_(text_buffer), proxy_caller_(proxy_caller), styles_(styles) {
+    : ToolbarStateSync(text_buffer),
+      proxy_caller_(proxy_caller),
+      styles_(styles) {
     // Called whenever the selection or the cursor position is changed.
     // Sets the correct visual state of the widget
     text_buffer_->signal_mark_set().connect(
@@ -886,6 +898,7 @@ void RichTextEditor::TogglePropButton<PROPERTY_PROXY>::on_button_toggled() {
         apply_property_tag(text_buffer_, start, end,
                            styles_[get_active() ? 1 : 0], proxy_caller_);
     }
+    refresh_toolbar_state();
 }
 
 template <typename PROPERTY_PROXY>
@@ -914,7 +927,9 @@ template <typename PROPERTY_PROXY>
 RichTextEditor::PropComboBox<PROPERTY_PROXY>::PropComboBox(
     Glib::RefPtr<Gtk::TextBuffer> text_buffer, PROPERTY_GETTER proxy_caller,
     const std::map<STYLE, std::string /*label*/>& labels)
-    : text_buffer_(text_buffer), proxy_caller_(proxy_caller), labels_(labels) {
+    : ToolbarStateSync(text_buffer),
+      proxy_caller_(proxy_caller),
+      labels_(labels) {
     // Add entries to combo box
     for (const auto& [prop_value, label] : labels) {
         combo_box_.append(label, label);
@@ -949,6 +964,7 @@ void RichTextEditor::PropComboBox<PROPERTY_PROXY>::on_box_changed() {
                 apply_property_tag(text_buffer_, start, end, prop_value,
                                    proxy_caller_);
             }
+            refresh_toolbar_state();
             break;
         }
     }
@@ -992,7 +1008,9 @@ RichTextEditor::TagComboBox::TagComboBox(
     const std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>>& tag_map,
     const std::vector<std::pair<std::string /*id*/, std::string /*label*/>>&
         labels)
-    : text_buffer_(text_buffer), default_id_(default_id), tag_map_(tag_map) {
+    : ToolbarStateSync(text_buffer),
+      default_id_(default_id),
+      tag_map_(tag_map) {
     // Add entries to combo box
     for (const auto& [tag_id, label] : labels) {
         combo_box_.append(tag_id, label);
@@ -1040,6 +1058,7 @@ void RichTextEditor::TagComboBox::on_box_changed() {
     if (text_buffer_->get_selection_bounds(start, end)) {
         apply_tag(start, end);
     }
+    refresh_toolbar_state();
 }
 
 std::string RichTextEditor::TagComboBox::get_active_tag(
