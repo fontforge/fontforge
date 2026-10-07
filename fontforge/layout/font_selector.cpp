@@ -28,6 +28,8 @@
 #include "font_selector.hpp"
 
 #include <algorithm>
+#include <map>
+#include <sstream>
 
 namespace ff::layout {
 
@@ -50,6 +52,54 @@ size_t RichTextFontSelector::select_face(
                          });
 
     return closest_face - properties_list_.begin();
+}
+
+std::stringstream RichTextFontSelector::xml_manifest() const {
+    std::stringstream unicode_buffer;
+    unicode_buffer << "<manifest>";
+    bool default_face_written = false;
+
+    static const std::map<int16_t, std::string> weight_to_name = {
+        {100, "thin"},    {200, "extra-light"}, {300, "light"},
+        {400, "regular"}, {500, "medium"},      {600, "semi-bold"},
+        {700, "bold"},    {800, "extra-bold"},  {900, "black"}};
+    static const std::map<std::string, int16_t> name_to_weight = {
+        {"thin", 100},    {"extra-light", 200}, {"light", 300},
+        {"regular", 400}, {"medium", 500},      {"semi-bold", 600},
+        {"bold", 700},    {"extra-bold", 800},  {"black", 900}};
+    static const std::map<int16_t, std::string> stretch_to_name = {
+        {1, "ultra-condensed"}, {2, "extra-condensed"}, {3, "condensed"},
+        {4, "semi-condensed"},  {5, "normal"},          {6, "semi-expanded"},
+        {7, "expanded"},        {8, "extra-expanded"},  {9, "ultra-expanded"}};
+    static const std::map<std::string, int16_t> name_to_stretch = {
+        {"ultra-condensed", 1}, {"extra-condensed", 2}, {"condensed", 3},
+        {"semi-condensed", 4},  {"normal", 5},          {"semi-expanded", 6},
+        {"expanded", 7},        {"extra-expanded", 8},  {"ultra-expanded", 9}};
+
+    for (const auto& properties : properties_list_) {
+        unicode_buffer << "<font key=\"" << properties.full_name << "\""
+                       << (default_face_written ? "" : " default=\"true\"")
+                       << ">";
+        default_face_written = true;
+        unicode_buffer << "<family>" << properties.family_name << "</family>";
+        unicode_buffer << "<name>" << properties.full_name << "</name>";
+        if (properties.os2_weight >= 0) {
+            unicode_buffer << "<weight>"
+                           << weight_to_name.at(properties.os2_weight)
+                           << "</weight>";
+        }
+        if (properties.os2_width >= 0) {
+            unicode_buffer << "<stretch>"
+                           << stretch_to_name.at(properties.os2_width)
+                           << "</stretch>";
+        }
+        if (properties.italic) {
+            unicode_buffer << "<style>italic</style>";
+        }
+        unicode_buffer << "</font>";
+    }
+    unicode_buffer << "</manifest>";
+    return unicode_buffer;
 }
 
 }  // namespace ff::layout

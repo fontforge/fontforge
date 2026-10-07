@@ -43,6 +43,8 @@ class RichTextFontSelector {
     size_t select_face(const std::vector<ParsedTag>& parsed_tags,
                        const SplineFontProperties& default_properties) const;
 
+    std::stringstream xml_manifest() const;
+
  private:
     std::vector<SplineFontProperties> properties_list_;
 };
