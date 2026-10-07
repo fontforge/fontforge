@@ -5775,6 +5775,73 @@ static void do_Adobe_Pua(unichar_t *buf,int sob,int uni) {
     buf[j] = 0;
 }
 
+static int compoundCodepointsToImage(unichar_t *buf, const char *name, int n) {
+    int i, j;
+    int uni[4] = {-1, -1, -1, -1};
+    if (n <= 0)
+	n = strlen(name);
+    if ( strncmp(name,"uni",3)==0 ) {
+	for ( i=2; i<=4; ++i ) {
+	    if (n == i * 4 + 3) {
+		for ( j=0; j<i; ++j ) {
+		    sscanf(name+(j*4+3),"%04x", (unsigned *) (uni+j) );
+		    if ( uni[j]==-1 )
+			return 0;
+		}
+		for ( j=0; j<i; ++j ) {
+		    buf[j] = uni[j];
+		}
+		return 1;
+	    }
+	}
+    }
+    return 0;
+}
+
+static int compoundNamesToImage(FontView *fv, unichar_t *buf, const char *name, int n) {
+    char component[64];
+    const char *strptr, *endptr;
+    int cnt = 0, componentLen, uni[8], i;
+    if (n <= 0)
+	n = strlen(name);
+    endptr = name + n;
+    if ( (strptr = strnstr(name, "_", n)) ) {
+	do {
+	    componentLen = strptr - name;
+	    if ( 0 < componentLen && componentLen < 64 ) {
+		strncpy(component, name, componentLen);
+		component[componentLen] = '\0';
+		uni[cnt] = UniFromName(component, fv->b.sf->uni_interp, fv->b.map->enc);
+		if ( uni[cnt] == -1 ) /* nonexistent */
+		    return 0;
+		name = strptr + 1;
+		n = endptr - name;
+		if ( n > 0 ) {
+		    strptr = strnstr(name, "_", n);
+		    if ( !strptr )
+			strptr = endptr;
+		}
+	    } else { /* consecutive underscore or too long name */
+		return 0;
+	    }
+	} while ( (++cnt) < 8 && n > 0 );
+	for ( i=0; i<cnt; ++i ) {
+	    buf[i] = uni[i];
+	}
+	return 1;
+    }
+    return 0;
+}
+
+static int compoundCharsToImage(FontView *fv, unichar_t *buf, const char *name, int n) {
+    if ( compoundCodepointsToImage(buf, name, n) )
+	return 1;
+    else if ( compoundNamesToImage(fv, buf, name, n) )
+	return 1;
+    else
+	return 0;
+}
+
 static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     int i, j, y, width, gid;
     int changed;
@@ -5842,7 +5909,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	    if ( sc==NULL )
 		sc = SCBuildDummy(&dummy,fv->b.sf,fv->b.map,index);
 	    uni = sc->unicodeenc;
-	    buf[0] = buf[1] = 0;
+	    memset(buf, 0, sizeof buf);
 	    if ( fv->b.sf->uni_interp==ui_ams && uni>=0xe000 && uni<=0xf8ff &&
 		    amspua[uni-0xe000]!=0 )
 		uni = amspua[uni-0xe000];
@@ -5902,6 +5969,9 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			if ( n==7 && sc->name[0]=='u' && sc->name[1]=='n' && sc->name[2]=='i' &&
 				(i=strtol(sc->name+3,&end,16), end-sc->name==7))
 			    buf[0] = i;
+			else if ( compoundCharsToImage(fv, buf, sc->name, n) ) {
+			    fg = fvunenclabelcol;
+			}
 			else if ( n>=5 && n<=7 && sc->name[0]=='u' &&
 				(i=strtol(sc->name+1,&end,16), end-sc->name==n))
 			    buf[0] = i;
@@ -5926,6 +5996,8 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			    if ( strstr(pt,".italic")!=NULL )
 				styles = _uni_italic;
 			}
+		    } else if ( compoundCharsToImage(fv, buf, sc->name, 0) ) {
+			fg = fvunenclabelcol;
 		    } else if ( strncmp(sc->name,"hwuni",5)==0 ) {
 			int uni=-1;
 			sscanf(sc->name,"hwuni%x", (unsigned *) &uni );
