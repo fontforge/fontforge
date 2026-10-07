@@ -6592,6 +6592,7 @@ return( NULL );
 			sc->ttf_glyph = bygid[1];
 		    else if ( format==ff_ttf &&
 			     (strcmp(sf->glyphs[i]->name,"nonmarkingreturn")==0 ||
+			      strcmp(sf->glyphs[i]->name,"CR")==0 ||
 			      strcmp(sf->glyphs[i]->name,"uni000D")==0 ||
 			      (i==2 && strcmp(sf->glyphs[2]->name,"glyph2")==0)))
 			sc->ttf_glyph = bygid[2];
