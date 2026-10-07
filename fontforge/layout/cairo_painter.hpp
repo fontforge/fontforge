@@ -31,6 +31,7 @@
 #include <memory>
 #include <cairomm/context.h>
 
+#include "font_selector.hpp"
 #include "layout_shim.hpp"
 #include "i_printer.hpp"
 #include "i_shaper.hpp"
@@ -208,6 +209,10 @@ class SampleTextPrinter : public ff::layout::IPrinter {
 
     // All the other currently open faces from the same family.
     const CairoFontFamily& cairo_family_;
+
+    // Selector responsible for choosing the best font face for a given set of
+    // tags.
+    layout::RichTextFontSelector selector_;
 
     std::string sample_text_;
     Tag script_;

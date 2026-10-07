@@ -33,8 +33,6 @@
 #include <sstream>
 #include <set>
 
-#include "font_selector.hpp"
-
 extern "C" {
 #include "../fffreetype.h"
 
@@ -584,6 +582,13 @@ SampleTextPrinter::SampleTextPrinter(const Cairo::RefPtr<Cairo::Context>& cr,
       script_(script),
       lang_(lang),
       features_(features) {
+    std::vector<SplineFontProperties> properties_list;
+    std::for_each(cairo_family_.begin(), cairo_family_.end(),
+                  [&properties_list](const auto& font) {
+                      properties_list.push_back(font.props);
+                  });
+    selector_ = layout::RichTextFontSelector(properties_list);
+
     calculate_layout(cr, printable_area, sample_text_);
     paginate(printable_area.height - top_margin_);
 }
@@ -687,13 +692,8 @@ void SampleTextPrinter::calculate_layout(
             parsed_tags.emplace_back(parse_tag(tag));
         }
 
-        std::vector<SplineFontProperties> properties_list;
-        std::for_each(cairo_family_.begin(), cairo_family_.end(),
-                      [&properties_list](const auto& font) {
-                          properties_list.push_back(font.props);
-                      });
-        size_t font_idx = layout::select_face(parsed_tags, properties_list,
-                                              default_properties);
+        size_t font_idx =
+            selector_.select_face(parsed_tags, default_properties);
         Cairo::RefPtr<Cairo::FtFontFace> font_face =
             cairo_family_[font_idx].face;
         double font_size = get_size(current_tags);

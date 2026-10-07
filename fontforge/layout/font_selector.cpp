@@ -31,9 +31,9 @@
 
 namespace ff::layout {
 
-size_t select_face(const std::vector<ParsedTag>& parsed_tags,
-                   const std::vector<SplineFontProperties>& properties_list,
-                   const SplineFontProperties& default_properties) {
+size_t RichTextFontSelector::select_face(
+    const std::vector<ParsedTag>& parsed_tags,
+    const SplineFontProperties& default_properties) const {
     // Desired properties are derived from the default ones, with
     // segment-specific tags overriding them when applicable.
     SplineFontProperties text_props =
@@ -43,13 +43,13 @@ size_t select_face(const std::vector<ParsedTag>& parsed_tags,
 
     // Find the face with properties closest to the desired properties.
     auto closest_face =
-        std::min_element(properties_list.begin(), properties_list.end(),
+        std::min_element(properties_list_.begin(), properties_list_.end(),
                          [&desired_properties](const auto& a, const auto& b) {
                              return desired_properties.distance(a) <
                                     desired_properties.distance(b);
                          });
 
-    return closest_face - properties_list.begin();
+    return closest_face - properties_list_.begin();
 }
 
 }  // namespace ff::layout
