@@ -2841,7 +2841,7 @@ const char* SCNameCheck(const unichar_t *name, bool *p_questionable) {
 
     if (p_questionable) *p_questionable = questionable;
 
-    if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
+    if ( uc_strcmp(name,".notdef")==0 || uc_strcmp(name,".null")==0 )		/* These names are special cases and don't follow conventions */
         return NULL;
     if ( u_strlen(name)>31 ) {
         return _("Glyph names are limited to 31 characters");
