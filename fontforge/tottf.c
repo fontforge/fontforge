@@ -1302,7 +1302,7 @@ return;
     gi->gcnt = j;
 }
 
-static void AssignNotdefNull(SplineFont *sf,int *bygid, int iscff) {
+static void AssignNotdefNull(SplineFont *sf,int *bygid, int iscff, int add_null_cr) {
     int i;
 
     /* The first three glyphs are magic, glyph 0 is .notdef */
@@ -1312,14 +1312,15 @@ static void AssignNotdefNull(SplineFont *sf,int *bygid, int iscff) {
 	if ( bygid[0]== -1 && strcmp(sf->glyphs[i]->name,".notdef")==0 ) {
 	    sf->glyphs[i]->ttf_glyph = 0;
 	    bygid[0] = i;
-	} else if ( !iscff && bygid[1]== -1 &&
+	} else if ( !iscff && bygid[1]== -1 && add_null_cr &&
 		(strcmp(sf->glyphs[i]->name,".null")==0 ||
 		 strcmp(sf->glyphs[i]->name,"uni0000")==0 ||
 		 (i==1 && strcmp(sf->glyphs[1]->name,"glyph1")==0)) ) {
 	    sf->glyphs[i]->ttf_glyph = 1;
 	    bygid[1] = i;
-	} else if ( !iscff && bygid[2]== -1 &&
+	} else if ( !iscff && bygid[2]== -1 && add_null_cr &&
 		(strcmp(sf->glyphs[i]->name,"nonmarkingreturn")==0 ||
+		 strcmp(sf->glyphs[i]->name,"CR")==0 || /* OpenType 1.7 recommendation */
 		 strcmp(sf->glyphs[i]->name,"uni000D")==0 ||
 		 (i==2 && strcmp(sf->glyphs[2]->name,"glyph2")==0)) ) {
 	    sf->glyphs[i]->ttf_glyph = 2;
@@ -1330,13 +1331,14 @@ static void AssignNotdefNull(SplineFont *sf,int *bygid, int iscff) {
 
 static int AssignTTFGlyph(struct glyphinfo *gi,SplineFont *sf,EncMap *map,int iscff) {
     int *bygid = malloc((sf->glyphcnt+3)*sizeof(int));
+    int add_null_cr = !(gi->flags&ttf_flag_nospecialnullcr);
     int i,j;
 
     memset(bygid,0xff, (sf->glyphcnt+3)*sizeof(int));
 
-    AssignNotdefNull(sf,bygid,iscff);
+    AssignNotdefNull(sf,bygid,iscff,add_null_cr);
 
-    j = iscff ? 1 : 3;
+    j = (iscff || !add_null_cr) ? 1 : 3;
     for ( i=0; i<map->enccount; ++i ) if ( map->map[i]!=-1 ) {
 	SplineChar *sc = sf->glyphs[map->map[i]];
 	if ( SCWorthOutputting(sc) && sc->ttf_glyph==-1
@@ -1368,11 +1370,12 @@ return j;
 static int AssignTTFBitGlyph(struct glyphinfo *gi,SplineFont *sf,EncMap *map,int32_t *bsizes) {
     int i, j;
     BDFFont *bdf;
+    int add_null_cr = !(gi->flags&ttf_flag_nospecialnullcr);
     int *bygid = malloc((sf->glyphcnt+3)*sizeof(int));
 
     memset(bygid,0xff, (sf->glyphcnt+3)*sizeof(int));
 
-    AssignNotdefNull(sf,bygid,false);
+    AssignNotdefNull(sf,bygid,false,add_null_cr);
 
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	for ( j=0; bsizes[j]!=0 && ((bsizes[j]&0xffff)!=bdf->pixelsize || (bsizes[j]>>16)!=BDFDepth(bdf)); ++j );
@@ -1387,7 +1390,7 @@ static int AssignTTFBitGlyph(struct glyphinfo *gi,SplineFont *sf,EncMap *map,int
 	    sf->glyphs[i]->ttf_glyph = -2;
     }
 
-    j = 3;
+    j = add_null_cr ? 3 : 1;
     for ( i=0; i<map->enccount; ++i ) if ( map->map[i]!=-1 ) {
 	SplineChar *sc = sf->glyphs[map->map[i]];
 	if ( sc->ttf_glyph==-2 ) {
@@ -1468,7 +1471,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 		dumpglyph(sf->glyphs[gi->bygid[0]],gi);
 	    else
 		dumpmissingglyph(sf,gi,fixed);
-	} else if ( i<=2 && gi->bygid[i]==-1 )
+	} else if ( i<=2 && gi->bygid[i]==-1 && !(gi->flags&ttf_flag_nospecialnullcr))
 	    dumpblankglyph(gi,sf,fixed);
 	else if ( gi->onlybitmaps ) {
 	    if ( gi->bygid[i]!=-1 && sf->glyphs[gi->bygid[i]]->ttf_glyph>0 )
@@ -4865,7 +4868,8 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     uint16_t table[256];
     SplineChar *sc;
     int alreadyprivate = false;
-    int wasotf = format==ff_otf || format==ff_otfcid;
+    int add_null_cr = !(at->gi.flags&ttf_flag_nospecialnullcr);
+    int wasotf = format==ff_otf || format==ff_otfcid || !add_null_cr;
     EncMap *map = at->map;
     int ucs4len=0, ucs2len=0, cjklen=0, applecjklen=0, vslen=0;
     FILE *format12, *format4, *format2, *apple2, *format14;
@@ -4892,7 +4896,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	if ( sc!=NULL && sc->ttf_glyph!=-1 )
 	    table[i] = sc->ttf_glyph;
     }
-    if ( table[0]==0 ) table[0] = 1;
+    if ( table[0]==0 && add_null_cr ) table[0] = 1;
 
     if ( modformat==ff_ttfsym ) {
 	alreadyprivate = AlreadyMSSymbolArea(sf,map);
@@ -6514,6 +6518,7 @@ static struct alltabs *ttc_prep(struct sflist *sfs, enum fontformat format,
     SplineFont *sf;
     SplineChar *sc, *test;
     int i, aborted;
+    int add_null_cr = !(flags&ttf_flag_nospecialnullcr);
 
     for ( sfitem= sfs, cnt=0; sfitem!=NULL; sfitem=sfitem->next, ++cnt ) {
 	sf = sfitem->sf;
@@ -6545,12 +6550,12 @@ return( NULL );
     bygid = malloc((gcnt+3)*sizeof(int));
     memset(bygid,0xff, (gcnt+3)*sizeof(int));
     for ( sfitem= sfs; sfitem!=NULL; sfitem=sfitem->next ) {
-	AssignNotdefNull(sfitem->sf,bygid,false);
+	AssignNotdefNull(sfitem->sf,bygid,false,add_null_cr);
 	if ( bygid[0]!=-1 && dummysf->glyphs[0]==NULL ) {
 	    dummysf->glyphs[0] = sfitem->sf->glyphs[bygid[0]];
 	    bygid[0]=0;
 	}
-	if ( format==ff_ttf ) {
+	if ( format==ff_ttf && add_null_cr ) {
 	    if ( bygid[1]!=-1 && dummysf->glyphs[1]==NULL ) {
 		dummysf->glyphs[1] = sfitem->sf->glyphs[bygid[1]];
 		bygid[1]=1;

@@ -1082,6 +1082,7 @@ int fmflag2ttfflag(int fmflags, bool is_postscript_or_cff) {
     if ( fmflags&fm_flag_pfed_layers ) ttfflags |= ttf_flag_pfed_layers;
     if ( fmflags&fm_flag_winkern ) ttfflags |= ttf_flag_oldkernmappedonly;
     if ( fmflags&fm_flag_nomacnames ) ttfflags |= ttf_flag_nomacnames;
+    if ( fmflags&fm_flag_nospecialnullcr ) ttfflags |= ttf_flag_nospecialnullcr;
     return ttfflags;
 }
 int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmflags,
