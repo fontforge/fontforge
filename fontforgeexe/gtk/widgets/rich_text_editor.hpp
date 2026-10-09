@@ -83,7 +83,7 @@ class RichTextEditor : public Gtk::Grid {
 
         void refresh_toolbar_state() {
             auto mark = text_buffer_->get_insert();
-            if (!mark) {
+            if (!mark || !group_) {
                 return;
             }
 
