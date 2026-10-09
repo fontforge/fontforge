@@ -179,6 +179,18 @@ void dump_tag(Glib::ustring& unicode_buffer, const Glib::ustring& tag_name,
         name = tag_name;
     }
 
+    // Check if the closing tag is directly following the opening tag, in which
+    // case both should be dropped.
+    if (!opening && unicode_buffer.size() >= name.size() + 2 &&
+        *unicode_buffer.rbegin() == '>') {
+        size_t opening_pos = unicode_buffer.rfind('<');
+        if (unicode_buffer.find("<" + name + ">", opening_pos) == opening_pos ||
+            unicode_buffer.find("<" + name + " ", opening_pos) == opening_pos) {
+            unicode_buffer.erase(opening_pos);
+            return;
+        }
+    }
+
     unicode_buffer.push_back('<');
     if (!opening) {
         unicode_buffer.push_back('/');
@@ -190,9 +202,39 @@ void dump_tag(Glib::ustring& unicode_buffer, const Glib::ustring& tag_name,
     unicode_buffer.push_back('>');
 }
 
-guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
-                         const Gtk::TextBuffer::iterator& start,
-                         const Gtk::TextBuffer::iterator& end, gsize& length) {
+// Dumps the content of a Gtk::TextBuffer to a string, with all the TextBuffer
+// tags serialized as XML tags. The result is not a proper XML, since its tags
+// can be interleaved and not properly nested.
+static std::string dump_text_buffer(
+    const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+    const Gtk::TextBuffer::iterator& start,
+    const Gtk::TextBuffer::iterator& end) {
+    Glib::ustring unicode_buffer;
+    for (auto it = start; it != end; ++it) {
+        // Retrieve closing and opening tags
+        for (bool opening : {false, true}) {
+            std::vector<Glib::RefPtr<Gtk::TextTag>> tags =
+                it.get_toggled_tags(opening);
+            for (auto tag : tags) {
+                Glib::ustring tag_name = tag->property_name();
+                // Dump the tag in raw format, without normalizing.
+                unicode_buffer += (opening ? "<" : "</") + tag_name + ">";
+            }
+        }
+
+        dump_character(unicode_buffer, *it);
+    }
+
+    return unicode_buffer;
+}
+
+// Normalizes Gtk::TextBuffer dump to a proper XML, by ensuring that all the
+// tags are properly nested and not interleaved. Tags are also normalized from
+// RichTextEditor naming convention to a more human-oriented format - see
+// dump_tag().
+std::string normalize_text_buffer_dump(const std::string& dump) {
+    std::string text, tag;
+    std::istringstream input(dump);
     Glib::ustring unicode_buffer;
 
     // Gtk::TextBuffer doesn't enforce nested ranges, so the sequence
@@ -201,68 +243,71 @@ guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
     // convention.
     std::stack<std::string> open_tags;
 
-    dump_tag(unicode_buffer, "ff_root", true);
+    while (std::getline(input, text, '<') && std::getline(input, tag, '>')) {
+        // Dump the text before the tag.
+        unicode_buffer += text;
 
-    for (auto it = start; it != end; ++it) {
-        // Retrieve closing tags
-        std::vector<Glib::RefPtr<Gtk::TextTag>> closing_tags =
-            it.get_toggled_tags(false);
+        // Just dump the opening tag. All problems are resolved when we
+        // encounter the closing tag.
+        if (tag.size() == 0 || tag.front() != '/') {
+            dump_tag(unicode_buffer, tag, true);
+            open_tags.push(tag);
+            continue;
+        }
 
-        // Try to close the tags in the reverse order of opening
-        bool closing_tag_found = true;
+        // Close interleaved tags if there are any, before the pending closing
+        // tag.
         std::stack<std::string> temporarily_closed_tags;
 
-        while (!closing_tags.empty() && !open_tags.empty()) {
-            const std::string& last_open_tag = open_tags.top();
-            auto tag_it = std::find_if(
-                closing_tags.begin(), closing_tags.end(),
-                [last_open_tag](Glib::RefPtr<const Gtk::TextTag> closing_tag) {
-                    return closing_tag->property_name() == last_open_tag;
-                });
-            if (tag_it == closing_tags.end()) {
-                // Closing tag is conflicting with the open tags stack
-                temporarily_closed_tags.push(last_open_tag);
-            } else {
-                // Closing tag correctly corresponds to the latest open tag
-                closing_tags.erase(tag_it);
-            }
-            dump_tag(unicode_buffer, last_open_tag, false);
+        // Try to close the tags in the reverse order of opening
+        tag.erase(0, 1);  // Remove the leading '/'
+        while (!open_tags.empty() && tag != open_tags.top()) {
+            dump_tag(unicode_buffer, open_tags.top(), false);
+            temporarily_closed_tags.push(open_tags.top());
             open_tags.pop();
         }
 
-        if (!closing_tags.empty()) {
-            std::cerr << "TextBuffer corruption: some closing tags haven't "
-                         "been opened."
-                      << std::endl;
+        if (open_tags.empty()) {
+            // Closing tag is conflicting with the open tags stack
+            std::cerr << "TextBuffer corruption: closing tag " << tag
+                      << " doesn't match any open tags." << std::endl;
+        } else {
+            // Closing tag correctly corresponds to the latest open tag
+            dump_tag(unicode_buffer, tag, false);
+            open_tags.pop();
         }
 
-        // Reopen the tags which were temporarily closed to resolve conflicts.
+        // Reopen the tags which were temporarily closed to resolve
+        // conflicts.
         while (!temporarily_closed_tags.empty()) {
             const std::string& tag_name = temporarily_closed_tags.top();
-            open_tags.push(tag_name);
             dump_tag(unicode_buffer, tag_name, true);
+            open_tags.push(tag_name);
             temporarily_closed_tags.pop();
         }
-
-        // Dump opening tags
-        std::vector<Glib::RefPtr<Gtk::TextTag>> opening_tags =
-            it.get_toggled_tags(true);
-
-        for (auto tag : opening_tags) {
-            Glib::ustring tag_name = tag->property_name();
-            dump_tag(unicode_buffer, tag_name, true);
-            open_tags.push(tag_name);
-        }
-
-        dump_character(unicode_buffer, *it);
     }
 
-    // Dump the remaining closing tags
+    // Push back whatever text has left.
+    unicode_buffer += text;
+
+    // Dump the remaining closing tags, if any. This is not an error.
     while (!open_tags.empty()) {
         dump_tag(unicode_buffer, open_tags.top(), false);
         open_tags.pop();
     }
 
+    return unicode_buffer;
+}
+
+guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+                         const Gtk::TextBuffer::iterator& start,
+                         const Gtk::TextBuffer::iterator& end, gsize& length) {
+    Glib::ustring unicode_buffer;
+    std::string tagged_text = dump_text_buffer(content_buffer, start, end);
+    std::string normalized_xml = normalize_text_buffer_dump(tagged_text);
+
+    dump_tag(unicode_buffer, "ff_root", true);
+    unicode_buffer += normalized_xml;
     dump_tag(unicode_buffer, "ff_root", false);
 
     length = unicode_buffer.bytes();
