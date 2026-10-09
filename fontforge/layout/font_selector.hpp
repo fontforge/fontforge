@@ -45,6 +45,8 @@ class RichTextFontSelector {
 
     std::stringstream xml_manifest() const;
 
+    static const std::string rich_text_mime_type;
+
  private:
     std::vector<SplineFontProperties> properties_list_;
 };

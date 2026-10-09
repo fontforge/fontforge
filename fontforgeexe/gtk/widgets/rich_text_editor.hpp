@@ -58,8 +58,6 @@ class RichTextEditor : public Gtk::Grid {
     // Load buffer from XML stream
     void load_buffer(std::istream& istream);
 
-    static const std::string rich_text_mime_type;
-
     // TextView accessors
     Glib::RefPtr<Gtk::TextBuffer> get_buffer() {
         return text_view_.get_buffer();
@@ -250,4 +248,13 @@ class RichTextEditor : public Gtk::Grid {
     void on_save_buffer_to_xml();
 };
 
+void dump_tag(Glib::ustring& unicode_buffer, const Glib::ustring& tag_name,
+              bool opening);
+
+std::string dump_text_buffer(
+    const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+    const Gtk::TextBuffer::iterator& start,
+    const Gtk::TextBuffer::iterator& end);
+
+std::string normalize_text_buffer_dump(const std::string& dump);
 }  // namespace ff::widget

@@ -102,4 +102,7 @@ std::stringstream RichTextFontSelector::xml_manifest() const {
     return unicode_buffer;
 }
 
+const std::string RichTextFontSelector::rich_text_mime_type =
+    "application/vnd.fontforge.rich-text+xml";
+
 }  // namespace ff::layout

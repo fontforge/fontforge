@@ -31,6 +31,7 @@
 #include "l10n_text.hpp"
 #include "utils.hpp"
 #include "win32_utils.hpp"
+#include "layout/font_selector.hpp"
 
 extern "C" {
 extern uint64_t* SFScriptsLangs(SplineFont* sf);
@@ -342,6 +343,26 @@ static widget::RichTextFontProperties make_rt_properties(
     return rt_props;
 }
 
+guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+                         const Gtk::TextBuffer::iterator& start,
+                         const Gtk::TextBuffer::iterator& end, gsize& length) {
+    Glib::ustring unicode_buffer;
+    std::string tagged_text =
+        widget::dump_text_buffer(content_buffer, start, end);
+    std::string normalized_xml =
+        widget::normalize_text_buffer_dump(tagged_text);
+
+    widget::dump_tag(unicode_buffer, "ff_root", true);
+    unicode_buffer += normalized_xml;
+    widget::dump_tag(unicode_buffer, "ff_root", false);
+
+    length = unicode_buffer.bytes();
+    char* utf8_buffer = new char[length + 1];
+    std::strcpy(utf8_buffer, unicode_buffer.c_str());
+
+    return (guint8*)utf8_buffer;
+}
+
 void PrintPreviewWidget::build_sample_text_editor() {
     bool generic = true;
     std::vector<SplineFontProperties> font_list =
@@ -374,6 +395,8 @@ void PrintPreviewWidget::build_sample_text_editor() {
                const Gtk::TextBuffer::iterator&) {
             preview_area.queue_draw();
         });
+    sample_text_->get_buffer()->register_serialize_format(
+        layout::RichTextFontSelector::rich_text_mime_type, &ff_xml_serialize);
 }
 
 Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
@@ -614,7 +637,7 @@ void PrintPreviewWidget::activate_cairo_printer(
         gsize length = 0;
         Glib::RefPtr<Gtk::TextBuffer> buffer = sample_text_->get_buffer();
         char* out_buffer = (char*)buffer->serialize(
-            buffer, widget::RichTextEditor::rich_text_mime_type,
+            buffer, layout::RichTextFontSelector::rich_text_mime_type,
             buffer->begin(), buffer->end(), length);
         persistent.sample_text = out_buffer;
 

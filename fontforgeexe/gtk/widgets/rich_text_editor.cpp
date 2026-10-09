@@ -205,7 +205,7 @@ void dump_tag(Glib::ustring& unicode_buffer, const Glib::ustring& tag_name,
 // Dumps the content of a Gtk::TextBuffer to a string, with all the TextBuffer
 // tags serialized as XML tags. The result is not a proper XML, since its tags
 // can be interleaved and not properly nested.
-static std::string dump_text_buffer(
+std::string dump_text_buffer(
     const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
     const Gtk::TextBuffer::iterator& start,
     const Gtk::TextBuffer::iterator& end) {
@@ -299,27 +299,6 @@ std::string normalize_text_buffer_dump(const std::string& dump) {
     return unicode_buffer;
 }
 
-guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
-                         const Gtk::TextBuffer::iterator& start,
-                         const Gtk::TextBuffer::iterator& end, gsize& length) {
-    Glib::ustring unicode_buffer;
-    std::string tagged_text = dump_text_buffer(content_buffer, start, end);
-    std::string normalized_xml = normalize_text_buffer_dump(tagged_text);
-
-    dump_tag(unicode_buffer, "ff_root", true);
-    unicode_buffer += normalized_xml;
-    dump_tag(unicode_buffer, "ff_root", false);
-
-    length = unicode_buffer.bytes();
-    char* utf8_buffer = new char[length + 1];
-    std::strcpy(utf8_buffer, unicode_buffer.c_str());
-
-    return (guint8*)utf8_buffer;
-}
-
-const std::string RichTextEditor::rich_text_mime_type =
-    "application/vnd.fontforge.rich-text+xml";
-
 RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
                                const RichTextFontList& font_list) {
     scale_css_provider_ = Gtk::CssProvider::create();
@@ -353,8 +332,6 @@ RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
                      G_CALLBACK(&RichTextEditor::on_text_view_paste_clipboard),
                      this);
 
-    text_view_.get_buffer()->register_serialize_format(rich_text_mime_type,
-                                                       &ff_xml_serialize);
     text_view_.get_buffer()->register_deserialize_format("text/html",
                                                          &ff_deserialize_html);
 
@@ -776,11 +753,10 @@ void RichTextEditor::on_save_buffer_to_xml() {
         std::string filepath = dialog.get_filename();
         Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
 
-        Gtk::TextBuffer::iterator start = buffer->begin();
-        Gtk::TextBuffer::iterator end = buffer->end();
-
         gsize length = 0;
-        guint8* serialized = ff_xml_serialize(buffer, start, end, length);
+        char* serialized = (char*)buffer->serialize(
+            buffer, layout::RichTextFontSelector::rich_text_mime_type,
+            buffer->begin(), buffer->end(), length);
 
         if (serialized != nullptr) {
             std::ofstream file(filepath, std::ios::binary);
