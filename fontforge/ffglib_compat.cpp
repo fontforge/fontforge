@@ -13,6 +13,7 @@
 #include <cstring>
 #include <ctime>
 #include <filesystem>
+#include <new>
 #include <random>
 #include <regex>
 #include <set>
