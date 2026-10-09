@@ -172,7 +172,7 @@ static int lgetlong(FILE *f) {
     ch2 = getc(f);
     ch3 = getc(f);
     ch4 = getc(f);
-return( (ch4<<24)|(ch3<<16)|(ch2<<8)|ch1 );
+return( CHR(ch4,ch3,ch2,ch1) );
 }
 
 static void lputshort(FILE *f,int val) {

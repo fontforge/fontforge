@@ -2287,7 +2287,7 @@ static void decrypteexec(FILE *in,FILE *temp, int hassectionheads,char *extra) {
 	sect_len = bgetc(extra,in);
 	sect_len |= bgetc(extra,in)<<8;
 	sect_len |= bgetc(extra,in)<<16;
-	sect_len |= bgetc(extra,in)<<24;
+	sect_len |= (int)((uint32_t)bgetc(extra,in)<<24);
 	sect_len -= 3;
 	ch1 = bgetc(extra,in);
     }
@@ -2317,7 +2317,7 @@ return;
 		    sect_len = bgetc(extra,in);
 		    sect_len |= bgetc(extra,in)<<8;
 		    sect_len |= bgetc(extra,in)<<16;
-		    sect_len |= bgetc(extra,in)<<24;
+		    sect_len |= (int)((uint32_t)bgetc(extra,in)<<24);
 		    sect_len += 1;
 		    if ( ch1=='\1' )
 	break;
