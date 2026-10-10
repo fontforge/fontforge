@@ -343,18 +343,27 @@ static widget::RichTextFontProperties make_rt_properties(
     return rt_props;
 }
 
-guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
-                         const Gtk::TextBuffer::iterator& start,
-                         const Gtk::TextBuffer::iterator& end, gsize& length) {
+guint8* PrintPreviewWidget::ff_xml_serialize(
+    const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+    const Gtk::TextBuffer::iterator& start,
+    const Gtk::TextBuffer::iterator& end, gsize& length) {
     Glib::ustring unicode_buffer;
+    std::vector<SplineFontProperties> font_list =
+        cairo_painter_.get_font_list();
+    layout::RichTextFontSelector font_selector(font_list);
+    std::string manifest = font_selector.xml_manifest().str();
+
     std::string tagged_text =
         widget::dump_text_buffer(content_buffer, start, end);
     std::string normalized_xml =
         widget::normalize_text_buffer_dump(tagged_text);
 
-    widget::dump_tag(unicode_buffer, "ff_root", true);
+    widget::dump_tag(unicode_buffer, "ff-sample", true);
+    unicode_buffer += manifest;
+    widget::dump_tag(unicode_buffer, "body", true);
     unicode_buffer += normalized_xml;
-    widget::dump_tag(unicode_buffer, "ff_root", false);
+    widget::dump_tag(unicode_buffer, "body", false);
+    widget::dump_tag(unicode_buffer, "ff-sample", false);
 
     length = unicode_buffer.bytes();
     char* utf8_buffer = new char[length + 1];
@@ -396,7 +405,8 @@ void PrintPreviewWidget::build_sample_text_editor() {
             preview_area.queue_draw();
         });
     sample_text_->get_buffer()->register_serialize_format(
-        layout::RichTextFontSelector::rich_text_mime_type, &ff_xml_serialize);
+        layout::RichTextFontSelector::rich_text_mime_type,
+        sigc::mem_fun(*this, &PrintPreviewWidget::ff_xml_serialize));
 }
 
 Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {

@@ -687,6 +687,10 @@ void SampleTextPrinter::calculate_layout(
     double line_buffer_width = 0;
 
     for (const auto& [current_tags, raw_text] : parsed_text) {
+        // Ignore manifest
+        // TODO(iorsh): consider manifest for font selection
+        if (current_tags.size() >= 2 && current_tags[1] == "manifest") continue;
+
         std::vector<ParsedTag> parsed_tags;
         for (const std::string& tag : current_tags) {
             parsed_tags.emplace_back(parse_tag(tag));

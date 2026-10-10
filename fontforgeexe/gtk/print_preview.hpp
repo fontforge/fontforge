@@ -67,6 +67,11 @@ class PrintPreviewWidget : public Gtk::Grid {
     // Build and initialize the sample text popover
     void build_sample_text_popover(Gtk::Widget* parent_widget);
 
+    guint8* ff_xml_serialize(
+        const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+        const Gtk::TextBuffer::iterator& start,
+        const Gtk::TextBuffer::iterator& end, gsize& length);
+
     // Build controls for sample text mode.
     Gtk::Widget* build_opentype_controls();
     void build_sample_text_editor();

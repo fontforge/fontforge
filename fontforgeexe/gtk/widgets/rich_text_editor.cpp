@@ -363,7 +363,7 @@ void RichTextEditor::load_buffer(std::istream& istream) {
 
         for (const std::string& raw_tag : raw_tags) {
             std::string tag_name = normalize_ff_xml_tag(raw_tag);
-            if (tag_name == "ff_root") {
+            if (tag_name == "ff-sample") {
                 continue;
             }
 
