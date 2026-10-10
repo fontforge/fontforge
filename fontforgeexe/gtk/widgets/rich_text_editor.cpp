@@ -720,9 +720,10 @@ void RichTextEditor::on_load_buffer_from_xml() {
     dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
 
     auto filter = Gtk::FileFilter::create();
-    filter->set_name(_("FontForge sample text"));
+    filter->set_name(_("FontForge sample text (*.ffxml)"));
     filter->add_pattern("*.ffxml");
     dialog.add_filter(filter);
+    dialog.set_filter(filter);
 
     if (dialog.run() != Gtk::RESPONSE_OK) {
         return;
@@ -745,9 +746,11 @@ void RichTextEditor::on_save_buffer_to_xml() {
     dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
 
     auto filter = Gtk::FileFilter::create();
-    filter->set_name(_("FontForge sample text"));
+    filter->set_name(_("FontForge sample text (*.ffxml)"));
     filter->add_pattern("*.ffxml");
     dialog.add_filter(filter);
+    dialog.set_filter(filter);
+    dialog.set_current_name("Untitled.ffxml");
 
     if (dialog.run() == Gtk::RESPONSE_OK) {
         std::string filepath = dialog.get_filename();
