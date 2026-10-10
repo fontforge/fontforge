@@ -1117,6 +1117,80 @@ return( arabicfixup(sf,space,ini,final));
 return( space );
 }
 
+int compoundCodepointsToUniString(unichar_t *buf, const char *name, int n) {
+    int i, j;
+    int uni[4] = {-1, -1, -1, -1};
+    if (n <= 0)
+	n = strlen(name);
+    if ( strncmp(name,"uni",3)==0 ) {
+	for ( i=2; i<=4; ++i ) {
+	    if (n == i * 4 + 3) {
+		for ( j=0; j<i; ++j ) {
+		    sscanf(name+(j*4+3),"%04x", (unsigned *) (uni+j) );
+		    if ( uni[j]==-1 )
+			return 0;
+		}
+		for ( j=0; j<i; ++j ) {
+		    buf[j] = uni[j];
+		}
+		buf[i] = 0;
+		return 1;
+	    }
+	}
+    }
+    return 0;
+}
+
+int compoundNamesToUniString(unichar_t *buf, const char *name, int n, enum uni_interp interp, Encoding *enc) {
+    char component[64];
+    const char *strptr, *endptr;
+    int cnt = 0, componentLen, uni[8], i;
+    if (n <= 0)
+	n = strlen(name);
+    if (n >= 64)
+	n = 63;
+    endptr = name + n;
+    if ( (strptr = strstr(name, "_")) && strptr < endptr ) {
+	do {
+	    componentLen = strptr - name;
+	    if ( 0 < componentLen && componentLen < 64 ) {
+		strncpy(component, name, componentLen);
+		component[componentLen] = '\0';
+		uni[cnt] = UniFromName(component, interp, enc);
+		if ( uni[cnt] == -1 ) /* nonexistent */
+		    return 0;
+		name = strptr + 1;
+		n = endptr - name;
+		if ( n > 0 ) {
+		    strptr = strstr(name, "_");
+		    if ( !strptr && strptr < endptr )
+			strptr = endptr;
+		}
+	    } else { /* consecutive underscore or too long name */
+		return 0;
+	    }
+	} while ( (++cnt) < 4 && n > 0 );
+	for ( i=0; i<cnt; ++i ) {
+	    buf[i] = uni[i];
+	}
+	return 1;
+    }
+    return 0;
+}
+
+const unichar_t *SFGetComponentsFromLigatureName(SplineFont *sf, SplineChar *sc, int usebasename) {
+    static unichar_t greekalts[5];
+    char *dot = usebasename ? strchr(sc->name,'.') : NULL;
+
+    if ( sc!=NULL ) {
+        if ( compoundCodepointsToUniString(greekalts, sc->name, dot ? dot - sc->name : 0) )
+            return greekalts;
+        if ( compoundNamesToUniString(greekalts, sc->name, dot ? dot - sc->name : 0, sf->uni_interp, NULL) )
+            return greekalts;
+    }
+    return NULL;
+}
+
 const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck) {
     static unichar_t greekalts[5];
     const unichar_t *upt, *pt; unichar_t *gpt;
@@ -1130,6 +1204,8 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int noch
             base = UniFromName(temp,sf->uni_interp,NULL);
             free(temp);
         }
+        if ( base==-1 && (pt = SFGetComponentsFromLigatureName(sf, sc, true)) )
+            return( pt );
     }
 
     if ( base>=0xac00 && base<=0xd7a3 ) { /* Hangul syllables */
@@ -1140,7 +1216,7 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int noch
 	else
 	    greekalts[2] = (base-0xac00)%28 -1 + 0x11a8;
 	greekalts[3] = 0;
-return( greekalts );
+	return( greekalts );
     }
     if ( base=='i' || base=='j' ) {
 	if ( base=='i' )
@@ -1151,15 +1227,15 @@ return( greekalts );
 	    greekalts[0] = 0xf6be;		/* Dotlessj in Adobe's private use area */
 	greekalts[1] = 0x307;
 	greekalts[2] = 0;
-return( greekalts );
+	return( greekalts );
     }
 
     if ( sf->uni_interp==ui_adobe && base>=0xf600 && base<=0xf7ff &&
 	    adobes_pua_alts[base-0xf600][0]!=0 )
-return( adobes_pua_alts[base-0xf600]);
+	return( adobes_pua_alts[base-0xf600]);
 
     if ( (upt = unialt(base))==NULL )
-return( SFAlternateFromLigature(sf,base,sc));
+	return( SFAlternateFromLigature(sf,base,sc));
 
 	    /* The definitions of some of the greek letters may make some */
 	    /*  linguistic sense, but I can't use it to place the accents */
@@ -1167,12 +1243,12 @@ return( SFAlternateFromLigature(sf,base,sc));
     if ( base>=0x1f00 && base<0x2000 ) {
 	gpt = unicode_greekalts[base-0x1f00];
 	if ( *gpt && (nocheck ||
-		(haschar(sf,*gpt,dot) && (gpt[1]=='\0' || haschar(sf,gpt[1],dot))) ))
-return( gpt );
+	    (haschar(sf,*gpt,dot) && (gpt[1]=='\0' || haschar(sf,gpt[1],dot))) ))
+		return( gpt );
 	    /* Similarly for these (korean) jamo */
     } else if (( base>=0x1176 && base<=0x117e ) || (base>=0x119a && base<=0x119c)) {
 	greekalts[0] = upt[1]; greekalts[1] = upt[0]; greekalts[2] = 0;
-return( greekalts );
+	return( greekalts );
     } else if ( base>=0x380 && base<=0x3ff && upt!=NULL ) {
 	/* Use precombined accents when possible */
 	if ( base==0x390 || base==0x3b0 ) {
@@ -1180,7 +1256,7 @@ return( greekalts );
 	    greekalts[1] = 0x385;
 	    greekalts[2] = '\0';
 	    if ( nocheck || haschar(sf,greekalts[1],dot))
-return( greekalts );
+		return( greekalts );
 	}
 	/* In version 3 of unicode tonos gets converted to acute, which it */
 	/*  doesn't look like. Convert it back */
@@ -1192,10 +1268,10 @@ return( greekalts );
 		else
 		    *gpt++ = *upt;
 	    }
-return( greekalts );
+	    return( greekalts );
 	}
     } else if (( base>=0xfb50 && base<=0xfdff ) || ( base>=0xfe70 && base<0xfeff ))
-return( arabicfixup(sf,upt,isarabisolated(base)||isarabinitial(base),
+	return( arabicfixup(sf,upt,isarabisolated(base)||isarabinitial(base),
 		isarabisolated(base)||isarabfinal(base)));
     else if ( base==0x0122 || base==0x0136 || base==0x137 ||
 	    base==0x013b || base==0x013c || base==0x0145 ||
@@ -1212,13 +1288,13 @@ return( arabicfixup(sf,upt,isarabisolated(base)||isarabinitial(base),
 			   'r';
 	greekalts[1] = 0x326;
 	greekalts[2] = '\0';
-return( greekalts );
+	return( greekalts );
     } else if ( base==0x0123 ) {
 	/* Unicode says this uses cedilla, but it looks like a turned comma above */
 	greekalts[0] = 'g';
 	greekalts[1] = 0x312;
 	greekalts[2] = '\0';
-return( greekalts );
+	return( greekalts );
     } else if ( base==0x010f || base==0x013d || base==0x013e || base==0x0165 ) {
 	/* Unicode says these use caron, but it looks like comma above right */
 	greekalts[0] =  base==0x010f ? 'd' :
@@ -1227,7 +1303,7 @@ return( greekalts );
 			   't';
 	greekalts[1] = 0x315;
 	greekalts[2] = '\0';
-return( greekalts );
+	return( greekalts );
     } else if (isdecompcircle(base) && u_strlen(upt) < (sizeof(greekalts)/sizeof(greekalts[0])-1)) {
 	static const unichar_t circle[] = {0x20dd, 0};
 	u_strcpy(greekalts, upt);
@@ -1235,7 +1311,7 @@ return( greekalts );
 	return greekalts;
     }
 
-return( upt );
+    return( upt );
 }
 
 static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
