@@ -36,6 +36,23 @@
 
 namespace ff::layout {
 
+static const std::map<int16_t, std::string> weight_to_name = {
+    {100, "thin"},    {200, "extra-light"}, {300, "light"},
+    {400, "regular"}, {500, "medium"},      {600, "semi-bold"},
+    {700, "bold"},    {800, "extra-bold"},  {900, "black"}};
+static const std::map<std::string, int16_t> name_to_weight = {
+    {"thin", 100},    {"extra-light", 200}, {"light", 300},
+    {"regular", 400}, {"medium", 500},      {"semi-bold", 600},
+    {"bold", 700},    {"extra-bold", 800},  {"black", 900}};
+static const std::map<int16_t, std::string> stretch_to_name = {
+    {1, "ultra-condensed"}, {2, "extra-condensed"}, {3, "condensed"},
+    {4, "semi-condensed"},  {5, "normal"},          {6, "semi-expanded"},
+    {7, "expanded"},        {8, "extra-expanded"},  {9, "ultra-expanded"}};
+static const std::map<std::string, int16_t> name_to_stretch = {
+    {"ultra-condensed", 1}, {"extra-condensed", 2}, {"condensed", 3},
+    {"semi-condensed", 4},  {"normal", 5},          {"semi-expanded", 6},
+    {"expanded", 7},        {"extra-expanded", 8},  {"ultra-expanded", 9}};
+
 size_t RichTextFontSelector::select_face(
     const std::vector<ParsedTag>& parsed_tags,
     const SplineFontProperties& default_properties) const {
@@ -61,23 +78,6 @@ std::stringstream RichTextFontSelector::xml_manifest() const {
     std::stringstream unicode_buffer;
     unicode_buffer << "<manifest>";
     bool default_face_written = false;
-
-    static const std::map<int16_t, std::string> weight_to_name = {
-        {100, "thin"},    {200, "extra-light"}, {300, "light"},
-        {400, "regular"}, {500, "medium"},      {600, "semi-bold"},
-        {700, "bold"},    {800, "extra-bold"},  {900, "black"}};
-    static const std::map<std::string, int16_t> name_to_weight = {
-        {"thin", 100},    {"extra-light", 200}, {"light", 300},
-        {"regular", 400}, {"medium", 500},      {"semi-bold", 600},
-        {"bold", 700},    {"extra-bold", 800},  {"black", 900}};
-    static const std::map<int16_t, std::string> stretch_to_name = {
-        {1, "ultra-condensed"}, {2, "extra-condensed"}, {3, "condensed"},
-        {4, "semi-condensed"},  {5, "normal"},          {6, "semi-expanded"},
-        {7, "expanded"},        {8, "extra-expanded"},  {9, "ultra-expanded"}};
-    static const std::map<std::string, int16_t> name_to_stretch = {
-        {"ultra-condensed", 1}, {"extra-condensed", 2}, {"condensed", 3},
-        {"semi-condensed", 4},  {"normal", 5},          {"semi-expanded", 6},
-        {"expanded", 7},        {"extra-expanded", 8},  {"ultra-expanded", 9}};
 
     for (const auto& properties : properties_list_) {
         unicode_buffer << "<font key=\"" << properties.full_name << "\""
@@ -282,6 +282,62 @@ ParsedRichText parse_xml_stream(std::istream& input) {
     }
 
     return parsed_input;
+}
+
+std::vector<SplineFontProperties> parse_manifest(const ParsedRichText& parsed) {
+    std::map<std::string, SplineFontProperties> font_map;
+    // Extract font name using pattern <font key="font_name">, without angular
+    // brackets.
+    std::regex font_key_regex(R"-(font\s+key="([^"]+)")-");
+    std::string default_font_key;
+
+    for (const auto& [tags, text] : parsed) {
+        if (tags.size() >= 4 && tags[0] == "ff-sample" &&
+            tags[1] == "manifest" && tags[2].substr(0, 5) == "font ") {
+            std::smatch match;
+            if (std::regex_search(tags[2], match, font_key_regex) &&
+                match.size() == 2) {
+                std::string font_key = match[1];
+                SplineFontProperties& current_font_properties =
+                    font_map[font_key];
+
+                if (tags[2].find("default=\"true\"") != std::string::npos) {
+                    default_font_key = font_key;
+                }
+
+                const std::string& style_tag = tags[3];
+                if (style_tag == "family") {
+                    current_font_properties.family_name = text;
+                } else if (style_tag == "name") {
+                    current_font_properties.full_name = text;
+                } else if (style_tag == "weight") {
+                    auto it = name_to_weight.find(text);
+                    if (it != name_to_weight.end()) {
+                        current_font_properties.os2_weight = it->second;
+                    }
+                } else if (style_tag == "stretch") {
+                    auto it = name_to_stretch.find(text);
+                    if (it != name_to_stretch.end()) {
+                        current_font_properties.os2_width = it->second;
+                    }
+                } else if (style_tag == "style") {
+                    current_font_properties.italic = (text == "italic");
+                }
+            }
+        }
+    }
+
+    std::vector<SplineFontProperties> font_list;
+    // If a default font was specified, move it to the front of the list.
+    if (!default_font_key.empty()) {
+        font_list.push_back(font_map[default_font_key]);
+        font_map.erase(default_font_key);
+    }
+    for (const auto& [key, properties] : font_map) {
+        font_list.push_back(properties);
+    }
+
+    return font_list;
 }
 
 }  // namespace ff::layout

@@ -76,4 +76,6 @@ std::string normalize_text_buffer_dump(const std::string& dump);
 
 ParsedRichText parse_xml_stream(std::istream& input);
 
+std::vector<SplineFontProperties> parse_manifest(const ParsedRichText& parsed);
+
 }  // namespace ff::layout
