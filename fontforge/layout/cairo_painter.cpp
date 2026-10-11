@@ -679,7 +679,7 @@ void SampleTextPrinter::calculate_layout(
     setup_context(cr);
 
     std::istringstream stream(sample_text);
-    ParsedRichText parsed_text = parse_xml_stream(stream);
+    layout::ParsedRichText parsed_text = layout::parse_xml_stream(stream);
     SplineFontProperties default_properties = get_default_style(parsed_text);
 
     // Buffer of text blocks for a single line of output
@@ -801,7 +801,7 @@ void SampleTextPrinter::paginate(double layout_height) {
 }
 
 SplineFontProperties SampleTextPrinter::get_default_style(
-    const ParsedRichText& rich_text) const {
+    const layout::ParsedRichText& rich_text) const {
     if (rich_text.empty()) {
         return cairo_family_[0].props;
     }
@@ -1123,64 +1123,6 @@ PrintGlyphMap build_glyph_map(SplineFont* sf) {
     }
     free(ttf_map);
     return print_map;
-}
-
-bool tags_match(const std::string& opening_tag,
-                const std::string& closing_tag) {
-    // Compare the opening tag without the attributes (which may be present
-    // after the space delimiter or not present at all).
-    size_t space_in_opening_tag = opening_tag.find(' ');
-    // Compare with the closing tag without its leading slash character.
-    return opening_tag.compare(0, space_in_opening_tag, closing_tag, 1,
-                               std::string::npos) == 0;
-}
-
-std::string unescape_xml(const std::string& text_in) {
-    std::string text_out;
-    text_out = std::regex_replace(text_in, std::regex("&lt;"), "<");
-    text_out = std::regex_replace(text_out, std::regex("&quot;"), "\"");
-    text_out = std::regex_replace(text_out, std::regex("&apos;"), "\'");
-    text_out = std::regex_replace(text_out, std::regex("&gt;"), ">");
-    text_out = std::regex_replace(text_out, std::regex("&amp;"), "&");
-    return text_out;
-}
-
-ParsedRichText parse_xml_stream(std::istream& input) {
-    std::string text, tag;
-    // Array of text blocks as follows: (text block, list of tags applied on
-    // that block)
-    ParsedRichText parsed_input;
-    std::vector<std::string> current_tags;
-
-    while (std::getline(input, text, '<') && std::getline(input, tag, '>')) {
-        if (!text.empty()) {
-            std::string unescaped_text = unescape_xml(text);
-            parsed_input.emplace_back(current_tags, unescaped_text);
-        }
-        if (tag.size() > 0 && tag.front() == '/') {
-            if (!current_tags.empty() &&
-                tags_match(tag, current_tags.back()) == 0) {
-                current_tags.pop_back();
-            } else {
-                std::cerr << "Rich text XML parser failed at tag \"" << tag
-                          << "\", position " << input.tellg() << std::endl;
-                break;
-            }
-        } else if (tag.size() > 0 && tag.back() == '/') {
-            // Self-closing tag, like <meta/>. We can ignore it, since it
-            // doesn't affect the style of any text.
-        } else {
-            current_tags.push_back(tag);
-        }
-    }
-
-    // Generally valid XML doesn't have trailing text after all tags have been
-    // closed. Push back whatever we have read, just in case.
-    if (!text.empty()) {
-        parsed_input.emplace_back(current_tags, text);
-    }
-
-    return parsed_input;
 }
 
 ParsedTag parse_tag(const std::string& complete_tag) {

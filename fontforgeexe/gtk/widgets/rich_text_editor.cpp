@@ -39,9 +39,9 @@
 
 namespace ff::widget {
 
-static ff::utils::ParsedRichText collapse_html_spaces(
-    const ff::utils::ParsedRichText& input) {
-    ff::utils::ParsedRichText collapsed;
+static layout::ParsedRichText collapse_html_spaces(
+    const layout::ParsedRichText& input) {
+    layout::ParsedRichText collapsed;
     bool in_space = false;
     bool prev_in_p = false;
     auto tag_is_p = [](const std::string& tag) {
@@ -95,8 +95,8 @@ bool ff_deserialize_html(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
 
     std::string html((const char*)data, length);
     std::istringstream html_stream(html);
-    ff::utils::ParsedRichText parsed =
-        collapse_html_spaces(ff::utils::parse_xml_stream(html_stream));
+    layout::ParsedRichText parsed =
+        collapse_html_spaces(layout::parse_xml_stream(html_stream));
 
     Glib::RefPtr<Gtk::TextBuffer> target_buffer = iter.get_buffer();
     auto tag_table = target_buffer->get_tag_table();
@@ -233,7 +233,7 @@ RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
 }
 
 void RichTextEditor::load_buffer(std::istream& istream) {
-    ff::utils::ParsedRichText parsed = ff::utils::parse_xml_stream(istream);
+    layout::ParsedRichText parsed = layout::parse_xml_stream(istream);
 
     Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
     if (!buffer) {

@@ -60,9 +60,6 @@ struct CairoFontRec {
 // used when no modifiers are specified.
 using CairoFontFamily = std::vector<CairoFontRec>;
 
-using ParsedRichText =
-    std::vector<std::pair<std::vector<std::string>, std::string>>;
-
 // size_t "font_idx" is an index into CairoPainter::cairo_family_.
 using RichTextLineBuffer =
     std::vector<std::tuple<std::string, size_t /*font_idx*/, double /*size*/>>;
@@ -241,7 +238,7 @@ class SampleTextPrinter : public ff::layout::IPrinter {
                           const std::string& sample_text);
     void paginate(double layout_height);
     SplineFontProperties get_default_style(
-        const ParsedRichText& rich_text) const;
+        const layout::ParsedRichText& rich_text) const;
 
     // Draw a single rich text buffer.
     void draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -313,8 +310,6 @@ class CairoPainter {
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
 CairoFontFamily create_cairo_family(SplineFont* current_sf);
 PrintGlyphMap build_glyph_map(SplineFont* sf);
-
-ParsedRichText parse_xml_stream(std::istream& input);
 
 ParsedTag parse_tag(const std::string& complete_tag);
 

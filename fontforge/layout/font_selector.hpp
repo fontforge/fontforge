@@ -32,6 +32,10 @@
 
 namespace ff::layout {
 
+// A sequence of text segments with associated tags.
+using ParsedRichText = std::vector<
+    std::pair<std::vector<std::string> /*tags*/, std::string /*text*/>>;
+
 class RichTextFontSelector {
  public:
     explicit RichTextFontSelector(
@@ -69,5 +73,7 @@ void dump_tag(std::string& unicode_buffer, const std::string& tag_name,
 // RichTextEditor naming convention to a more human-oriented format - see
 // dump_tag().
 std::string normalize_text_buffer_dump(const std::string& dump);
+
+ParsedRichText parse_xml_stream(std::istream& input);
 
 }  // namespace ff::layout
