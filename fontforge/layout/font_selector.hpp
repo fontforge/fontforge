@@ -45,10 +45,29 @@ class RichTextFontSelector {
 
     std::stringstream xml_manifest() const;
 
+    // Compose a sample text XML document, which contains the manifest and the
+    // contents of RichTextEditor text buffer with tags normalized to proper XML
+    // format. While normally saved from the UI, this function can be used to
+    // generate a sample text XML from any tagged text, e.g. for testing
+    // purposes.
+    std::string compose_sample_text_xml(const std::string& tagged_text) const;
+
     static const std::string rich_text_mime_type;
 
  private:
     std::vector<SplineFontProperties> properties_list_;
 };
+
+// By convention, TextBuffer::Tag name may come in the format
+// "tag_name|tag_value". This format should be dumped as <tag_name
+// value="tag_value">.
+void dump_tag(std::string& unicode_buffer, const std::string& tag_name,
+              bool opening);
+
+// Normalizes Gtk::TextBuffer dump to a proper XML, by ensuring that all the
+// tags are properly nested and not interleaved. Tags are also normalized from
+// RichTextEditor naming convention to a more human-oriented format - see
+// dump_tag().
+std::string normalize_text_buffer_dump(const std::string& dump);
 
 }  // namespace ff::layout

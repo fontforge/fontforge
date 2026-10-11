@@ -165,43 +165,6 @@ void dump_character(Glib::ustring& unicode_buffer, const gunichar& character) {
     }
 }
 
-void dump_tag(Glib::ustring& unicode_buffer, const Glib::ustring& tag_name,
-              bool opening) {
-    // By convention, TextBuffer::Tag name may come in the format
-    // "tag_name|tag_value". This format should be dumped as <tag_name
-    // value="tag_value">.
-    std::string name, value;
-    size_t delim = tag_name.find('|');
-    if (delim != std::string::npos) {
-        name = tag_name.substr(0, delim);
-        value = tag_name.substr(delim + 1);
-    } else {
-        name = tag_name;
-    }
-
-    // Check if the closing tag is directly following the opening tag, in which
-    // case both should be dropped.
-    if (!opening && unicode_buffer.size() >= name.size() + 2 &&
-        *unicode_buffer.rbegin() == '>') {
-        size_t opening_pos = unicode_buffer.rfind('<');
-        if (unicode_buffer.find("<" + name + ">", opening_pos) == opening_pos ||
-            unicode_buffer.find("<" + name + " ", opening_pos) == opening_pos) {
-            unicode_buffer.erase(opening_pos);
-            return;
-        }
-    }
-
-    unicode_buffer.push_back('<');
-    if (!opening) {
-        unicode_buffer.push_back('/');
-    }
-    unicode_buffer += name;
-    if (opening && !value.empty()) {
-        unicode_buffer += " value=\"" + value + '\"';
-    }
-    unicode_buffer.push_back('>');
-}
-
 // Dumps the content of a Gtk::TextBuffer to a string, with all the TextBuffer
 // tags serialized as XML tags. The result is not a proper XML, since its tags
 // can be interleaved and not properly nested.
@@ -223,77 +186,6 @@ std::string dump_text_buffer(
         }
 
         dump_character(unicode_buffer, *it);
-    }
-
-    return unicode_buffer;
-}
-
-// Normalizes Gtk::TextBuffer dump to a proper XML, by ensuring that all the
-// tags are properly nested and not interleaved. Tags are also normalized from
-// RichTextEditor naming convention to a more human-oriented format - see
-// dump_tag().
-std::string normalize_text_buffer_dump(const std::string& dump) {
-    std::string text, tag;
-    std::istringstream input(dump);
-    Glib::ustring unicode_buffer;
-
-    // Gtk::TextBuffer doesn't enforce nested ranges, so the sequence
-    // "aa<bold>bc<italic>dd</bold>efg</italic>hi" is perfectly valid. We will
-    // use the tag stack to normalize opening and closing tags to follow XML
-    // convention.
-    std::stack<std::string> open_tags;
-
-    while (std::getline(input, text, '<') && std::getline(input, tag, '>')) {
-        // Dump the text before the tag.
-        unicode_buffer += text;
-
-        // Just dump the opening tag. All problems are resolved when we
-        // encounter the closing tag.
-        if (tag.size() == 0 || tag.front() != '/') {
-            dump_tag(unicode_buffer, tag, true);
-            open_tags.push(tag);
-            continue;
-        }
-
-        // Close interleaved tags if there are any, before the pending closing
-        // tag.
-        std::stack<std::string> temporarily_closed_tags;
-
-        // Try to close the tags in the reverse order of opening
-        tag.erase(0, 1);  // Remove the leading '/'
-        while (!open_tags.empty() && tag != open_tags.top()) {
-            dump_tag(unicode_buffer, open_tags.top(), false);
-            temporarily_closed_tags.push(open_tags.top());
-            open_tags.pop();
-        }
-
-        if (open_tags.empty()) {
-            // Closing tag is conflicting with the open tags stack
-            std::cerr << "TextBuffer corruption: closing tag " << tag
-                      << " doesn't match any open tags." << std::endl;
-        } else {
-            // Closing tag correctly corresponds to the latest open tag
-            dump_tag(unicode_buffer, tag, false);
-            open_tags.pop();
-        }
-
-        // Reopen the tags which were temporarily closed to resolve
-        // conflicts.
-        while (!temporarily_closed_tags.empty()) {
-            const std::string& tag_name = temporarily_closed_tags.top();
-            dump_tag(unicode_buffer, tag_name, true);
-            open_tags.push(tag_name);
-            temporarily_closed_tags.pop();
-        }
-    }
-
-    // Push back whatever text has left.
-    unicode_buffer += text;
-
-    // Dump the remaining closing tags, if any. This is not an error.
-    while (!open_tags.empty()) {
-        dump_tag(unicode_buffer, open_tags.top(), false);
-        open_tags.pop();
     }
 
     return unicode_buffer;

@@ -347,27 +347,18 @@ guint8* PrintPreviewWidget::ff_xml_serialize(
     const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
     const Gtk::TextBuffer::iterator& start,
     const Gtk::TextBuffer::iterator& end, gsize& length) {
-    Glib::ustring unicode_buffer;
     std::vector<SplineFontProperties> font_list =
         cairo_painter_.get_font_list();
     layout::RichTextFontSelector font_selector(font_list);
-    std::string manifest = font_selector.xml_manifest().str();
 
     std::string tagged_text =
         widget::dump_text_buffer(content_buffer, start, end);
-    std::string normalized_xml =
-        widget::normalize_text_buffer_dump(tagged_text);
+    std::string sample_text_xml =
+        font_selector.compose_sample_text_xml(tagged_text);
 
-    widget::dump_tag(unicode_buffer, "ff-sample", true);
-    unicode_buffer += manifest;
-    widget::dump_tag(unicode_buffer, "body", true);
-    unicode_buffer += normalized_xml;
-    widget::dump_tag(unicode_buffer, "body", false);
-    widget::dump_tag(unicode_buffer, "ff-sample", false);
-
-    length = unicode_buffer.bytes();
+    length = sample_text_xml.size();
     char* utf8_buffer = new char[length + 1];
-    std::strcpy(utf8_buffer, unicode_buffer.c_str());
+    std::strcpy(utf8_buffer, sample_text_xml.c_str());
 
     return (guint8*)utf8_buffer;
 }
