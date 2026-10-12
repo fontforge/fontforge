@@ -5775,6 +5775,15 @@ static void do_Adobe_Pua(unichar_t *buf,int sob,int uni) {
     buf[j] = 0;
 }
 
+static int compoundCharsToImage(FontView *fv, unichar_t *buf, const char *name, int n) {
+    if ( compoundCodepointsToUniString(buf, name, n) )
+	return 1;
+    else if ( compoundNamesToUniString(buf, name, n, fv->b.sf->uni_interp, fv->b.map->enc) )
+	return 1;
+    else
+	return 0;
+}
+
 static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     int i, j, y, width, gid;
     int changed;
@@ -5842,7 +5851,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	    if ( sc==NULL )
 		sc = SCBuildDummy(&dummy,fv->b.sf,fv->b.map,index);
 	    uni = sc->unicodeenc;
-	    buf[0] = buf[1] = 0;
+	    memset(buf, 0, sizeof buf);
 	    if ( fv->b.sf->uni_interp==ui_ams && uni>=0xe000 && uni<=0xf8ff &&
 		    amspua[uni-0xe000]!=0 )
 		uni = amspua[uni-0xe000];
@@ -5902,6 +5911,9 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			if ( n==7 && sc->name[0]=='u' && sc->name[1]=='n' && sc->name[2]=='i' &&
 				(i=strtol(sc->name+3,&end,16), end-sc->name==7))
 			    buf[0] = i;
+			else if ( compoundCharsToImage(fv, buf, sc->name, n) ) {
+			    fg = fvunenclabelcol;
+			}
 			else if ( n>=5 && n<=7 && sc->name[0]=='u' &&
 				(i=strtol(sc->name+1,&end,16), end-sc->name==n))
 			    buf[0] = i;
@@ -5926,6 +5938,8 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			    if ( strstr(pt,".italic")!=NULL )
 				styles = _uni_italic;
 			}
+		    } else if ( compoundCharsToImage(fv, buf, sc->name, 0) ) {
+			fg = fvunenclabelcol;
 		    } else if ( strncmp(sc->name,"hwuni",5)==0 ) {
 			int uni=-1;
 			sscanf(sc->name,"hwuni%x", (unsigned *) &uni );

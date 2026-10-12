@@ -4002,6 +4002,8 @@ static void CIFillup(CharInfo *ci) {
 	GGadget *cola = GWidgetGetControl(ci->gw,CID_ComponentChangeMsg);
 
     bits = bits2 = SFGetAlternate(sc->parent,sc->unicodeenc,NULL,true);
+    if ( sc->unicodeenc == -1 )
+	bits = bits2 = SFGetComponentsFromLigatureName(sf, sc, false);
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ComponentMsg),
 	bits==NULL ? _("No components") :
 	hascomposing(sc->parent,sc->unicodeenc,sc) ? _("Accented glyph composed of:") :

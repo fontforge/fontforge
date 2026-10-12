@@ -10,6 +10,9 @@ extern "C" {
 extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1, SplineChar *sc2, AnchorPoint **_ap1, AnchorPoint **_ap2);
 extern AnchorClass *AnchorClassMatch(SplineChar *sc1, SplineChar *sc2, AnchorClass *restrict_, AnchorPoint **_ap1, AnchorPoint **_ap2);
 extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1, SplineChar *sc2, AnchorPoint **_ap1, AnchorPoint **_ap2);
+extern int compoundCodepointsToUniString(unichar_t *buf, const char *name, int n);
+extern int compoundNamesToUniString(unichar_t *buf, const char *name, int n, enum uni_interp interp, Encoding *enc);
+extern const unichar_t *SFGetComponentsFromLigatureName(SplineFont *sf, SplineChar *sc, int usebasename);
 extern const unichar_t *SFGetAlternate(SplineFont *sf, int base, SplineChar *sc, int nocheck);
 extern int CanonicalCombiner(int uni);
 extern int hascomposing(SplineFont *sf, int u, SplineChar *sc);
