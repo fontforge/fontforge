@@ -27,6 +27,12 @@
 
 #include "print_preview.hpp"
 
+// TODO: Replace after moving to C++23.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcpp"
+#include <strstream>
+#pragma GCC diagnostic pop
+
 #include "intl.h"
 #include "l10n_text.hpp"
 #include "utils.hpp"
@@ -189,7 +195,8 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
         sample_text_->get_buffer()->set_text(sample_text);
     else {
         std::istringstream istream(persistent.sample_text);
-        sample_text_->load_buffer(istream);
+        sample_text_->load_buffer(sample_text_->get_buffer(),
+                                  sample_text_->get_buffer()->begin(), istream);
     }
     sample_text_->get_buffer()->place_cursor(
         sample_text_->get_buffer()->begin());
@@ -363,6 +370,18 @@ guint8* PrintPreviewWidget::ff_xml_serialize(
     return (guint8*)utf8_buffer;
 }
 
+bool PrintPreviewWidget::ff_xml_deserialize(
+    const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+    const Gtk::TextBuffer::iterator& insert_iter, const guint8* data,
+    gsize length, bool /*create_tags*/) {
+    if (data == nullptr || length == 0) return true;
+
+    std::istrstream istream(reinterpret_cast<const char*>(data),
+                            static_cast<std::streamsize>(length));
+    sample_text_->load_buffer(content_buffer, insert_iter, istream);
+    return true;
+}
+
 void PrintPreviewWidget::build_sample_text_editor() {
     bool generic = true;
     std::vector<SplineFontProperties> font_list =
@@ -398,6 +417,9 @@ void PrintPreviewWidget::build_sample_text_editor() {
     sample_text_->get_buffer()->register_serialize_format(
         layout::RichTextFontSelector::rich_text_mime_type,
         sigc::mem_fun(*this, &PrintPreviewWidget::ff_xml_serialize));
+    sample_text_->get_buffer()->register_deserialize_format(
+        layout::RichTextFontSelector::rich_text_mime_type,
+        sigc::mem_fun(*this, &PrintPreviewWidget::ff_xml_deserialize));
 }
 
 Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {

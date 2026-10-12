@@ -56,7 +56,9 @@ class RichTextEditor : public Gtk::Grid {
                    const RichTextFontList& font_list);
 
     // Load buffer from XML stream
-    void load_buffer(std::istream& istream);
+    void load_buffer(const Glib::RefPtr<Gtk::TextBuffer>& buffer,
+                     const Gtk::TextBuffer::iterator& insert_it,
+                     std::istream& istream);
 
     // TextView accessors
     Glib::RefPtr<Gtk::TextBuffer> get_buffer() {

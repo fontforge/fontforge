@@ -31,6 +31,7 @@
 #include <iostream>
 #include <cstring>
 #include <fstream>
+#include <iterator>
 #include <optional>
 
 #include "intl.h"
@@ -232,16 +233,11 @@ RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
     attach(scrolled_, 0, 1);
 }
 
-void RichTextEditor::load_buffer(std::istream& istream) {
+void RichTextEditor::load_buffer(const Glib::RefPtr<Gtk::TextBuffer>& buffer,
+                                 const Gtk::TextBuffer::iterator& insert_it,
+                                 std::istream& istream) {
     layout::ParsedRichText parsed = layout::parse_xml_stream(istream);
 
-    Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
-    if (!buffer) {
-        return;
-    }
-
-    buffer->set_text("");
-    auto insert_it = buffer->begin();
     auto cursor_mark = buffer->create_mark(insert_it, false);
     auto tag_table = buffer->get_tag_table();
 
@@ -626,7 +622,18 @@ void RichTextEditor::on_load_buffer_from_xml() {
         return;
     }
 
-    load_buffer(file);
+    Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
+    if (!buffer) {
+        return;
+    }
+
+    buffer->set_text("");
+    auto insert_it = buffer->begin();
+
+    std::string xml(std::istreambuf_iterator<char>(file), {});
+    buffer->deserialize(
+        buffer, layout::RichTextFontSelector::rich_text_mime_type, insert_it,
+        reinterpret_cast<const guint8*>(xml.data()), xml.size());
 }
 
 void RichTextEditor::on_save_buffer_to_xml() {
