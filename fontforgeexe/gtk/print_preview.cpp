@@ -382,7 +382,28 @@ bool PrintPreviewWidget::ff_xml_deserialize(
 
     std::istrstream istream(reinterpret_cast<const char*>(data),
                             static_cast<std::streamsize>(length));
-    sample_text_->load_buffer(content_buffer, insert_iter, istream);
+    layout::ParsedRichText parsed = layout::parse_xml_stream(istream);
+    std::vector<SplineFontProperties> imported_fonts =
+        layout::parse_manifest(parsed);
+
+    std::vector<SplineFontProperties> font_list =
+        cairo_painter_.get_font_list();
+    layout::RichTextFontSelector font_selector(font_list);
+    std::map<std::string, std::string> mapped_fonts =
+        font_selector.map_fonts(imported_fonts);
+
+    layout::ParsedRichText remapped =
+        layout::remap_font_names(parsed, mapped_fonts);
+
+    // Drop manifest
+    remapped.erase(std::remove_if(remapped.begin(), remapped.end(),
+                                  [](const auto& segment) {
+                                      return segment.first.size() >= 2 &&
+                                             segment.first[1] == "manifest";
+                                  }),
+                   remapped.end());
+
+    sample_text_->load_buffer(content_buffer, insert_iter, remapped);
     return true;
 }
 

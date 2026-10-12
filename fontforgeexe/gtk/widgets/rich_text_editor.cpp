@@ -36,7 +36,6 @@
 
 #include "intl.h"
 #include "../utils.hpp"
-#include "layout/cairo_painter.hpp"
 
 namespace ff::widget {
 
@@ -235,13 +234,11 @@ RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
 
 void RichTextEditor::load_buffer(const Glib::RefPtr<Gtk::TextBuffer>& buffer,
                                  const Gtk::TextBuffer::iterator& insert_it,
-                                 std::istream& istream) {
-    layout::ParsedRichText parsed = layout::parse_xml_stream(istream);
-
+                                 const layout::ParsedRichText& parsed_text) {
     auto cursor_mark = buffer->create_mark(insert_it, false);
     auto tag_table = buffer->get_tag_table();
 
-    for (const auto& [raw_tags, text] : parsed) {
+    for (const auto& [raw_tags, text] : parsed_text) {
         if (text.empty()) {
             continue;
         }

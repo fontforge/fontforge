@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "combo_text.hpp"
+#include "layout/cairo_painter.hpp"
 
 namespace ff::widget {
 
@@ -58,7 +59,7 @@ class RichTextEditor : public Gtk::Grid {
     // Load buffer from XML stream
     void load_buffer(const Glib::RefPtr<Gtk::TextBuffer>& buffer,
                      const Gtk::TextBuffer::iterator& insert_it,
-                     std::istream& istream);
+                     const layout::ParsedRichText& parsed_text);
 
     // TextView accessors
     Glib::RefPtr<Gtk::TextBuffer> get_buffer() {
