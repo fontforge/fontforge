@@ -245,6 +245,12 @@ void RichTextEditor::load_buffer(const Glib::RefPtr<Gtk::TextBuffer>& buffer,
 
         auto start_mark = buffer->create_mark(cursor_mark->get_iter());
         buffer->insert(cursor_mark->get_iter(), text);
+        // This is a bit of a hack, because property widgets apply their own
+        // tags in their signal_insert() handlers, and we don't have a good way
+        // to know whether the insertion is due to typing or due to loading text
+        // from deserializer.
+        buffer->remove_all_tags(start_mark->get_iter(),
+                                cursor_mark->get_iter());
 
         for (const std::string& raw_tag : raw_tags) {
             std::string tag_name = normalize_ff_xml_tag(raw_tag);
