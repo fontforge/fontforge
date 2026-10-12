@@ -26,6 +26,7 @@
  */
 #pragma once
 
+#include <map>
 #include <vector>
 
 #include "layout_shim.hpp"
@@ -55,6 +56,11 @@ class RichTextFontSelector {
     // generate a sample text XML from any tagged text, e.g. for testing
     // purposes.
     std::string compose_sample_text_xml(const std::string& tagged_text) const;
+
+    // Map font names imported from a sample text XML to the font names
+    // available in the system.
+    std::map<std::string, std::string> map_fonts(
+        const std::vector<SplineFontProperties>& imported_fonts) const;
 
     static const std::string rich_text_mime_type;
 

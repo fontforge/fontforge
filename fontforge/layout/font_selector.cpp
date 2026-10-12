@@ -28,9 +28,10 @@
 #include "font_selector.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
-#include <map>
 #include <regex>
+#include <set>
 #include <sstream>
 #include <stack>
 
@@ -120,6 +121,55 @@ std::string RichTextFontSelector::compose_sample_text_xml(
     dump_tag(unicode_buffer, "body", false);
     dump_tag(unicode_buffer, "ff-sample", false);
     return unicode_buffer;
+}
+
+std::map<std::string, std::string> RichTextFontSelector::map_fonts(
+    const std::vector<SplineFontProperties>& imported_fonts) const {
+    std::map<std::string, std::string> font_mapping;
+
+    // Force weight remapping for imported fonts. A possible case is when the
+    // available fonts have weights e.g. 500, 700 and the imported fonts have
+    // weights 300, 600. The weight 600 may be mapped to either 500 or 700, and
+    // there is no guarantee about it. We shall match the weights manually
+    // before proceeding further.
+    std::set<int16_t> available_weights;
+    for (const auto& properties : properties_list_) {
+        if (properties.os2_weight >= 0) {
+            available_weights.insert(properties.os2_weight);
+        }
+    }
+    std::set<int16_t> imported_weights;
+    for (const auto& properties : imported_fonts) {
+        if (properties.os2_weight >= 0) {
+            imported_weights.insert(properties.os2_weight);
+        }
+    }
+    std::vector<SplineFontProperties> remapped_imported_fonts = imported_fonts;
+    if (available_weights.size() > 1 && imported_weights.size() > 1) {
+        // Remap imported weights to available weights using linear mapping.
+        // It's a hack, but it should work in most cases.
+        double k =
+            (double)(*available_weights.rbegin() - *available_weights.begin()) /
+            (*imported_weights.rbegin() - *imported_weights.begin());
+        double b = *available_weights.begin() - k * (*imported_weights.begin());
+        for (auto& properties : remapped_imported_fonts) {
+            if (properties.os2_weight >= 0) {
+                properties.os2_weight =
+                    std::round(k * properties.os2_weight + b);
+            }
+        }
+    }
+
+    for (const auto& imported_font : remapped_imported_fonts) {
+        // Find the face with properties closest to the desired properties.
+        auto closest_face = std::min_element(
+            properties_list_.begin(), properties_list_.end(),
+            [&imported_font](const auto& a, const auto& b) {
+                return imported_font.distance(a) < imported_font.distance(b);
+            });
+        font_mapping[imported_font.full_name] = closest_face->full_name;
+    }
+    return font_mapping;
 }
 
 const std::string RichTextFontSelector::rich_text_mime_type =
