@@ -194,9 +194,13 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
     if (persistent.sample_text.empty())
         sample_text_->get_buffer()->set_text(sample_text);
     else {
-        std::istringstream istream(persistent.sample_text);
-        sample_text_->load_buffer(sample_text_->get_buffer(),
-                                  sample_text_->get_buffer()->begin(), istream);
+        Glib::RefPtr<Gtk::TextBuffer> buffer = sample_text_->get_buffer();
+        Gtk::TextBuffer::iterator insert_iter = buffer->begin();
+        buffer->deserialize(
+            buffer, layout::RichTextFontSelector::rich_text_mime_type,
+            insert_iter,
+            reinterpret_cast<const guint8*>(persistent.sample_text.data()),
+            persistent.sample_text.size());
     }
     sample_text_->get_buffer()->place_cursor(
         sample_text_->get_buffer()->begin());
