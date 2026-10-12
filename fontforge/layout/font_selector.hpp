@@ -84,4 +84,8 @@ ParsedRichText parse_xml_stream(std::istream& input);
 
 std::vector<SplineFontProperties> parse_manifest(const ParsedRichText& parsed);
 
+ParsedRichText remap_font_names(
+    const ParsedRichText& parsed,
+    const std::map<std::string, std::string>& font_name_mapping);
+
 }  // namespace ff::layout

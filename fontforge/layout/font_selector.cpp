@@ -338,7 +338,7 @@ std::vector<SplineFontProperties> parse_manifest(const ParsedRichText& parsed) {
     std::map<std::string, SplineFontProperties> font_map;
     // Extract font name using pattern <font key="font_name">, without angular
     // brackets.
-    std::regex font_key_regex(R"-(font\s+key="([^"]+)")-");
+    static const std::regex font_key_regex(R"-(font\s+key="([^"]+)")-");
     std::string default_font_key;
 
     for (const auto& [tags, text] : parsed) {
@@ -388,6 +388,32 @@ std::vector<SplineFontProperties> parse_manifest(const ParsedRichText& parsed) {
     }
 
     return font_list;
+}
+
+ParsedRichText remap_font_names(
+    const ParsedRichText& parsed,
+    const std::map<std::string, std::string>& font_name_mapping) {
+    static const std::regex font_value_regex(R"-(font\s+value="([^"]+)")-");
+
+    ParsedRichText remapped = parsed;
+    for (auto& [tags, text] : remapped) {
+        for (std::string& tag : tags) {
+            if (tag.substr(0, 5) == "font ") {
+                // Remap the font name in the tag, if a mapping exists.
+                std::smatch match;
+                if (std::regex_search(tag, match, font_value_regex) &&
+                    match.size() == 2) {
+                    std::string font_key = match[1];
+                    auto it = font_name_mapping.find(font_key);
+                    if (it != font_name_mapping.end()) {
+                        tag.replace(match.position(1), match.length(1),
+                                    it->second);
+                    }
+                }
+            }
+        }
+    }
+    return remapped;
 }
 
 }  // namespace ff::layout
