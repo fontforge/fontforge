@@ -447,12 +447,22 @@ static int line_pt_cmp( const void *_p1, const void *_p2 ) {
     struct linedata *line;
     double ppos1=0,ppos2=0;
     
+    /* Pick a line shared by both points, considering both arguments so
+     * that the comparison is symmetric: with an asymmetric comparator
+     * qsort() has undefined behaviour and the resulting ordering depends
+     * on uninitialised memory (non-reproducible output). */
     if ( (*pd1)->prevline != NULL && 
 	( (*pd1)->prevline == (*pd2)->prevline || (*pd1)->prevline == (*pd2)->nextline ))
 	line = (*pd1)->prevline;
     else if ( (*pd1)->nextline != NULL && 
 	( (*pd1)->nextline == (*pd2)->prevline || (*pd1)->nextline == (*pd2)->nextline ))
 	line = (*pd1)->nextline;
+    else if ( (*pd2)->prevline != NULL && 
+	( (*pd2)->prevline == (*pd1)->prevline || (*pd2)->prevline == (*pd1)->nextline ))
+	line = (*pd2)->prevline;
+    else if ( (*pd2)->nextline != NULL && 
+	( (*pd2)->nextline == (*pd1)->prevline || (*pd2)->nextline == (*pd1)->nextline ))
+	line = (*pd2)->nextline;
     else
 return( 0 );
 
@@ -2575,11 +2585,16 @@ static int stem_cmp( const void *_p1, const void *_p2 ) {
     struct stemdata * const *st1 = _p1, * const *st2 = _p2;
     double start1, end1, start2, end2;
     
+    /* Sort each stem along an axis determined by that stem's own
+     * orientation, so that the comparison is symmetric */
     if ( fabs( (*st1)->unit.x ) > fabs( (*st1)->unit.y )) {
 	start1 = (*st1)->right.y; end1 = (*st1)->left.y;
-	start2 = (*st2)->right.y; end2 = (*st2)->left.y;
     } else {
 	start1 = (*st1)->left.x; end1 = (*st1)->right.x;
+    }
+    if ( fabs( (*st2)->unit.x ) > fabs( (*st2)->unit.y )) {
+	start2 = (*st2)->right.y; end2 = (*st2)->left.y;
+    } else {
 	start2 = (*st2)->left.x; end2 = (*st2)->right.x;
     }
 	
