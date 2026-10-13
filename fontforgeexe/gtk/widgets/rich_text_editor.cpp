@@ -942,10 +942,11 @@ RichTextEditor::TagComboBox::TagComboBox(
         combo_box_.append(tag_id, label);
     }
 
-    if (default_id_.empty())
-        combo_box_.set_active_id(labels.front().first);
-    else
-        combo_box_.set_active_id(default_id_);
+    // If the default id was already specified, it should have no actual tag
+    // associated with it.
+    if (default_id_.empty()) default_id_ = labels.front().first;
+
+    combo_box_.set_active_id(default_id_);
     combo_box_.set_focus_on_click(false);
     add(combo_box_);
 
@@ -969,11 +970,24 @@ RichTextEditor::TagComboBox::TagComboBox(
 void RichTextEditor::TagComboBox::apply_tag(
     const Gtk::TextBuffer::iterator& start,
     const Gtk::TextBuffer::iterator& end) {
+    std::string active_id = combo_box_.get_active_id();
+    if (active_id.empty()) {
+        // A mixed selection may have no active tag. When typing or pasting new
+        // raw text into it, we apply the tag corresponding to the beginning of
+        // the selection.
+        Gtk::TextBuffer::iterator prev = start;
+        prev.backward_char();
+        active_id = get_active_tag(prev, start);
+
+        // Fallback to default.
+        if (active_id.empty()) active_id = default_id_;
+    }
+
     // Remove all other tags from this group, except the new one.
     for (const auto& [tag_id, tag] : tag_map_) {
-        if (tag_id != default_id_ && tag_id != combo_box_.get_active_id()) {
+        if (tag_id != active_id) {
             text_buffer_->remove_tag(tag, start, end);
-        } else if (tag_id == combo_box_.get_active_id()) {
+        } else {
             text_buffer_->apply_tag(tag, start, end);
         }
     }
