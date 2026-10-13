@@ -21,46 +21,28 @@ Sample Text
 The sample text can be edited in the text area, which is visible right away in
 Windows, or appears when clicking on a one-line preview of the sample text.
 
-The editor works in a generic mode when a single family, possibly with multiple
-styles, is being edited. In this mode the usual text editing controls such as
-bold, italic, wide etc. are available. When fonts from multiple families are
-opened in the editor, the available fonts can be explicitly selected by name.
-
-.. _printing.sample_text.generic_mode:
-
-Generic Mode
-------------
-
-The sample text can be formatted to have different weights, slant, sizes and
-widths. The availability of these options depends on the fonts from the same
-family being currently open. For example, if you have a regular, bold and
-italic version of the same font open, you can change the weight and slant of
-the sample text. If you have a condensed version of the font open, you can
-change the width of the sample text. This allow you to see how the different
-faces of the font family work together. You can clean all formatting from the
-selected text by clicking on the "Clear Formatting" button.
-
 .. image:: /images/SampleTextEditor.png
    :align: right
 
-Specific mode
--------------
+The sample text can be formatted with different fonts or to have different
+weights, slant, sizes and widths. The availability of these options depends on
+the fonts being currently open. For example, if you have a regular, bold, and
+italic fonts open, you can change the weight and slant of the sample text. If
+you have a condensed font open, you can change the width of the sample text.
+This allows you to see how the different faces of the font family work together
+or with other available fonts.
 
-In this mode font styles are not available, but you can select the font to use
-for each segment of the sample text. This allows you to see how different
-unrelated fonts work together in a single text. The underscored text in the
-text area indicates that the font for that segment doesn't belong to the same
-family as the font currently being proofed. Font size and "Clear Formatting"
-button are available in the same manner as in the generic mode.
-
-.. image:: /images/SampleTextSpecific.png
-   :align: right
+You can clean all formatting from the selected text by clicking on the "Clear
+Formatting" button.
 
 An additional tool menu button, also located in the text area toolbar, allows
-to import and export the sample text in a JSON format, which preserves the
-formatting of the text. This can be useful if you are working on a specific
-feature, like diacritics, and want to test it with different fonts or font
-families again and again.
+to import and export the sample text in an XML format, which preserves the
+formatting of the text. This can be useful if you have a custom sample text
+with features specific to your fonts. If the loaded sample text file was
+created with other fonts, FontForge makes a reasonable effort to preserve the
+formatting by substituting available fonts instead. This is useful if you are
+working on a specific feature, like diacritics, and want to test it with
+different fonts or font families again and again.
 
 As with the :doc:`metrics view </ui/mainviews/metricsview>` you may set the
 script and language of the sample text and then choose which features to apply.
