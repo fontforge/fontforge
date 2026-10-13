@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 16:52+0300\n"
-"PO-Revision-Date: 2026-06-24 06:08\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt_PT\n"
@@ -48,11 +48,17 @@ msgstr "Adicionar âncora Marca..."
 msgid "Additional arguments for autotrace program:"
 msgstr "Argumentos adicionais para o programa autotrace:"
 
+msgid "Aegean Numbers"
+msgstr "Números Egeus"
+
 msgid "Albanian"
 msgstr "Albanês"
 
 msgid "All characters in the value must be in ASCII"
 msgstr "Todas as letras no valor deve estar em ASCII"
+
+msgid "Alphabetic Presentation Forms"
+msgstr "Formas de Apresentação Alfabética"
 
 msgid "An outline font editor"
 msgstr "Um editor de fontes"
@@ -70,6 +76,12 @@ msgstr "Controle de âncora..."
 msgid "Anchor Lost"
 msgstr "Ancoragem Perdida"
 
+msgid "Ancient Greek Numbers"
+msgstr "Números Gregos Antigos"
+
+msgid "Ancient Symbols"
+msgstr "Símbolos Antigos"
+
 msgid "Arabic"
 msgstr "Árabe"
 
@@ -78,6 +90,12 @@ msgstr "Árabe Alargado-A"
 
 msgid "Arabic Extended-B"
 msgstr "Árabe Alargado-B"
+
+msgid "Arabic Presentation Forms-A"
+msgstr "Formas de Apresentação Árabe-A"
+
+msgid "Arabic Presentation Forms-B"
+msgstr "Formas de Apresentação Árabe-B"
 
 msgid "Arabic Supplement"
 msgstr "Suplemento árabe"
@@ -93,6 +111,9 @@ msgstr "Setas"
 
 msgid "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
 msgstr "Pelo menos um ponto de ancoragem foi perdido ao colar de uma fonte para outra porque nenhuma classe ancoradora correspondente pôde ser encontrada na nova fonte."
+
+msgid "Auto Hinting Font..."
+msgstr "Auto Hinting da Fonte..."
 
 msgid "Auto Width"
 msgstr "Largura Automática"
@@ -138,6 +159,9 @@ msgstr "Arquivo xfig inválido"
 msgid "Balinese"
 msgstr "Balinês"
 
+msgid "Bamum"
+msgstr "Bamum"
+
 msgid "Baseline used for Latin, Greek, Cyrillic text."
 msgstr "Linha de base utilizada para o texto Latim, Grego, Cirílico."
 
@@ -150,8 +174,20 @@ msgstr "Batak"
 msgid "Bengali"
 msgstr "Bengali"
 
+msgid "Block Elements"
+msgstr "Elementos de Bloco"
+
 msgid "Bopomofo"
 msgstr "Bopomofo"
+
+msgid "Bopomofo Extended"
+msgstr "Bopomofo Estendido"
+
+msgid "Box Drawing"
+msgstr "Desenho de caixas"
+
+msgid "Braille Patterns"
+msgstr "Padrões de Braille"
 
 msgid "Breton"
 msgstr "Bretão"
@@ -168,11 +204,29 @@ msgstr "Búlgaro"
 msgid "Byelorussian"
 msgstr "Bielorusso"
 
+msgid "CJK Compatibility"
+msgstr "Compatibilidade CJK"
+
+msgid "CJK Compatibility Forms"
+msgstr "Formas de Compatibilidade CJK"
+
+msgid "CJK Compatibility Ideographs"
+msgstr "Ideogramas de Compatibilidade CJK"
+
 msgid "CJK Radicals Supplement"
 msgstr "Suplemento radicais de CJK"
 
+msgid "CJK Strokes"
+msgstr "Traços CJK"
+
 msgid "CJK Symbols and Punctuation"
 msgstr "Símbolos e pontuação de CJK"
+
+msgid "CJK Unified Ideographs"
+msgstr "Ideogramas CJK Unificados"
+
+msgid "CJK Unified Ideographs Extension A"
+msgstr "Ideogramas CJK Unificados - Extensão A"
 
 msgid "Can't Parallel"
 msgstr "Não pode Paralela"
@@ -214,11 +268,20 @@ msgstr "Não é possível abrir %s"
 msgid "Can't run mf"
 msgstr "Não é possível executar programa mf"
 
+msgid "Carian"
+msgstr "Cária"
+
+msgid "Cham"
+msgstr "Cham"
+
 msgid "Character Variants 99"
 msgstr "Variantes de Caractere 99"
 
 msgid "Cherokee"
 msgstr "Cheroqui"
+
+msgid "Cherokee Supplement"
+msgstr "Suplemento Cherokee"
 
 msgid "Combining Diacritical Marks"
 msgstr "Marcas diacríticas para combinar"
@@ -232,8 +295,23 @@ msgstr "Suplemento de marcas diacríticas para combinar"
 msgid "Combining Diacritical Marks for Symbols"
 msgstr "Combinando notas diacríticas para símbolos"
 
+msgid "Combining Half Marks"
+msgstr "Metades de Marcas de Combinação"
+
+msgid "Common Indic Number Forms"
+msgstr "Formas numéricas índicas comuns"
+
+msgid "Control Pictures"
+msgstr "Imagens de Controlo"
+
 msgid "Coordinate along which to space"
 msgstr "Coordenar ao longo da qual o espaço"
+
+msgid "Coptic"
+msgstr "Cóptico"
+
+msgid "Coptic Epact Numbers"
+msgstr "Disco de Phaistos"
 
 msgid ""
 "Correction in pixels to the horizontal positioning of this anchor point\n"
@@ -269,6 +347,9 @@ msgstr "Cirílico"
 msgid "Cyrillic Extended-A"
 msgstr "Cirílico Alargado-A"
 
+msgid "Cyrillic Extended-B"
+msgstr "Cirílico Estendido-C"
+
 msgid "Cyrillic Extended-C"
 msgstr "Cirílico Alargado-C"
 
@@ -287,14 +368,23 @@ msgstr "Linha de Base Default"
 msgid "Delete"
 msgstr "Apaga"
 
+msgid "Deseret"
+msgstr "Deseret"
+
 msgid "Detaching Anchor Point"
 msgstr "Destacando Ponto de Ancoragem"
 
 msgid "Devanagari"
 msgstr "Devanagari"
 
+msgid "Devanagari Extended"
+msgstr "Devanagari Estendido"
+
 msgid "Different Fonts"
 msgstr "Fontes diferentes"
+
+msgid "Dingbats"
+msgstr "Dingbats"
 
 msgid "Distance"
 msgstr "Distância"
@@ -307,6 +397,12 @@ msgstr "Classe âncora Duplicado"
 
 msgid "Dutch"
 msgstr "Holandês"
+
+msgid "Enclosed Alphanumerics"
+msgstr "Alfanuméricos delimitados"
+
+msgid "Enclosed CJK Letters and Months"
+msgstr "Letras e meses CJK delimitados"
 
 msgid "Encoding Too Large"
 msgstr "Codificação Grande Demais"
@@ -325,6 +421,9 @@ msgstr "Etiópico"
 
 msgid "Ethiopic Extended"
 msgstr "Etíope Alargado"
+
+msgid "Ethiopic Extended-A"
+msgstr "Etiópico estendido-A"
 
 msgid "Ethiopic Supplement"
 msgstr "Suplemento etiópico"
@@ -392,8 +491,14 @@ msgstr "Georgiano"
 msgid "Georgian Extended"
 msgstr "Georgiano Estendido"
 
+msgid "Georgian Supplement"
+msgstr "Suplemento Georgiano"
+
 msgid "German"
 msgstr "Alemão"
+
+msgid "Glagolitic"
+msgstr "Glagolítico"
 
 msgid "Glyph Positioning\n"
 msgstr "Posicionamento de Glifo\n"
@@ -403,6 +508,9 @@ msgstr "Substituição de Glifo\n"
 
 msgid "Glyph too big"
 msgstr "Glifos muito grande"
+
+msgid "Gothic"
+msgstr "Gótico"
 
 msgid "Greek (polytonic)"
 msgstr "Grego (politônico)"
@@ -419,11 +527,23 @@ msgstr "Gujaráti"
 msgid "Gurmukhi"
 msgstr "Gurmukhi"
 
+msgid "Halfwidth and Fullwidth Forms"
+msgstr "Formas de Meia Largura e Largura Total"
+
 msgid "Hangul Compatibility Jamo"
 msgstr "Jamo do Hangul de compatibilidade"
 
 msgid "Hangul Jamo"
 msgstr "Jamo de Hangul"
+
+msgid "Hangul Jamo Extended-A"
+msgstr "Hangul Jamo Etendido-A"
+
+msgid "Hangul Jamo Extended-B"
+msgstr "Hangul Jamo Estendido-B"
+
+msgid "Hangul Syllables"
+msgstr "Sílabas Hangul"
 
 msgid "Hanunoo"
 msgstr "Hanunoo"
@@ -433,6 +553,12 @@ msgstr "Hebraico"
 
 msgid "Height"
 msgstr "Altura"
+
+msgid "High Private Use Surrogates"
+msgstr "Substitutos Altos de Uso Privado"
+
+msgid "High Surrogates"
+msgstr "Altos Substitutos "
 
 msgid "Hindi"
 msgstr "Hindi"
@@ -501,6 +627,9 @@ msgstr "Japonês"
 msgid "Javanese"
 msgstr "Javanês"
 
+msgid "Kanbun"
+msgstr "Kanbun"
+
 msgid "Kangxi Radicals"
 msgstr "Radicais Kangxi"
 
@@ -512,6 +641,9 @@ msgstr "Katakana"
 
 msgid "Katakana Phonetic Extensions"
 msgstr "Extensões Phonetic Katakana"
+
+msgid "Kayah Li"
+msgstr "Kayah Li"
 
 msgid "Kazakh"
 msgstr "Cazaque"
@@ -556,6 +688,12 @@ msgstr "Latim Alargado-B"
 msgid "Latin Extended-C"
 msgstr "Latino Estendido -C"
 
+msgid "Latin Extended-D"
+msgstr "Latim Estendido-D"
+
+msgid "Latin Extended-E"
+msgstr "Latim Estendido-E"
+
 msgid "Latin-1 Supplement"
 msgstr "Suplemento Latim-1"
 
@@ -565,14 +703,32 @@ msgstr "Aprender a usar FontForge é fácil, e existem vários tutoriais dispon�
 msgid "Lepcha"
 msgstr "Lepcha"
 
+msgid "Letterlike Symbols"
+msgstr "Símbolos Tipográficos"
+
 msgid "Limbu"
 msgstr "Limbu"
+
+msgid "Linear B Ideograms"
+msgstr "Ideogramas Lineares B"
+
+msgid "Linear B Syllabary"
+msgstr "Silabário Linear B"
+
+msgid "Lisu"
+msgstr "Lisu"
 
 msgid "Lithuanian"
 msgstr "Lituano"
 
 msgid "Loop Count"
 msgstr "Conta de Repetição"
+
+msgid "Low Surrogates"
+msgstr "Baixos Substitutos"
+
+msgid "Lycian"
+msgstr "Lícia"
 
 msgid "Ma_x:"
 msgstr "Má_x:"
@@ -612,6 +768,9 @@ msgstr "Máx (subida)"
 msgid "Max Bearing"
 msgstr "Rolamento Máxima"
 
+msgid "Meetei Mayek Extensions"
+msgstr "Extensões Meetei Mayek"
+
 msgid "MetaFont exited with an error"
 msgstr "MetaFont saiu com um erro"
 
@@ -621,12 +780,27 @@ msgstr "Mín (descida)"
 msgid "Min Bearing"
 msgstr "Rolamento Mínimo"
 
+msgid "Miscellaneous Mathematical Symbols-A"
+msgstr "Símbolos Matemáticos diversos - A"
+
+msgid "Miscellaneous Mathematical Symbols-B"
+msgstr "Símbolos Matemáticos diversos - B"
+
 msgid "Miscellaneous Symbols"
 msgstr "Símbolos Variados"
+
+msgid "Miscellaneous Symbols and Arrows"
+msgstr "Diversos Símbolos e Setas "
+
+msgid "Miscellaneous Technical"
+msgstr "Diversos técnicos"
 
 #, c-format
 msgid "Missing number on line %d of %s"
 msgstr "Número ausente na linha %d de %s"
+
+msgid "Modifier Tone Letters"
+msgstr "Letras modificadoras de tom"
 
 msgid "Mongolian"
 msgstr "Mongol"
@@ -639,6 +813,12 @@ msgstr "Deve ser um número"
 
 msgid "Myanmar"
 msgstr "Birmânia"
+
+msgid "Myanmar Extended-A"
+msgstr "Myanmar Estendido-A"
+
+msgid "Myanmar Extended-B"
+msgstr "Myanmar Estendido-B"
 
 msgid "NKo"
 msgstr "NKo"
@@ -706,6 +886,15 @@ msgstr "Ogam"
 msgid "Ol Chiki"
 msgstr "Ol Chiki"
 
+msgid "Old Italic"
+msgstr "Itálico Antigo"
+
+msgid "Old Permic"
+msgstr "Pérmico Antigo"
+
+msgid "Old Persian"
+msgstr "Persa Antigo"
+
 msgid "Optical Character Recognition"
 msgstr "Reconhecimento de caractere óptico"
 
@@ -717,6 +906,12 @@ msgstr "Fora da Faixa"
 
 msgid "Pasting..."
 msgstr "Colando..."
+
+msgid "Phags-pa"
+msgstr "Phags-pa"
+
+msgid "Phaistos Disc"
+msgstr "Disco de Phaistos"
 
 msgid "Phonetic Extensions"
 msgstr "Extensões fonéticas"
@@ -735,6 +930,9 @@ msgstr "Polonês"
 
 msgid "Portuguese"
 msgstr "Português"
+
+msgid "Private Use Area"
+msgstr "Área de Uso Privado"
 
 #. GT: I am told that the use of "|" to provide contextual information in a
 #. GT: gettext string is non-standard. However it is documented in section
@@ -761,6 +959,9 @@ msgstr "Escreva um nome para o glifo"
 msgid "Quechua"
 msgstr "Quíchua"
 
+msgid "Rejang"
+msgstr "Rejang"
+
 msgid "Romanian"
 msgstr "Romeno"
 
@@ -775,6 +976,9 @@ msgstr "Samaritano"
 
 msgid "Sanskrit"
 msgstr "Sânscrito"
+
+msgid "Saurashtra"
+msgstr "Saurashtra"
 
 msgid "Save Failed"
 msgstr "Erro ao Salvar"
@@ -819,6 +1023,9 @@ msgstr ""
 "da linha de base. Isso pode variar de acordo\n"
 "com a linguagem."
 
+msgid "Shavian"
+msgstr "Shaviano"
+
 msgid "Simplified Chinese"
 msgstr "Chinês simplificado"
 
@@ -834,6 +1041,9 @@ msgstr "Eslovaco"
 msgid "Slovenian"
 msgstr "Esloveno"
 
+msgid "Small Form Variants"
+msgstr "Variantes de Forma Pequena"
+
 msgid "Space Regions"
 msgstr "Regiões Espaço"
 
@@ -842,6 +1052,9 @@ msgstr "Letras modificadoras do espaçamento"
 
 msgid "Spanish"
 msgstr "Espanhol"
+
+msgid "Specials"
+msgstr "Especiais"
 
 msgid "Spiros did not converge"
 msgstr "Spiros não convergem"
@@ -856,11 +1069,26 @@ msgstr "Sundanês"
 msgid "Sundanese Supplement"
 msgstr "Supplemento Sundanês"
 
+msgid "Superscripts and Subscripts"
+msgstr "Superscripts e Subscripts"
+
+msgid "Supplemental Arrows-A"
+msgstr "Setas Suplementares - A"
+
+msgid "Supplemental Arrows-B"
+msgstr "Setas Suplementares - B"
+
+msgid "Supplemental Mathematical Operators"
+msgstr "Operadores Matemáticos Suplementares"
+
 msgid "Supplemental Punctuation"
 msgstr "Pontuação suplementar"
 
 msgid "Swedish"
 msgstr "Sueco"
+
+msgid "Syloti Nagri"
+msgstr "Syloti Nagri"
 
 msgid "Syriac"
 msgstr "Siríaco"
@@ -879,6 +1107,9 @@ msgstr "Tai Le"
 
 msgid "Tai Tham"
 msgstr "Tai Tham"
+
+msgid "Tai Viet"
+msgstr "Tai Viet"
 
 msgid "Tamil"
 msgstr "Tâmil"
@@ -1003,8 +1234,14 @@ msgstr "Muito Complexo ou Inválido"
 msgid "Traditional Chinese"
 msgstr "Chinês tradicional"
 
+msgid "Transforming..."
+msgstr "A transformar..."
+
 msgid "Turkish"
 msgstr "Turco"
+
+msgid "Ugaritic"
+msgstr "Ugarítico"
 
 msgid "Ukrainian"
 msgstr "Ucraniano"
@@ -1031,6 +1268,12 @@ msgstr "Utilizar mapa CID"
 msgid "Uzbek"
 msgstr "Usbeque"
 
+msgid "Vai"
+msgstr "Vai"
+
+msgid "Variation Selectors"
+msgstr "Seletores de Variação"
+
 msgid "Vedic Extensions"
 msgstr "Extensões Vedic"
 
@@ -1041,11 +1284,31 @@ msgstr "Linhas de Base Verticais"
 msgid "Vertical Extents for %c%c%c%c"
 msgstr "Extensões Verticais para %c%c%c%c"
 
+msgid "Vertical Forms"
+msgstr "Formas Verticais"
+
 msgid "Welsh"
 msgstr "Galês"
 
 msgid "Yes to _All"
 msgstr "Sim para _Todos"
+
+msgid "Yi Radicals"
+msgstr "Radicais Yi"
+
+msgid "Yi Syllables"
+msgstr "Sílabas Yi"
+
+msgid "Yijing Hexagram Symbols"
+msgstr "Símbolos de hexagramas de Yijing"
+
+#, c-format
+msgid ""
+"You are attempting to clear %.30s which is referred to by\n"
+"another character. Are you sure you want to clear it?"
+msgstr ""
+"Está a tentar limpar %.30s que é referenciado por\n"
+"outro glifo. Tem a certeza que deseja limpar?"
 
 #, c-format
 msgid ""
@@ -1099,6 +1362,9 @@ msgstr "E_spaço:"
 
 msgid "_Size:"
 msgstr "_Tamanho:"
+
+msgid "_Unlink All"
+msgstr "_Desvincular Todos"
 
 msgid "_Yes"
 msgstr "_Sim"

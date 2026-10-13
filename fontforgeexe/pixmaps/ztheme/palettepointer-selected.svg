@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 26">
+  <rect x="1" y="1" width="24" height="24" rx="2" ry="2" transform="translate(26 0) rotate(90)" opacity=".4"/>
+  <rect x="2" y="2" width="22" height="22" rx="1" ry="1" transform="translate(26 0) rotate(90)" fill="#d2d2d2"/>
+  <polygon points="18.35 14 8 4.75 8 18 11.523 14.76 15 21.25 16.751 20.25 13.509 14 18.35 14"/>
+</svg>

@@ -3,14 +3,15 @@ Open Font License in Vietnamese
 
 .. note::
 
-   This is an unofficial translation of the SIL Open Font License into Vietnamese. It
-   was not published by SIL International, and does not legally state the
+   This is an unofficial translation of the SIL Open Font License into Vietnamese.
+   It was not published by SIL International, and does not legally state the
    distribution terms for fonts that use the OFL. A release under the OFL is
    only valid when using the original English text. However, we recognize that
-   this translation will help users and designers not familiar with English to
-   understand the SIL OFL better and use and release font families under this
-   collaborative font design model. Please go to
-   `for the official version and the accompanying FAQ. <http://scripts.sil.org/OFL>`_
+   this unofficial translation will help users and designers not familiar with
+   English to better understand and use the OFL. We encourage designers who
+   consider releasing their creation under the OFL to read the OFL-FAQ in their
+   own language if it is available. Please go to https://openfontlicense.org
+   for the official version of the license and the accompanying OFL-FAQ.
 
 Đây là một bản dịch tiếng Việt không chính thức của Giấy Phép Phông Chữ Mở (OFL)
 của SIL. Nó không được xuất bản bởi tổ chức SIL International, cũng không tuyên
@@ -21,7 +22,7 @@ Tuy nhiên, chúng tôi chấp nhận rằng bản dịch này sẽ giúp đỡ 
 thiết kế không quen với tiếng Anh hiểu khá hơn OFL của SIL, cũng dùng và phát
 hành nhóm phông chữ dưới mô hình thiết kế phông chữ hợp tác này.
 
-Xin hãy xem phiên bản chính thức và Hỏi Đáp tại http://scripts.sil.org/OFL.
+Xin hãy xem phiên bản chính thức và Hỏi Đáp tại https://openfontlicense.org.
 
 --------------------------------------------------------------------------------
 
@@ -36,7 +37,7 @@ Xin hãy xem phiên bản chính thức và Hỏi Đáp tại http://scripts.sil
 Phần Mềm Phông Chữ này được cấp phép dưới Bản Quyền Phông Chữ Mở SIL, phiên bản
 1.0. Không cho phép sửa đổi bản quyền này, chỉ cho phép sao chép đúng nguyên
 văn. Bản quyền này được trình bày ở bên dưới, cũng có sẵn ở mục Hỏi Đáp tại:
-http://scripts.sil.org/OFL
+https://openfontlicense.org
 
 --------------------------------------------------------------------------------
 

@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 16:52+0300\n"
-"PO-Revision-Date: 2026-06-24 06:08\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
@@ -2940,6 +2940,12 @@ msgstr "中日韓統一表意文字擴展 G"
 
 msgid "CJK Unified Ideographs Extension H"
 msgstr "中日韓統一表意文字擴展 H"
+
+msgid "CJK Unified Ideographs Extension I"
+msgstr "中日韓統一表意文字擴展 I"
+
+msgid "CJK Unified Ideographs Extension J"
+msgstr "中日韓統一表意文字擴展 J"
 
 msgid "CS Clarendon"
 msgstr "CS 粗長鉛字"
@@ -11027,6 +11033,12 @@ msgstr "像素尺寸？"
 
 msgid "PixelSize|New"
 msgstr "新增"
+
+msgid "Plane 15 (Supplementary Private Use Area-A)"
+msgstr "平面15（補充私用區-A）"
+
+msgid "Plane 16 (Supplementary Private Use Area-B)"
+msgstr "平面16（補充私用區-B）"
 
 msgid "Playing Cards"
 msgstr "撲克牌"

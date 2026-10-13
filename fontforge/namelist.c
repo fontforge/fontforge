@@ -20792,6 +20792,8 @@ static struct psaltnames psaltnames[] = {
 	{ "ssharp", 0xdf, 0 },
 	{ "Ooblique", 0xd8, 0 },
 	{ "notsign", 0xac, 0 },
+/* OpenType 1.7 recommended "CR" rather than "nonmarkingreturn" */
+	{ "CR", 0x0d, 0 },
 /* Sun has used "masculine" for ordmasculine */
 	{ NULL, 0, 0 }
 };

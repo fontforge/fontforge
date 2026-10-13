@@ -2743,10 +2743,21 @@ return( NULL );
 	    }
 	    --i;
 	} else {
-	    names[i] = malloc(offsets[i+1]-offsets[i]+1);
-	    for ( j=0; j<offsets[i+1]-offsets[i]; ++j )
-		names[i][j] = getc(ttf);
-	    names[i][j] = '\0';
+	    uint32_t len = offsets[i+1]-offsets[i];
+	    /* offsets are uint32_t, so a negative difference wraps to a huge
+	     * value.  'len+1' then wraps to 0, so malloc() returns a zero-length
+	     * block while the loop below still copies len bytes into it.  The same
+	     * bound readcffsubrs() uses keeps the loop inside a sane allocation. */
+	    if ( len==0 || len>=0x10000 ) {
+	        LogError( _("Bad CFF name INDEX") );
+	        if ( info!=NULL ) info->bad_cff = true;
+	        names[i] = copy("");
+	    } else {
+	        names[i] = malloc(len+1);
+	        for ( j=0; j<len; ++j )
+		    names[i][j] = getc(ttf);
+	        names[i][j] = '\0';
+	    }
 	}
     }
     names[i] = NULL;

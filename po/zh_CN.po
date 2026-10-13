@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 17:21+0300\n"
-"PO-Revision-Date: 2026-06-24 14:20\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -1090,6 +1090,9 @@ msgstr "需要压入堆栈的短整数"
 
 msgid "A style may not have both condense and extend set (it makes no sense)"
 msgstr "样式不能同时设置紧凑和扩展（这没有意义）"
+
+msgid "A subset of Unicode ranges explicitly recognized by Microsoft. Select the ranges which you consider functional."
+msgstr "由 Microsoft 明确识别的 Unicode 范围子集。请选择您认为适用的范围。"
 
 msgid "A tag must be 4 ASCII characters"
 msgstr "特征标签应为4个ASCII字符"
@@ -2772,7 +2775,7 @@ msgid "Bad Encoding"
 msgstr "错误编码"
 
 msgid "Bad Extension"
-msgstr "扩展错误"
+msgstr "扩展名错误"
 
 msgid "Bad FPST format"
 msgstr "FPST 格式错误"
@@ -3400,6 +3403,12 @@ msgstr "巴尔卡尔语"
 msgid "Ball (Round Cap)"
 msgstr "圆球（圆头）"
 
+msgid "Balti"
+msgstr "巴尔蒂文"
+
+msgid "Bambara"
+msgstr "班巴拉文"
+
 msgid "Bamum"
 msgstr "巴姆穆文"
 
@@ -3414,6 +3423,9 @@ msgstr "班贾朗语"
 
 msgid "Bar Width:"
 msgstr "条宽："
+
+msgid "Bar width:"
+msgstr "条宽度："
 
 msgid "Base"
 msgstr "基底"
@@ -3495,6 +3507,9 @@ msgstr "截角(_V)"
 
 msgid "Begin:"
 msgstr "起点："
+
+msgid "Belarussian"
+msgstr "白俄罗斯文"
 
 msgid "Below Base Forms"
 msgstr "低于基底形式"
@@ -5634,6 +5649,14 @@ msgstr "未能打开文件%.200s"
 msgid "Couldn't open font"
 msgstr "未能打开字体"
 
+#, c-format
+msgid "Count: %u"
+msgstr "计数：%u"
+
+#, c-format
+msgid "Count: %u (average: %.2f)"
+msgstr "计数：%u（平均值：%.2f）"
+
 msgid "Counter Addition"
 msgstr "字腔增加"
 
@@ -6094,6 +6117,9 @@ msgstr "默认:"
 
 msgid "DefaultFont"
 msgstr "DefaultFont"
+
+msgid "DefaultShaper"
+msgstr "默认塑形器"
 
 msgid "Define \"Almost Horizontal\""
 msgstr "定义\"几乎水平\""
@@ -11898,6 +11924,12 @@ msgstr "MS其他"
 msgid "MS Script"
 msgstr "MS手写体"
 
+msgid "MS Unicode Ranges"
+msgstr "MS Unicode 范围"
+
+msgid "MS Unicode Ranges:"
+msgstr "MS Unicode 范围:"
+
 msgid ""
 "MS has changed (in August 2006) the inner workings of their Indic shaping\n"
 "engine, and to disambiguate this change has created a parallel set of script\n"
@@ -12263,6 +12295,10 @@ msgstr "标记字形与 Kashida 类似"
 
 msgid "Marks"
 msgstr "标记"
+
+#, c-format
+msgid "Marks within a ligature are usually ordered with the direction of writing. This one and %d are out of order."
+msgstr "连字内部的标记通常按书写方向排序。此标记与 %d 的顺序有误。"
 
 #, c-format
 msgid ""
@@ -15586,6 +15622,10 @@ msgstr "画笔角度(_A):"
 msgid "Per glyph baseline data"
 msgstr "每个字形基线数据"
 
+#, c-format
+msgid "Percentage of Max: %d%%"
+msgstr "最大值百分比：%d%%"
+
 msgid "Percentage scale down for script level 1"
 msgstr "脚本级别 1 的缩小百分比"
 
@@ -15892,6 +15932,10 @@ msgstr "葡萄牙语(葡萄牙)"
 
 msgid "Pos"
 msgstr "位置"
+
+#, c-format
+msgid "Position: %d"
+msgstr "位置：%d"
 
 #, c-format
 msgid ""
@@ -16475,6 +16519,9 @@ msgstr "此字形中引用的嵌套深度超出了允许的最大深度"
 
 msgid "References may not be dragged into the guidelines layer"
 msgstr "参照不可拖放到引导层"
+
+msgid "References neste_d deeper than:"
+msgstr "参照递归深度超过(_D):"
 
 msgid "References with bad PostScript transformation matrices"
 msgstr "引用中包含错误的 PostScript 变换矩阵"
@@ -18607,6 +18654,9 @@ msgstr "形状"
 msgid "Shaped Fill"
 msgstr "形状填充"
 
+msgid "Shaper preference is not implemented in contextual preferences"
+msgstr "上下文首选项中并未实现塑形器首选项"
+
 msgid "Shapes"
 msgstr "形状"
 
@@ -18949,6 +18999,9 @@ msgstr "小型形式变体"
 
 msgid "Small Kana Extension"
 msgstr "小假名扩展"
+
+msgid "Smoothing window:"
+msgstr "平滑窗口："
 
 msgid "Snap Outlines to Pi_xel Grid"
 msgstr "对齐轮廓到像素网格(_X)"
@@ -19945,7 +19998,7 @@ msgid "Symbol Charset"
 msgstr "符号字符集"
 
 msgid "Symbolic"
-msgstr "符号(Sy)"
+msgstr "符号"
 
 msgid "Symbols and Pictographs Extended-A"
 msgstr "符号及象形扩展 A"
@@ -20870,8 +20923,8 @@ msgid ""
 "The current encoding contains glyphs which I cannot map to CIDs.\n"
 "Should I delete them or add them to the end (where they may conflict with future ros definitions)?"
 msgstr ""
-"当前编码包含无法映射到 CID的字形。\n"
-"应该删除它们还是将它们添加到末尾(放在末尾可能会导致他们与未来的排序定义相冲突)？"
+"当前编码包含无法映射到 CID 的字形。\n"
+"我应该删除它们还是将它们添加到末尾（它们可能会与未来的排序定义冲突）？"
 
 #, c-format
 msgid "The default font does not have a 'cvt ' table, but the instance %.30s does"
@@ -20879,6 +20932,9 @@ msgstr "默认字体没有“cvt”表，但实例 %.30s 有"
 
 msgid "The default left margin (in points)"
 msgstr "默认左边距(以磅为单位)"
+
+msgid "The default shaper for MetricsView."
+msgstr "MetricsView 的默认塑形器。"
 
 msgid "The default size of the Em-Square in a newly created font."
 msgstr "新建字体全角宽度的默认值。"
@@ -21452,7 +21508,7 @@ msgid "The selected control point's position violates Rule 3 (see documentation)
 msgstr "所选控制点的位置违反规则 3（参见文档）。"
 
 msgid "The selected glyphs have no hints. FontForge will not produce many instructions."
-msgstr "已选字形沒有任何渲调。FontForge 将无法生成许多指令。"
+msgstr "已选字形沒有任何渲调。FontForge 将不生成更多指令。"
 
 msgid "The selected line segment is near the italic angle"
 msgstr "选定的线段靠近斜角"
@@ -24255,6 +24311,10 @@ msgid "Warning Foreground"
 msgstr "警告前景"
 
 #, c-format
+msgid "Warning in rule %d: \"%s\""
+msgstr "规则 %d 中存在警告：“%s”"
+
+#, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
 msgstr "警告：%dth 轴值（%g）超出允许范围 [%g,%g]"
 
@@ -24868,6 +24928,10 @@ msgstr "细字干的宽度/高度："
 
 msgid "Width:"
 msgstr "宽度："
+
+#, c-format
+msgid "Width: %d"
+msgstr "宽度：%d"
 
 #, c-format
 msgid ""

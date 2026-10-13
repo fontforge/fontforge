@@ -1252,9 +1252,13 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     PListAddNameString(dictnode,"openTypeNameSampleText",sf,ttf_sampletext);
     PListAddNameString(dictnode,"openTypeWWSFamilyName",sf,ttf_wwsfamily);
     PListAddNameString(dictnode,"openTypeWWSSubfamilyName",sf,ttf_wwssubfamily);
-    if ( sf->use_typo_metrics ) {
-	char typo_metrics_bit = 7;
-	PListAddIntArray(dictnode,"openTypeOS2Selection",&typo_metrics_bit,1);
+    if ( sf->use_typo_metrics && sf->weight_width_slope_only ) {
+	char selection_bitnums[2] = {7, 8};
+	PListAddIntArray(dictnode,"openTypeOS2Selection",selection_bitnums,2);
+    }
+    else if ( sf->use_typo_metrics || sf->weight_width_slope_only ) {
+	char selection_bitnum = sf->use_typo_metrics ? 7 : 8;
+	PListAddIntArray(dictnode,"openTypeOS2Selection",&selection_bitnum,1);
     }
     if ( sf->pfminfo.panose_set )
 	PListAddIntArray(dictnode,"openTypeOS2Panose",sf->pfminfo.panose,10);
@@ -3785,6 +3789,47 @@ return;
     }
 }
 
+static void parse_os2_fsSelection(SplineFont *sf, xmlDocPtr doc, xmlNodePtr value) {
+    char selection[16];
+    UFOGetByteArray(selection,sizeof(selection),doc,value);
+    for ( int i=0; i<sizeof(selection); ++i ) {
+	switch ( selection[i] ) {
+	    case 7:
+		sf->use_typo_metrics = true;
+		break;
+	    case 8:
+		sf->weight_width_slope_only = true;
+		break;
+	    case 0:
+                if ((i >= sizeof(selection) - 1) || selection[i + 1] == 0)
+                    break; /* probably no more specified; suppress warning */
+                /* fallthrough */
+	    case 5:
+	    case 6:
+		LogError(_("Bad openTypeOS2Selection bit number: bit %d should be set through styleMapStyleName. It will be ignored"), selection[i]);
+		break;
+	    case 1:
+	    case 2:
+	    case 3:
+	    case 4:
+	    case 9:
+		LogError(_("In openTypeOS2Selection bit %d is set but Fontforge does not support it. It will be ignored"), selection[i]);
+		break;
+	    case 10:
+	    case 11:
+	    case 12:
+	    case 13:
+	    case 14:
+	    case 15:
+		LogError(_("Bad openTypeOS2Selection bit number: bit %d is reserved and must not be set. It will be ignored"), selection[i]);
+		break;
+	    default:
+		LogError(_("Bad openTypeOS2Selection bit number: bit %d is out of range. It will be ignored"), selection[i]);
+		break;
+	}
+    }
+}
+
 SplineFont *SFReadUFO(char *basedir, int flags) {
     xmlNodePtr plist, dict, keys, value;
     xmlNodePtr guidelineNode = NULL;
@@ -3924,11 +3969,7 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
 	    } else if ( strncmp((char *) keyname,"openTypeOS2",11)==0 ) {
 		sf->pfminfo.pfmset = true;
 		if ( xmlStrcmp(keyname+11,(xmlChar *) "Selection")==0 ) {
-		    char selection[16];
-		    UFOGetByteArray(selection,sizeof(selection),doc,value);
-		    for ( int i=0; i<sizeof(selection); ++i )
-			if ( selection[i] == 7 )
-			    sf->use_typo_metrics = true;
+                    parse_os2_fsSelection(sf, doc, value);
 		} else if ( xmlStrcmp(keyname+11,(xmlChar *) "Panose")==0 ) {
 		    UFOGetByteArray(sf->pfminfo.panose,sizeof(sf->pfminfo.panose),doc,value);
 		    sf->pfminfo.panose_set = true;

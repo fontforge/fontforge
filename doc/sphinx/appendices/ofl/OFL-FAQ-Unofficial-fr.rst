@@ -6,7 +6,7 @@ ouvertes (OFL)
 
 Version 1.1 - 26 février 2007
 
-(voir http://scripts.sil.org/OFL pour les mises à jour)
+(voir https://openfontlicense.org pour les mises à jour)
 
 traduction Pierre Hanser, 2007-03-25
 
