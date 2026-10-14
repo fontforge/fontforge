@@ -50,6 +50,8 @@ std::map<ff::Tag, L10nText> LanguageLabelsMap();
 
 namespace ff::dlg {
 
+using layout::SplineFontProperties;
+
 static const std::string preview_area_css(
     "box { box-shadow: 3pt 3pt 3pt black;}");
 
@@ -87,7 +89,7 @@ static const std::map<int16_t, Pango::Weight> kWeightMap{
 static struct {
     std::string radio_selection = SAMPLE_TEXT;
     size_t full_display_size = 20;
-    std::string full_page_scaling = utils::FullGlyphPrinter::kScaleToPage;
+    std::string full_page_scaling = layout::FullGlyphPrinter::kScaleToPage;
     std::string sample_text = "";
 } persistent;
 
@@ -105,7 +107,7 @@ static std::pair<ff::Tag, ff::Tag> extract_script_lang_tags(
     return {script, lang};
 }
 
-PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
+PrintPreviewWidget::PrintPreviewWidget(layout::CairoPainter&& cairo_painter,
                                        const std::string& sample_text)
     : aspect_wrapper(0.5, 0.5, 0.5),
       current_setup_(default_setup_),
@@ -181,11 +183,11 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
         [this] { preview_area.queue_draw(); });
 
     scaling_option_ = Gtk::make_managed<Gtk::ComboBoxText>();
-    scaling_option_->append(utils::FullGlyphPrinter::kScaleToPage,
+    scaling_option_->append(layout::FullGlyphPrinter::kScaleToPage,
                             "Scale each glyph to page size");
-    scaling_option_->append(utils::FullGlyphPrinter::kScaleEmSize,
+    scaling_option_->append(layout::FullGlyphPrinter::kScaleEmSize,
                             "Scale glyphs to em size");
-    scaling_option_->append(utils::FullGlyphPrinter::kScaleMaxHeight,
+    scaling_option_->append(layout::FullGlyphPrinter::kScaleMaxHeight,
                             "Scale glyphs to maximum height");
     scaling_option_->set_active_id(persistent.full_page_scaling);
     scaling_option_->set_valign(Gtk::ALIGN_START);
@@ -276,7 +278,7 @@ void PrintPreviewWidget::refresh_feature_tags_list() {
 
     feature_tags_list_->clear_items();
 
-    const utils::CairoFontRec& font_rec = cairo_painter_.default_rec();
+    const layout::CairoFontRec& font_rec = cairo_painter_.default_rec();
     Glib::ustring entry_text = script_lang_combo_->get_entry()->get_text();
     auto [script, lang] = extract_script_lang_tags(entry_text);
 
@@ -712,7 +714,7 @@ void PrintPreviewWidget::activate_cairo_printer(
 void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
-    ff::utils::CairoContext context(cr, printable_area);
+    layout::CairoContext context(cr, printable_area);
     cairo_painter_.add_page(page_nr, &context);
 
     paginate();

@@ -40,9 +40,7 @@
 typedef struct splinechar SplineChar;
 typedef struct fontviewbase FontViewBase;
 
-using ff::layout::SplineFontProperties;
-
-namespace ff::utils {
+namespace ff::layout {
 
 using PrintGlyphMap = std::map<int, SplineChar*>;
 
@@ -322,4 +320,4 @@ void draw_centered_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
                          const Cairo::Rectangle& box,
                          unsigned long glyph_index);
 
-}  // namespace ff::utils
+}  // namespace ff::layout

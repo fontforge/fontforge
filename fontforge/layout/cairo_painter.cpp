@@ -57,9 +57,7 @@ extern char* WordlistEscapedInputStringToUTF8(SplineFont* sf,
 #include "gutils.h"
 #include "ustring.h"
 
-namespace ff::utils {
-
-using layout::parse_tag;
+namespace ff::layout {
 
 // All dimensions are in points
 const double margin_ = 36;
@@ -77,7 +75,7 @@ const std::string FullGlyphPrinter::kScaleMaxHeight = "scale_to_max_height";
 size_t FullGlyphPrinter::page_count() const { return print_map_.size(); }
 
 void FullGlyphPrinter::add_page(size_t page_number,
-                                const ff::layout::PageContext* context) {
+                                const PageContext* context) {
     auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
     if (!cairo_ctx) {
         std::cerr << "Invalid page context passed to FullGlyphPrinter"
@@ -248,8 +246,7 @@ MultiSizePrinter::MultiSizePrinter(const Cairo::Rectangle& printable_area,
         (char_area_height + extravspace) / (pointsizes_[0] + extravspace)));
 }
 
-void MultiSizePrinter::add_page(size_t page_nr,
-                                const ff::layout::PageContext* context) {
+void MultiSizePrinter::add_page(size_t page_nr, const PageContext* context) {
     auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
     if (!cairo_ctx) {
         std::cerr << "Invalid page context passed to MultiSizePrinter"
@@ -503,7 +500,7 @@ void FullDisplayPrinter::draw_glyphs_line(
 }
 
 void FullDisplayPrinter::add_page(size_t page_number,
-                                  const ff::layout::PageContext* context) {
+                                  const PageContext* context) {
     auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
     if (!cairo_ctx) {
         std::cerr << "Invalid page context passed to FullDisplayPrinter"
@@ -590,14 +587,14 @@ SampleTextPrinter::SampleTextPrinter(const Cairo::RefPtr<Cairo::Context>& cr,
                   [&properties_list](const auto& font) {
                       properties_list.push_back(font.props);
                   });
-    selector_ = layout::RichTextFontSelector(properties_list);
+    selector_ = RichTextFontSelector(properties_list);
 
     calculate_layout(cr, printable_area, sample_text_);
     paginate(printable_area.height - top_margin_);
 }
 
 void SampleTextPrinter::add_page(size_t page_number,
-                                 const ff::layout::PageContext* context) {
+                                 const PageContext* context) {
     auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
     if (!cairo_ctx) {
         std::cerr << "Invalid page context passed to FullDisplayPrinter"
@@ -682,7 +679,7 @@ void SampleTextPrinter::calculate_layout(
     setup_context(cr);
 
     std::istringstream stream(sample_text);
-    layout::ParsedRichText parsed_text = layout::parse_xml_stream(stream);
+    ParsedRichText parsed_text = parse_xml_stream(stream);
     SplineFontProperties default_properties = get_default_style(parsed_text);
 
     // Buffer of text blocks for a single line of output
@@ -694,7 +691,7 @@ void SampleTextPrinter::calculate_layout(
         // TODO(iorsh): consider manifest for font selection
         if (current_tags.size() >= 2 && current_tags[1] == "manifest") continue;
 
-        std::vector<layout::ParsedTag> parsed_tags;
+        std::vector<ParsedTag> parsed_tags;
         for (const std::string& tag : current_tags) {
             parsed_tags.emplace_back(parse_tag(tag));
         }
@@ -804,7 +801,7 @@ void SampleTextPrinter::paginate(double layout_height) {
 }
 
 SplineFontProperties SampleTextPrinter::get_default_style(
-    const layout::ParsedRichText& rich_text) const {
+    const ParsedRichText& rich_text) const {
     if (rich_text.empty()) {
         return cairo_family_[0].props;
     }
@@ -1207,4 +1204,4 @@ void draw_centered_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->show_glyphs({glyph});
 }
 
-}  // namespace ff::utils
+}  // namespace ff::layout

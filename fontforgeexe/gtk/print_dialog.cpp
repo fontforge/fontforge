@@ -33,7 +33,7 @@
 #include "print_preview.hpp"
 #include "win32_utils.hpp"
 
-using ff::utils::PrintGlyphMap;
+using ff::layout::PrintGlyphMap;
 
 void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv,
                   char* sample_text) {
@@ -52,7 +52,7 @@ void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv,
     // The preview widget is also responsible for actual printing, which happens
     // after the print dialog has been closed. We should manage its lifecycle
     // independently.
-    ff::utils::CairoPainter cairo_painter(sf, fv);
+    ff::layout::CairoPainter cairo_painter(sf, fv);
     ff::dlg::PrintPreviewWidget ff_preview_widget(std::move(cairo_painter),
                                                   sample_text);
 

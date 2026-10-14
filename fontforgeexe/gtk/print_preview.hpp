@@ -36,7 +36,7 @@ namespace ff::dlg {
 
 class PrintPreviewWidget : public Gtk::Grid {
  public:
-    PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
+    PrintPreviewWidget(layout::CairoPainter&& cairo_painter,
                        const std::string& sample_text);
 
     static Glib::ustring label();
@@ -137,7 +137,7 @@ class PrintPreviewWidget : public Gtk::Grid {
     // This setup should never be nullptr, all drawing functions rely on it.
     Glib::RefPtr<Gtk::PageSetup> current_setup_;
 
-    utils::CairoPainter cairo_painter_;
+    layout::CairoPainter cairo_painter_;
 };
 
 }  // namespace ff::dlg
