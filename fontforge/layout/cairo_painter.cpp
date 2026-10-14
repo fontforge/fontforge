@@ -1084,7 +1084,7 @@ std::shared_ptr<shapers::IShaper> create_shaper(SplineFont* sf) {
 }
 
 CairoFontFamily create_cairo_family(SplineFont* current_sf) {
-    SplineFont** family_sfs = FVCollectFonts(current_sf);
+    SplineFont** open_sfs = FVCollectFonts(current_sf);
     SplineFontProperties* sf_properties = nullptr;
     Cairo::RefPtr<Cairo::FtFontFace> ft_face;
     std::shared_ptr<shapers::IShaper> shaper;
@@ -1099,8 +1099,8 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf) {
     family.push_back(CairoFontRec{*sf_properties, ft_face, shaper, current_sf});
     delete sf_properties;
 
-    if (family_sfs) {
-        for (SplineFont** sf_it = family_sfs; *sf_it != nullptr; ++sf_it) {
+    if (open_sfs) {
+        for (SplineFont** sf_it = open_sfs; *sf_it != nullptr; ++sf_it) {
             sf_properties = toCPP(SFGetProperties(*sf_it));
             ft_face = create_cairo_face(*sf_it);
             shaper = create_shaper(*sf_it);
@@ -1110,7 +1110,18 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf) {
         }
     }
 
-    free(family_sfs);
+    // Generate unique full names in case of duplicates (e.g. multiple font
+    // versions loaded together).
+    std::map<std::string, int /*count*/> full_names;
+    for (auto& font_rec : family) {
+        std::string full_name = font_rec.props.full_name;
+        int name_count = full_names[full_name]++;
+        if (name_count > 0)
+            font_rec.props.full_name +=
+                " (" + std::to_string(name_count + 1) + ")";
+    }
+
+    free(open_sfs);
     return family;
 }
 

@@ -36,8 +36,6 @@ namespace ff::layout {
 // A sequence of text segments with associated tags.
 using ParsedRichText = std::vector<
     std::pair<std::vector<std::string> /*tags*/, std::string /*text*/>>;
-using ParsedTag =
-    std::pair<std::string /*tag name*/, std::string /*tag value*/>;
 
 class RichTextFontSelector {
  public:
