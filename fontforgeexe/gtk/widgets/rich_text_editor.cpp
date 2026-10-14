@@ -201,8 +201,11 @@ RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
     auto size_combo = build_size_combo(pointsizes);
     size_combo->set_tooltip_text(_("Font Size"));
 
+    std::string default_font_id =
+        font_list.empty() ? "" : "font|" + font_list[0].first;
     ClearFormattingButton* clear_button =
-        Gtk::make_managed<ClearFormattingButton>(text_view_.get_buffer());
+        Gtk::make_managed<ClearFormattingButton>(text_view_.get_buffer(),
+                                                 default_font_id);
     clear_button->set_icon_name("edit-clear-all");
     clear_button->set_tooltip_text(_("Clear Formatting"));
     Gtk::ToolButton* hamburger_button = build_tools_menu();
@@ -1074,8 +1077,9 @@ void RichTextEditor::TagComboBox::on_buffer_cursor_changed(
 ///////////////////////////////////////////////////////////////////////
 
 RichTextEditor::ClearFormattingButton::ClearFormattingButton(
-    Glib::RefPtr<Gtk::TextBuffer> text_buffer)
-    : text_buffer_(text_buffer) {
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+    const std::string& default_font_id)
+    : text_buffer_(text_buffer), default_font_id_(default_font_id) {
     signal_clicked().connect(
         sigc::mem_fun(*this, &ClearFormattingButton::on_button_clicked));
 }
@@ -1084,6 +1088,11 @@ void RichTextEditor::ClearFormattingButton::on_button_clicked() {
     Gtk::TextBuffer::iterator start, end;
     if (text_buffer_->get_selection_bounds(start, end)) {
         text_buffer_->remove_all_tags(start, end);
+        auto default_font_tag =
+            text_buffer_->get_tag_table()->lookup(default_font_id_);
+        if (default_font_tag) {
+            text_buffer_->apply_tag(default_font_tag, start, end);
+        }
     }
 }
 

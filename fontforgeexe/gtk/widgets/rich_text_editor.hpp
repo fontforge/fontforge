@@ -211,12 +211,14 @@ class RichTextEditor : public Gtk::Grid {
 
     class ClearFormattingButton : public Gtk::ToolButton {
      public:
-        ClearFormattingButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
+        ClearFormattingButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+                              const std::string& default_font_id);
 
         void on_button_clicked();
 
      protected:
         Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+        std::string default_font_id_;
     };
 
  protected:
