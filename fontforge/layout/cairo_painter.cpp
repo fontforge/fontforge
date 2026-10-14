@@ -59,6 +59,8 @@ extern char* WordlistEscapedInputStringToUTF8(SplineFont* sf,
 
 namespace ff::utils {
 
+using layout::parse_tag;
+
 // All dimensions are in points
 const double margin_ = 36;
 const double top_margin_ = 96;
@@ -692,7 +694,7 @@ void SampleTextPrinter::calculate_layout(
         // TODO(iorsh): consider manifest for font selection
         if (current_tags.size() >= 2 && current_tags[1] == "manifest") continue;
 
-        std::vector<ParsedTag> parsed_tags;
+        std::vector<layout::ParsedTag> parsed_tags;
         for (const std::string& tag : current_tags) {
             parsed_tags.emplace_back(parse_tag(tag));
         }
@@ -1124,26 +1126,6 @@ PrintGlyphMap build_glyph_map(SplineFont* sf) {
     }
     free(ttf_map);
     return print_map;
-}
-
-ParsedTag parse_tag(const std::string& complete_tag) {
-    // Attempt to match tag name and "value" attribute
-    // The string below is equivalent to ^(.+?)\s+value=\"(.+?)\"
-    std::regex re(R"-(^(.+?)\s+value=\"(.+?)\")-");
-    std::smatch tag_value_match;
-    if (std::regex_match(complete_tag, tag_value_match, re) &&
-        (tag_value_match.size() == 3)) {
-        // tag_value_match[0] holds the complete match, ignore it. We need just
-        // the capturing groups.
-        return {tag_value_match[1], tag_value_match[2]};
-    }
-
-    // Return tag name only, with "set" as value by convention.
-    auto space_it =
-        std::find_if(complete_tag.begin(), complete_tag.end(),
-                     [](unsigned char c) { return std::isspace(c); });
-    std::string tag_name(complete_tag.begin(), space_it);
-    return {tag_name, "set"};
 }
 
 void setup_context(const Cairo::RefPtr<Cairo::Context>& cr) {

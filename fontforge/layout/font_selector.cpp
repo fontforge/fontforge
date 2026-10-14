@@ -334,6 +334,26 @@ ParsedRichText parse_xml_stream(std::istream& input) {
     return parsed_input;
 }
 
+ParsedTag parse_tag(const std::string& complete_tag) {
+    // Attempt to match tag name and "value" attribute
+    // The string below is equivalent to ^(.+?)\s+value=\"(.+?)\"
+    std::regex re(R"-(^(.+?)\s+value=\"(.+?)\")-");
+    std::smatch tag_value_match;
+    if (std::regex_match(complete_tag, tag_value_match, re) &&
+        (tag_value_match.size() == 3)) {
+        // tag_value_match[0] holds the complete match, ignore it. We need just
+        // the capturing groups.
+        return {tag_value_match[1], tag_value_match[2]};
+    }
+
+    // Return tag name only, with "set" as value by convention.
+    auto space_it =
+        std::find_if(complete_tag.begin(), complete_tag.end(),
+                     [](unsigned char c) { return std::isspace(c); });
+    std::string tag_name(complete_tag.begin(), space_it);
+    return {tag_name, "set"};
+}
+
 std::vector<SplineFontProperties> parse_manifest(const ParsedRichText& parsed) {
     std::map<std::string, SplineFontProperties> font_map;
     // Extract font name using pattern <font key="font_name">, without angular

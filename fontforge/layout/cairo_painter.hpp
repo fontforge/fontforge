@@ -41,8 +41,6 @@ typedef struct splinechar SplineChar;
 typedef struct fontviewbase FontViewBase;
 
 using ff::layout::SplineFontProperties;
-using ParsedTag =
-    std::pair<std::string /*tag name*/, std::string /*tag value*/>;
 
 namespace ff::utils {
 
@@ -310,8 +308,6 @@ class CairoPainter {
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
 CairoFontFamily create_cairo_family(SplineFont* current_sf);
 PrintGlyphMap build_glyph_map(SplineFont* sf);
-
-ParsedTag parse_tag(const std::string& complete_tag);
 
 void setup_context(const Cairo::RefPtr<Cairo::Context>& cr);
 void init_document(const Cairo::RefPtr<Cairo::Context>& cr,

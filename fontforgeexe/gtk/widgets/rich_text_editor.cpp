@@ -79,7 +79,7 @@ static layout::ParsedRichText collapse_html_spaces(
 }
 
 static std::string normalize_ff_xml_tag(const std::string& raw_tag) {
-    auto [tag_name, tag_value] = ff::utils::parse_tag(raw_tag);
+    auto [tag_name, tag_value] = ff::layout::parse_tag(raw_tag);
     if (tag_value == "set") {
         return tag_name;
     }

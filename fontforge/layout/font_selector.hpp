@@ -36,6 +36,8 @@ namespace ff::layout {
 // A sequence of text segments with associated tags.
 using ParsedRichText = std::vector<
     std::pair<std::vector<std::string> /*tags*/, std::string /*text*/>>;
+using ParsedTag =
+    std::pair<std::string /*tag name*/, std::string /*tag value*/>;
 
 class RichTextFontSelector {
  public:
@@ -81,6 +83,8 @@ void dump_tag(std::string& unicode_buffer, const std::string& tag_name,
 std::string normalize_text_buffer_dump(const std::string& dump);
 
 ParsedRichText parse_xml_stream(std::istream& input);
+
+ParsedTag parse_tag(const std::string& complete_tag);
 
 std::vector<SplineFontProperties> parse_manifest(const ParsedRichText& parsed);
 

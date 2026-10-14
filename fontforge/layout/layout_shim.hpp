@@ -46,10 +46,10 @@ cpp_SplineFontProperties* make_SplineFontProperties(
 #include <string>
 #include <vector>
 
+namespace ff::layout {
+
 using ParsedTag =
     std::pair<std::string /*tag name*/, std::string /*tag value*/>;
-
-namespace ff::layout {
 
 struct SplineFontProperties {
     int ascent = -1, descent = -1;
