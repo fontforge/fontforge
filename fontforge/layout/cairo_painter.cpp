@@ -27,6 +27,7 @@
 
 #include "cairo_painter.hpp"
 
+#include <algorithm>
 #include <array>
 #include <charconv>
 #include <regex>
