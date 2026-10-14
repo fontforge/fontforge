@@ -399,14 +399,14 @@ char* SFGetFullName(SplineFont *sf) {
 
 cpp_SplineFontProperties* SFGetProperties(SplineFont* sf) {
     return make_SplineFontProperties(
-    sf->ascent,
-    sf->descent,
-    (sf->italicangle != 0.0),
-    sf->pfminfo.weight,
-    sf->pfminfo.width,
-    sf->familyname ? sf->familyname : "",
-    SFGetModifiers(sf),
-    SFGetFullName(sf));
+        sf->ascent, sf->descent,
+        (sf->pfminfo.pfmset && sf->pfminfo.stylemap != -1)
+            ? sf->pfminfo.stylemap & 0x01
+            : false,
+        sf->pfminfo.pfmset ? sf->pfminfo.weight : 400,
+        sf->pfminfo.pfmset ? sf->pfminfo.width : 5,
+        sf->familyname ? sf->familyname : "", SFGetModifiers(sf),
+        SFGetFullName(sf));
 }
 
 static char *scaleString(char *string, double scale) {

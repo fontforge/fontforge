@@ -56,9 +56,11 @@ SplineFontProperties SplineFontProperties::from_tags(
         } else if (tag_name == "bold") {
             props.os2_weight = 700;
         } else if (tag_name == "width") {
-            props.os2_width = widths.at(tag_value);
+            props.os2_width =
+                widths.count(tag_value) ? widths.at(tag_value) : 5;
         } else if (tag_name == "weight") {
-            props.os2_weight = weights.at(tag_value);
+            props.os2_weight =
+                weights.count(tag_value) ? weights.at(tag_value) : 400;
         } else if (tag_name == "font") {
             props.full_name = tag_value;
         }
@@ -87,7 +89,9 @@ int SplineFontProperties::distance(const SplineFontProperties& other) const {
         {7, {7, 8, 6, 9, 5, 4, 3, 2, 1}}, {8, {8, 9, 7, 6, 5, 4, 3, 2, 1}},
         {9, {9, 8, 7, 6, 5, 4, 3, 2, 1}},
     };
-    const std::vector<int16_t>& m = width_mapper.at(os2_width);
+    const std::vector<int16_t>& m = width_mapper.count(os2_width)
+                                        ? width_mapper.at(os2_width)
+                                        : width_mapper.at(5);
     int width_dist = std::find(m.begin(), m.end(), other.os2_width) - m.begin();
 
     // Full name is a perfect match
