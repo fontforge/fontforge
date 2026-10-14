@@ -177,8 +177,8 @@ std::pair<double, double> FullGlyphPrinter::get_splinefont_metrics(
     return {sf_ascent, sf_descent};
 }
 
-// Returns [x_position, y_position, scale]
-std::array<double, 3> FullGlyphPrinter::calculate_full_glyph_location(
+std::tuple<double /*x_position*/, double /*y_position*/, double /*scale*/>
+FullGlyphPrinter::calculate_full_glyph_location(
     const std::string& scaling_option, const Cairo::RefPtr<Cairo::Context>& cr,
     const Cairo::Rectangle& printable_area,
     const Cairo::TextExtents& text_extents) const {

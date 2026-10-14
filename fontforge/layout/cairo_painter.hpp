@@ -104,7 +104,8 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
     std::pair<double, double> get_splinefont_metrics(
         const Cairo::RefPtr<Cairo::Context>& cr) const;
 
-    std::array<double, 3> calculate_full_glyph_location(
+    std::tuple<double /*x_position*/, double /*y_position*/, double /*scale*/>
+    calculate_full_glyph_location(
         const std::string& scaling_option,
         const Cairo::RefPtr<Cairo::Context>& cr,
         const Cairo::Rectangle& shifted_printable_area,
