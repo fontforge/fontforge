@@ -77,10 +77,7 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
  public:
     FullGlyphPrinter(const PrintGlyphVec& print_map,
                      const CairoFontRec& font_rec,
-                     const std::string& scaling_option)
-        : print_map_(print_map),
-          font_rec_(font_rec),
-          scaling_option_(scaling_option) {}
+                     const std::string& scaling_option);
 
     size_t page_count() const override;
     void draw_page(size_t page_number,
@@ -97,6 +94,7 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
     const PrintGlyphVec& print_map_;
     const CairoFontRec& font_rec_;
     std::string scaling_option_;
+    std::vector<Cairo::Glyph> cairo_glyphs_;
 
     // Get SplineFont ascent and descent in Cairo context units, normalized for
     // font size 1pt.
@@ -105,7 +103,6 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
 
     std::tuple<double /*x_position*/, double /*y_position*/, double /*scale*/>
     calculate_full_glyph_location(
-        const std::string& scaling_option,
         const Cairo::RefPtr<Cairo::Context>& cr,
         const Cairo::Rectangle& shifted_printable_area,
         const Cairo::TextExtents& text_extents) const;

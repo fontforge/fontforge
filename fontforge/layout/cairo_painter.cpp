@@ -68,6 +68,23 @@ const double full_glyph_top_margin_ = 48;
 //                             FullGlyphPrinter                             //
 //////////////////////////////////////////////////////////////////////////////
 
+FullGlyphPrinter::FullGlyphPrinter(const PrintGlyphVec& print_map,
+                                   const CairoFontRec& font_rec,
+                                   const std::string& scaling_option)
+    : print_map_(print_map),
+      font_rec_(font_rec),
+      scaling_option_(scaling_option) {
+    if (scaling_option_ == kScaleMaxHeight) {
+        // Collect all glyphs to determine maximum y-extents
+        cairo_glyphs_.resize(print_map_.size());
+        std::transform(
+            print_map_.begin(), print_map_.end(), cairo_glyphs_.begin(),
+            [](const PrintGlyphVec::value_type& p) {
+                return Cairo::Glyph{(unsigned long)p.first, 0.0, 0.0};
+            });
+    }
+}
+
 size_t FullGlyphPrinter::page_count() const { return print_map_.size(); }
 
 void FullGlyphPrinter::draw_page(size_t page_number,
@@ -112,8 +129,8 @@ void FullGlyphPrinter::draw_page(size_t page_number,
     Cairo::TextExtents text_extents;
     cr->get_glyph_extents({glyph}, text_extents);
 
-    auto [x_min, y_min, glyph_scale] = calculate_full_glyph_location(
-        scaling_option_, cr, shifted_printable_area, text_extents);
+    auto [x_min, y_min, glyph_scale] =
+        calculate_full_glyph_location(cr, shifted_printable_area, text_extents);
 
     cr->scale(glyph_scale, glyph_scale);
     cr->translate(-x_min, shifted_printable_area.height / glyph_scale + y_min);
@@ -175,13 +192,13 @@ std::pair<double, double> FullGlyphPrinter::get_splinefont_metrics(
 
 std::tuple<double /*x_position*/, double /*y_position*/, double /*scale*/>
 FullGlyphPrinter::calculate_full_glyph_location(
-    const std::string& scaling_option, const Cairo::RefPtr<Cairo::Context>& cr,
+    const Cairo::RefPtr<Cairo::Context>& cr,
     const Cairo::Rectangle& printable_area,
     const Cairo::TextExtents& text_extents) const {
     auto [sf_ascent, sf_descent] = get_splinefont_metrics(cr);
     double x_min = 0, y_min = 0, scale = 1;
     double pointsize = 0;
-    if (scaling_option == kScaleToPage) {
+    if (scaling_option_ == kScaleToPage) {
         x_min = std::min(0.0, text_extents.x_bearing);
         double x_max = std::max(text_extents.x_advance,
                                 text_extents.width + text_extents.x_bearing);
@@ -194,23 +211,16 @@ FullGlyphPrinter::calculate_full_glyph_location(
         double y_scale =
             (y_max > y_min) ? printable_area.height / (y_max - y_min) : 1e-5;
         scale = std::min(x_scale, y_scale);
-    } else if (scaling_option == kScaleEmSize) {
+    } else if (scaling_option_ == kScaleEmSize) {
         x_min = std::min(0.0, text_extents.x_bearing);
         y_min = sf_descent;
         double y_max = sf_ascent;
 
         double y_scale = printable_area.height / (y_max - y_min);
         scale = y_scale;
-    } else if (scaling_option == kScaleMaxHeight) {
-        // Collect all glyphs to determine maximum y-extents
-        std::vector<Cairo::Glyph> glyphs(print_map_.size());
-        std::transform(print_map_.begin(), print_map_.end(), glyphs.begin(),
-                       [](const PrintGlyphVec::value_type& p) {
-                           return Cairo::Glyph{(unsigned long)p.first, 0.0,
-                                               0.0};
-                       });
+    } else if (scaling_option_ == kScaleMaxHeight) {
         Cairo::TextExtents big_text_extents;
-        cr->get_glyph_extents(glyphs, big_text_extents);
+        cr->get_glyph_extents(cairo_glyphs_, big_text_extents);
         x_min = std::min(0.0, text_extents.x_bearing);
         y_min = -big_text_extents.y_bearing - big_text_extents.height;
         double y_max = -big_text_extents.y_bearing;
