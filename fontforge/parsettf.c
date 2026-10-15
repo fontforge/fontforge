@@ -3463,6 +3463,13 @@ static void readcffset(FILE *ttf,struct topdicts *dict,struct ttfinfo *info) {
     int i;
     int format, cnt, j, first;
 
+    /* dict->glyphs.cnt comes from the CFF CharStrings INDEX.  A font with no
+     * glyphs at all leaves len==0, and every branch below then allocates
+     * len*sizeof(uint16_t)==0 bytes and writes the .notdef entry at [0].
+     * There is no charset to read without glyphs, so bail out. */
+    if ( len<=0 )
+return;
+
     i = 0;
     if ( dict->charsetoff==0 ) {
 	/* ISO Adobe charset */
