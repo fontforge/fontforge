@@ -68,10 +68,6 @@ const double full_glyph_top_margin_ = 48;
 //                             FullGlyphPrinter                             //
 //////////////////////////////////////////////////////////////////////////////
 
-const std::string FullGlyphPrinter::kScaleToPage = "scale_to_page";
-const std::string FullGlyphPrinter::kScaleEmSize = "scale_to_em_size";
-const std::string FullGlyphPrinter::kScaleMaxHeight = "scale_to_max_height";
-
 size_t FullGlyphPrinter::page_count() const { return print_map_.size(); }
 
 void FullGlyphPrinter::add_page(size_t page_number,
@@ -134,11 +130,11 @@ void FullGlyphPrinter::add_page(size_t page_number,
     cr->set_line_width(0.002);
 
     // TODO(iorsh): extend lines by tiny dashes
-    draw_line(cr, na, 0, false);
-    draw_line(cr, na, text_extents.x_advance, false);
-    draw_line(cr, na, 0, true);
-    draw_line(cr, na, -sf_ascent, true);
-    draw_line(cr, na, -sf_descent, true);
+    draw_rule(cr, na, 0, false);
+    draw_rule(cr, na, text_extents.x_advance, false);
+    draw_rule(cr, na, 0, true);
+    draw_rule(cr, na, -sf_ascent, true);
+    draw_rule(cr, na, -sf_descent, true);
 }
 
 std::pair<double, double> FullGlyphPrinter::get_splinefont_metrics(
@@ -552,7 +548,7 @@ void FullDisplayPrinter::add_page(size_t page_number,
             Cairo::Rectangle line_slot{
                 margin_ + left_code_area_width_ + extrahspace_, y_start,
                 line_length * (extrahspace_ + pointsize_) - extrahspace_, 0};
-            draw_line(cr, line_slot, y_start, true);
+            draw_rule(cr, line_slot, y_start, true);
 
             // This provides a vertical shift after we have drawn a ruler
             // between encoded and unencoded glyphs.
@@ -1165,9 +1161,9 @@ void init_document(const Cairo::RefPtr<Cairo::Context>& cr,
 }
 
 // Draw a line across the box, at the specified horizontal or vertical position.
-// TODO(iorsh): Fix draw_line() to draw a pixel-wide line on screen or bitmap,
+// TODO(iorsh): Fix draw_rule() to draw a pixel-wide line on screen or bitmap,
 // or a very thin line on a scalable surface (e.g. PDF, PS).
-void draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
+void draw_rule(const Cairo::RefPtr<Cairo::Context>& cr,
                const Cairo::Rectangle& box, double level, bool horizontal) {
     if (horizontal) {
         cr->move_to(box.x, level);

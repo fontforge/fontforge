@@ -89,7 +89,8 @@ static const std::map<int16_t, Pango::Weight> kWeightMap{
 static struct {
     std::string radio_selection = SAMPLE_TEXT;
     size_t full_display_size = 20;
-    std::string full_page_scaling = layout::FullGlyphPrinter::kScaleToPage;
+    std::string full_page_scaling =
+        std::string(layout::FullGlyphPrinter::kScaleToPage);
     std::string sample_text = "";
 } persistent;
 
@@ -183,12 +184,13 @@ PrintPreviewWidget::PrintPreviewWidget(layout::CairoPainter&& cairo_painter,
         [this] { preview_area.queue_draw(); });
 
     scaling_option_ = Gtk::make_managed<Gtk::ComboBoxText>();
-    scaling_option_->append(layout::FullGlyphPrinter::kScaleToPage,
+    scaling_option_->append(std::string(layout::FullGlyphPrinter::kScaleToPage),
                             "Scale each glyph to page size");
-    scaling_option_->append(layout::FullGlyphPrinter::kScaleEmSize,
+    scaling_option_->append(std::string(layout::FullGlyphPrinter::kScaleEmSize),
                             "Scale glyphs to em size");
-    scaling_option_->append(layout::FullGlyphPrinter::kScaleMaxHeight,
-                            "Scale glyphs to maximum height");
+    scaling_option_->append(
+        std::string(layout::FullGlyphPrinter::kScaleMaxHeight),
+        "Scale glyphs to maximum height");
     scaling_option_->set_active_id(persistent.full_page_scaling);
     scaling_option_->set_valign(Gtk::ALIGN_START);
 

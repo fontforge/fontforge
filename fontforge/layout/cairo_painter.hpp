@@ -63,8 +63,6 @@ using RichTextLayout =
     std::vector<std::pair<RichTextLineBuffer, double /*height*/>>;
 using PrintGlyphVec = std::vector<std::pair<int, SplineChar*>>;
 
-class CairoPainter;
-
 class CairoContext : public ff::layout::PageContext {
  public:
     CairoContext(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -88,9 +86,10 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
     void add_page(size_t page_number,
                   const ff::layout::PageContext* context) override;
 
-    static const std::string kScaleToPage;
-    static const std::string kScaleEmSize;
-    static const std::string kScaleMaxHeight;
+    inline constexpr static std::string_view kScaleToPage = "scale_to_page";
+    inline constexpr static std::string_view kScaleEmSize = "scale_to_em_size";
+    inline constexpr static std::string_view kScaleMaxHeight =
+        "scale_to_max_height";
 
  private:
     // TODO(iorsh): Storing reference is dangerous, consider other non-copying
@@ -207,8 +206,6 @@ class SampleTextPrinter : public ff::layout::IPrinter {
     Tag lang_;
     std::map<Tag, bool> features_;
 
-    // Cached layout data, which should be invalidated whenever the painter
-    // input changes.
     // Vector of output lines with calculated height.
     RichTextLayout full_layout_;
 
@@ -244,7 +241,8 @@ class CairoPainter {
  public:
     CairoPainter(SplineFont* sf, FontViewBase* fv);
 
-    // The currently active face
+    // The currently active face. By convention, the first element of the
+    // CairoFontList is the default face, and it must always be present.
     const CairoFontRec& default_rec() const { return cairo_list_[0]; }
 
     std::vector<SplineFontProperties> get_font_list() const {
@@ -304,7 +302,7 @@ void init_document(const Cairo::RefPtr<Cairo::Context>& cr,
                    const Cairo::Rectangle& printable_area,
                    const std::string& document_title, double top_margin);
 
-void draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
+void draw_rule(const Cairo::RefPtr<Cairo::Context>& cr,
                const Cairo::Rectangle& box, double level, bool horizontal);
 void draw_centered_text(const Cairo::RefPtr<Cairo::Context>& cr,
                         const Cairo::Rectangle& box, const std::string& text);
