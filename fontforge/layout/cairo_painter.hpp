@@ -51,12 +51,12 @@ struct CairoFontRec {
     SplineFont* sf;
 };
 
-// Several fonts comprising a family. By convention, the first element is the
-// default font (it doesn't need to be the regular face). The default font is
-// used when no modifiers are specified.
-using CairoFontFamily = std::vector<CairoFontRec>;
+// A collection of all the available fonts. By convention, the first element is
+// the default font (it doesn't need to be the regular face). The default font
+// is used when no modifiers are specified.
+using CairoFontList = std::vector<CairoFontRec>;
 
-// size_t "font_idx" is an index into CairoPainter::cairo_family_.
+// size_t "font_idx" is an index into CairoPainter::cairo_list_.
 using RichTextLineBuffer =
     std::vector<std::tuple<std::string, size_t /*font_idx*/, double /*size*/>>;
 using RichTextLayout =
@@ -186,7 +186,7 @@ class SampleTextPrinter : public ff::layout::IPrinter {
  public:
     SampleTextPrinter(const Cairo::RefPtr<Cairo::Context>& cr,
                       const Cairo::Rectangle& printable_area,
-                      const CairoFontFamily& cairo_family,
+                      const CairoFontList& cairo_list,
                       const std::string& sample_text, Tag script, Tag lang,
                       const std::map<Tag, bool>& features);
 
@@ -195,14 +195,8 @@ class SampleTextPrinter : public ff::layout::IPrinter {
                   const ff::layout::PageContext* context) override;
 
  private:
-    // TODO(iorsh): Storing reference is dangerous, consider other non-copying
-    // storage options.
-    // Currently active font face (for example, whose FontView invoked the Print
-    // dialog).
-    Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
-
-    // All the other currently open faces from the same family.
-    const CairoFontFamily& cairo_family_;
+    // All the currently open faces.
+    const CairoFontList& cairo_list_;
 
     // Selector responsible for choosing the best font face for a given set of
     // tags.
@@ -212,14 +206,14 @@ class SampleTextPrinter : public ff::layout::IPrinter {
     Tag script_;
     Tag lang_;
     std::map<Tag, bool> features_;
-    //     const PrintGlyphVec& print_map_;
-    //     const CairoFontRec& font_rec_;
 
+    // Cached layout data, which should be invalidated whenever the painter
+    // input changes.
+    // Vector of output lines with calculated height.
     RichTextLayout full_layout_;
+
     // Pagination list for full_layout_, with i-th entry designating the
     // first line of the i-th page.
-
-    // Vector of output lines with calculated height.
     std::vector<size_t> pagination_list_;
 
     // Calculate height of single line
@@ -251,11 +245,11 @@ class CairoPainter {
     CairoPainter(SplineFont* sf, FontViewBase* fv);
 
     // The currently active face
-    const CairoFontRec& default_rec() const { return cairo_family_[0]; }
+    const CairoFontRec& default_rec() const { return cairo_list_[0]; }
 
     std::vector<SplineFontProperties> get_font_list() const {
         std::vector<SplineFontProperties> font_list;
-        for (const auto& font_rec : cairo_family_) {
+        for (const auto& font_rec : cairo_list_) {
             font_list.push_back(font_rec.props);
         }
         return font_list;
@@ -289,8 +283,8 @@ class CairoPainter {
                                       const std::map<Tag, bool>& features);
 
  private:
-    // All the other currently open faces from the same family.
-    CairoFontFamily cairo_family_;
+    // All the faces available to the painter.
+    CairoFontList cairo_list_;
 
     // Sorted with encoded glyph first (ordered by encoding), unencoded glyphs
     // second (ordered by glyph index).
@@ -298,14 +292,11 @@ class CairoPainter {
 
     std::unique_ptr<ff::layout::IPrinter> active_printer_;
 
-    // Cached layout data, which should be invalidated whenever the painter
-    // input changes.
-
     void sort_glyphs(const PrintGlyphMap& print_map);
 };
 
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
-CairoFontFamily create_cairo_family(SplineFont* current_sf);
+CairoFontList create_cairo_list(SplineFont* current_sf);
 PrintGlyphMap build_glyph_map(SplineFont* sf);
 
 void setup_context(const Cairo::RefPtr<Cairo::Context>& cr);
