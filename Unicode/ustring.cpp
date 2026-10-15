@@ -564,7 +564,7 @@ void utf82u_strcat(unichar_t *to,const char *from) {
 
 char *u2utf8_strncpy(char *utf8buf,const unichar_t *ubuf,int len, int idpb_flags) {
 /* Copy unichar string 'ubuf' into utf8 buffer string 'utf8buf' */
-    char *pt = utf8buf, *pt2;
+    char *pt = utf8buf, *pt2 = pt;
 
     assert(utf8buf != NULL);
 
