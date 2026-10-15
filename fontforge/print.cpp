@@ -150,7 +150,7 @@ return( -1 );
 	ch = getc(pfb);
 	sublen += (ch<<16);
 	ch = getc(pfb);
-	sublen += (ch<<24);
+	sublen += (int)((uint32_t)ch<<24);
 	if ( !skip_sec )
 return( sublen );
 	len += sublen;

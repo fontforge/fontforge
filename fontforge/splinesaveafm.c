@@ -371,8 +371,8 @@ return;
 	    if ( k_index>4*tfmd->kern_size )
 return;
 	    off = (sf->ascent+sf->descent) *
-		    ((tfmd->kerntab[k_index]<<24) + (tfmd->kerntab[k_index+1]<<16) +
-			(tfmd->kerntab[k_index+2]<<8) + tfmd->kerntab[k_index+3])/
+		    (((uint32_t)tfmd->kerntab[k_index]<<24) + ((uint32_t)tfmd->kerntab[k_index+1]<<16) +
+			((uint32_t)tfmd->kerntab[k_index+2]<<8) + (uint32_t)tfmd->kerntab[k_index+3])/
 		    (bigreal) 0x100000;
  /* printf( "%s(%d) %s(%d) -> %g\n", sc1->name, sc1->enc, sc2->name, sc2->enc, off); */
 	    KPInsert(sc1,sc2,rint(off),false);
@@ -497,7 +497,7 @@ return;
     }
 }
 
-#define BigEndianWord(pt) ((((uint8_t *) pt)[0]<<24) | (((uint8_t *) pt)[1]<<16) | (((uint8_t *) pt)[2]<<8) | (((uint8_t *) pt)[3]))
+#define BigEndianWord(pt) CHR(((uint8_t *) pt)[0], ((uint8_t *) pt)[1], ((uint8_t *) pt)[2], ((uint8_t *) pt)[3])
 
 int LoadKerningDataFromTfm(SplineFont *sf, char *filename,EncMap *map) {
     FILE *file = fopen(filename,"rb");
@@ -629,8 +629,8 @@ return;
 	    if ( k_index>tfmd->kern_size )
 return;
 	    off = (sf->ascent+sf->descent) *
-		    ((tfmd->kerntab[k_index]<<24) + (tfmd->kerntab[k_index+1]<<16) +
-			(tfmd->kerntab[k_index+2]<<8) + tfmd->kerntab[k_index+3])/
+		    (((uint32_t)tfmd->kerntab[k_index]<<24) + ((uint32_t)tfmd->kerntab[k_index+1]<<16) +
+			((uint32_t)tfmd->kerntab[k_index+2]<<8) + (uint32_t)tfmd->kerntab[k_index+3])/
 		    (bigreal) 0x100000;
  /* printf( "%s(%d) %s(%d) -> %g\n", sc1->name, sc1->enc, sc2->name, sc2->enc, off); */
 	    KPInsert(sc1,sc2,rint(off),false);
@@ -2110,7 +2110,7 @@ static int getlint(FILE *pfm) {
     ch1 = getc(pfm);
     ch2 = getc(pfm);
     ch3 = getc(pfm);
-return( (getc(pfm)<<24)|(ch3<<16)|(ch2<<8)|ch1 );
+return( CHR(getc(pfm),ch3,ch2,ch1) );
 }
 
 static void putlshort(short val,FILE *pfm) {
@@ -3149,7 +3149,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int maxc,int la
 		    if ( former[i]==-1 )
 			lkindex[i] = lkcnt;
 		    else {
-			lkarray[former[i]] |= (lkcnt-former[i]-1)<<24;
+			lkarray[former[i]] |= (uint32_t)(lkcnt-former[i]-1)<<24;
 			if ( lkcnt-former[i]-1 >= 128 )
 			    IError( " generating lig/kern array, jump too far.\n" );
 		    }
@@ -3175,7 +3175,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int maxc,int la
 		    lknext = lk->next;
 		    /* Here we will always skip to the next record, so the	*/
 		    /* skip_byte will always be 0 (well, or 128 for stop)	*/
-		    lkarray[lkcnt2++] = ((lknext==NULL?128:0)<<24) |
+		    lkarray[lkcnt2++] = ((lknext==NULL?128U:0U)<<24) |
 					(lk->other_char<<16) |
 					(lk->op<<8) |
 					lk->remainder;
@@ -3480,7 +3480,7 @@ return( mf_tfm );
 return( mf_ofm );
 
     if ( len>= 6 && buffer[0]==0 && buffer[1]==1 &&
-	    (buffer[2]|(buffer[3]<<8)|(buffer[4]<<16)|(buffer[5]<<24))== filesize )
+	    ((uint32_t)buffer[2]|((uint32_t)buffer[3]<<8)|((uint32_t)buffer[4]<<16)|((uint32_t)buffer[5]<<24))== filesize )
 return( mf_pfm );
 
     /* I don't see any distinguishing marks for a feature file */

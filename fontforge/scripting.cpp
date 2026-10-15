@@ -3269,10 +3269,10 @@ static void bLoadTableFromFile(Context *c) {
     end = tstr+strlen(tstr);
     if ( *tstr=='\0' || end-tstr>4 )
 	ScriptError(c, "Bad tag");
-    tag = *tstr<<24;
-    tag |= (tstr+1<end ? tstr[1] : ' ')<<16;
-    tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
-    tag |= (tstr+3<end ? tstr[3] : ' ')    ;
+    tag = CHR(*tstr,
+              (tstr+1<end ? tstr[1] : ' '),
+              (tstr+2<end ? tstr[2] : ' '),
+              (tstr+3<end ? tstr[3] : ' '));
 
     t = script2utf8_copy(c->a.vals[2].u.sval);
     locfilename = utf82def_copy(t);
@@ -3309,10 +3309,10 @@ static void bSaveTableToFile(Context *c) {
     end = tstr+strlen(tstr);
     if ( *tstr=='\0' || end-tstr>4 )
 	ScriptError(c, "Bad tag");
-    tag = *tstr<<24;
-    tag |= (tstr+1<end ? tstr[1] : ' ')<<16;
-    tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
-    tag |= (tstr+3<end ? tstr[3] : ' ')    ;
+    tag = CHR(*tstr,
+              (tstr+1<end ? tstr[1] : ' '),
+              (tstr+2<end ? tstr[2] : ' '),
+              (tstr+3<end ? tstr[3] : ' '));
 
     t = script2utf8_copy(c->a.vals[2].u.sval);
     locfilename = utf82def_copy(t);
@@ -3338,10 +3338,10 @@ static void bRemovePreservedTable(Context *c) {
     end = tstr+strlen(tstr);
     if ( *tstr=='\0' || end-tstr>4 )
 	ScriptError(c, "Bad tag");
-    tag = *tstr<<24;
-    tag |= (tstr+1<end ? tstr[1] : ' ')<<16;
-    tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
-    tag |= (tstr+3<end ? tstr[3] : ' ')    ;
+    tag = CHR(*tstr,
+              (tstr+1<end ? tstr[1] : ' '),
+              (tstr+2<end ? tstr[2] : ' '),
+              (tstr+3<end ? tstr[3] : ' '));
 
     for ( tab=sf->ttf_tab_saved, prev=NULL; tab!=NULL && tab->tag!=tag; prev=tab, tab=tab->next );
     if ( tab==NULL )
@@ -3364,10 +3364,10 @@ static void bHasPreservedTable(Context *c) {
     end = tstr+strlen(tstr);
     if ( *tstr=='\0' || end-tstr>4 )
 	ScriptError(c, "Bad tag");
-    tag = *tstr<<24;
-    tag |= (tstr+1<end ? tstr[1] : ' ')<<16;
-    tag |= (tstr+2<end ? tstr[2] : ' ')<<8 ;
-    tag |= (tstr+3<end ? tstr[3] : ' ')    ;
+    tag = CHR(*tstr,
+              (tstr+1<end ? tstr[1] : ' '),
+              (tstr+2<end ? tstr[2] : ' '),
+              (tstr+3<end ? tstr[3] : ' '));
 
     for ( tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
     c->return_val.type = v_int;
@@ -4342,7 +4342,7 @@ static void bApplySubstitution(Context *c) {
 		}
 	    }
 	}
-	tags[i] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
+	tags[i] = CHR(temp[0], temp[1], temp[2], temp[3]);
     }
     FVApplySubstitution(c->curfv, tags[0], tags[1], tags[2]);
 }
@@ -5979,7 +5979,7 @@ static void bClearTable(Context *c) {
 		_tag[3] = c->a.vals[1].u.sval[3];
 	}
     }
-    tag = (_tag[0]<<24) | (_tag[1]<<16) | (_tag[2]<<8) | _tag[3];
+    tag = CHR(_tag[0], _tag[1], _tag[2], _tag[3]);
 
     prev = NULL;
     for ( table = sf->ttf_tables; table!=NULL; prev=table, table=table->next )
@@ -7112,7 +7112,7 @@ return( (feat<<16) | set );
 	}
     }
     *wasmac = false;
-return( (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3] );
+return( CHR(tag[0], tag[1], tag[2], tag[3]) );
 }
 
 static FeatureScriptLangList *ParseFeatureList(Context *c,Array *a) {
