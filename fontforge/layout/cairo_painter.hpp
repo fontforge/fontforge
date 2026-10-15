@@ -83,8 +83,8 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
           scaling_option_(scaling_option) {}
 
     size_t page_count() const override;
-    void add_page(size_t page_number,
-                  const ff::layout::PageContext* context) override;
+    void draw_page(size_t page_number,
+                   const ff::layout::PageContext* context) override;
 
     inline constexpr static std::string_view kScaleToPage = "scale_to_page";
     inline constexpr static std::string_view kScaleEmSize = "scale_to_em_size";
@@ -118,8 +118,8 @@ class FullDisplayPrinter : public ff::layout::IPrinter {
                        const CairoFontRec& font_rec, double pointsize);
 
     size_t page_count() const override;
-    void add_page(size_t page_number,
-                  const ff::layout::PageContext* context) override;
+    void draw_page(size_t page_number,
+                   const ff::layout::PageContext* context) override;
 
  private:
     const double left_code_area_width_ = 36;
@@ -167,8 +167,8 @@ class MultiSizePrinter : public ff::layout::IPrinter {
                      const std::vector<double>& pointsizes);
 
     size_t page_count() const override;
-    void add_page(size_t page_number,
-                  const ff::layout::PageContext* context) override;
+    void draw_page(size_t page_number,
+                   const ff::layout::PageContext* context) override;
 
  private:
     const PrintGlyphVec& print_map_;
@@ -190,8 +190,8 @@ class SampleTextPrinter : public ff::layout::IPrinter {
                       const std::map<Tag, bool>& features);
 
     size_t page_count() const override { return pagination_list_.size(); }
-    void add_page(size_t page_number,
-                  const ff::layout::PageContext* context) override;
+    void draw_page(size_t page_number,
+                   const ff::layout::PageContext* context) override;
 
  private:
     // All the currently open faces.
@@ -256,9 +256,9 @@ class CairoPainter {
     size_t page_count() const {
         return active_printer_ ? active_printer_->page_count() : 0;
     }
-    void add_page(size_t page_number, const layout::PageContext* context) {
+    void draw_page(size_t page_number, const layout::PageContext* context) {
         if (active_printer_) {
-            active_printer_->add_page(page_number, context);
+            active_printer_->draw_page(page_number, context);
         }
     }
 

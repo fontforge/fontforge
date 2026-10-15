@@ -70,8 +70,8 @@ const double full_glyph_top_margin_ = 48;
 
 size_t FullGlyphPrinter::page_count() const { return print_map_.size(); }
 
-void FullGlyphPrinter::add_page(size_t page_number,
-                                const PageContext* context) {
+void FullGlyphPrinter::draw_page(size_t page_number,
+                                 const PageContext* context) {
     auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
     if (!cairo_ctx) {
         std::cerr << "Invalid page context passed to FullGlyphPrinter"
@@ -242,7 +242,7 @@ MultiSizePrinter::MultiSizePrinter(const Cairo::Rectangle& printable_area,
         (char_area_height + extravspace) / (pointsizes_[0] + extravspace)));
 }
 
-void MultiSizePrinter::add_page(size_t page_nr, const PageContext* context) {
+void MultiSizePrinter::draw_page(size_t page_nr, const PageContext* context) {
     auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
     if (!cairo_ctx) {
         std::cerr << "Invalid page context passed to MultiSizePrinter"
@@ -495,8 +495,8 @@ void FullDisplayPrinter::draw_glyphs_line(
     }
 }
 
-void FullDisplayPrinter::add_page(size_t page_number,
-                                  const PageContext* context) {
+void FullDisplayPrinter::draw_page(size_t page_number,
+                                   const PageContext* context) {
     auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
     if (!cairo_ctx) {
         std::cerr << "Invalid page context passed to FullDisplayPrinter"
@@ -588,8 +588,8 @@ SampleTextPrinter::SampleTextPrinter(const Cairo::RefPtr<Cairo::Context>& cr,
     paginate(printable_area.height - top_margin_);
 }
 
-void SampleTextPrinter::add_page(size_t page_number,
-                                 const PageContext* context) {
+void SampleTextPrinter::draw_page(size_t page_number,
+                                  const PageContext* context) {
     auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
     if (!cairo_ctx) {
         std::cerr << "Invalid page context passed to FullDisplayPrinter"

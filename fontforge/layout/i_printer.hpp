@@ -40,7 +40,7 @@ class IPrinter {
     virtual ~IPrinter() = default;
 
     virtual size_t page_count() const = 0;
-    virtual void add_page(size_t page_number, const PageContext* context) = 0;
+    virtual void draw_page(size_t page_number, const PageContext* context) = 0;
 };
 
 }  // namespace ff::layout

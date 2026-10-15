@@ -717,7 +717,7 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
     layout::CairoContext context(cr, printable_area);
-    cairo_painter_.add_page(page_nr, &context);
+    cairo_painter_.draw_page(page_nr, &context);
 
     paginate();
 }
