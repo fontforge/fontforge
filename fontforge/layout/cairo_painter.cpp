@@ -435,10 +435,7 @@ void FullDisplayPrinter::paginate(double char_area_height, double pointsize,
                                   double extravspace) {
     int max_lines = static_cast<int>(
         std::floor(char_area_height / (extravspace + pointsize)));
-    if (max_lines <= 0) {
-        glyph_line_pagination_ = {0};
-        return;
-    }
+    max_lines = std::max(max_lines, 1);
 
     auto first_unencoded = std::find_if(
         glyph_lines_.begin(), glyph_lines_.end(),
@@ -559,6 +556,9 @@ void FullDisplayPrinter::draw_page(size_t page_number,
         (glyph_lines_.empty() || start_line_it->encoded) ? slot_labels_hex
                                                          : slot_labels_dec;
 
+    cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
+                         Cairo::FONT_WEIGHT_BOLD);
+    cr->set_font_size(page_title_height_);
     for (size_t i = 0; i < line_length; ++i) {
         Cairo::Rectangle slot{margin_ + left_code_area_width_ + extrahspace_ +
                                   i * (extrahspace_ + pointsize_),
