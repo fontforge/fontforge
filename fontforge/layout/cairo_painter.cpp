@@ -155,6 +155,9 @@ void FullGlyphPrinter::draw_page(size_t page_number,
 
 std::pair<double, double> FullGlyphPrinter::get_splinefont_metrics(
     const Cairo::RefPtr<Cairo::Context>& cr) const {
+    // Make sure the context state is not changed by accident.
+    cr->save();
+
     // Retrieve the font and glyph metrics in normalized size 1 pt.
     static const double normalized_size = 1.0;
     cr->set_font_face(font_rec_.face);
@@ -185,6 +188,8 @@ std::pair<double, double> FullGlyphPrinter::get_splinefont_metrics(
                        : 1000;
     double sf_ascent = sf_properties.ascent * scale;
     double sf_descent = -sf_properties.descent * scale;
+
+    cr->restore();
 
     return {sf_ascent, sf_descent};
 }
