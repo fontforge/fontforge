@@ -140,8 +140,6 @@ void FullGlyphPrinter::draw_page(size_t page_number,
                         shifted_printable_area.width / glyph_scale,
                         shifted_printable_area.height / glyph_scale};
 
-    double scaled_size = glyph_scale * normalized_size;
-    cr->set_font_size(normalized_size);
     cr->show_glyphs({glyph});
 
     cr->set_line_width(0.002);
