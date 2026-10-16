@@ -254,6 +254,7 @@ MultiSizePrinter::MultiSizePrinter(const Cairo::Rectangle& printable_area,
     double char_area_height = printable_area.height - margin_ - top_margin_;
     lines_per_page_ = static_cast<int>(std::floor(
         (char_area_height + extravspace) / (pointsizes_[0] + extravspace)));
+    lines_per_page_ = std::max(lines_per_page_, 1);
 }
 
 void MultiSizePrinter::draw_page(size_t page_nr, const PageContext* context) {
@@ -530,9 +531,33 @@ void FullDisplayPrinter::draw_page(size_t page_number,
     size_t line_length =
         glyph_lines_.empty() ? 16 : glyph_lines_[0].indexes.size();
 
-    static const std::array<std::string, 16> slot_labels = {
+    auto start_line_it = glyph_lines_.begin();
+    auto end_line_it = start_line_it;
+
+    // Compute the range of lines to draw for the given page number.
+    if (!glyph_line_pagination_.empty()) {
+        int page_nr = std::clamp((int)page_number, 0,
+                                 (int)glyph_line_pagination_.size() - 1);
+
+        start_line_it += glyph_line_pagination_[page_nr];
+        end_line_it =
+            (page_nr == glyph_line_pagination_.size() - 1)
+                ? glyph_lines_.end()
+                : glyph_lines_.begin() + glyph_line_pagination_[page_nr + 1];
+    }
+
+    // The slot labels for encoded glyphs are hexadecimals, and for unencoded
+    // glyphs are decimal numbers. For empty font we use hexadecimals too.
+    static const std::vector<std::string> slot_labels_hex = {
         "0", "1", "2", "3", "4", "5", "6", "7",
         "8", "9", "A", "B", "C", "D", "E", "F"};
+    static const std::vector<std::string> slot_labels_dec = {
+        "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",  "8",  "9",
+        "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"};
+    const std::vector<std::string>& slot_labels =
+        (glyph_lines_.empty() || start_line_it->encoded) ? slot_labels_hex
+                                                         : slot_labels_dec;
+
     for (size_t i = 0; i < line_length; ++i) {
         Cairo::Rectangle slot{margin_ + left_code_area_width_ + extrahspace_ +
                                   i * (extrahspace_ + pointsize_),
@@ -541,19 +566,6 @@ void FullDisplayPrinter::draw_page(size_t page_number,
     }
 
     double y_start = top_margin_ + top_code_area_height_ + extravspace_;
-
-    if (glyph_line_pagination_.empty()) {
-        return;
-    }
-
-    int page_nr =
-        std::clamp((int)page_number, 0, (int)glyph_line_pagination_.size() - 1);
-
-    auto start_line_it = glyph_lines_.begin() + glyph_line_pagination_[page_nr];
-    auto end_line_it =
-        (page_nr == glyph_line_pagination_.size() - 1)
-            ? glyph_lines_.end()
-            : glyph_lines_.begin() + glyph_line_pagination_[page_nr + 1];
 
     for (auto line_it = start_line_it; line_it != end_line_it; ++line_it) {
         // Draw a ruler between encoded and unencoded glyphs, if necessary.
