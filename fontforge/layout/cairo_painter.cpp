@@ -62,7 +62,8 @@ namespace ff::layout {
 // All dimensions are in points
 const double margin_ = 36;
 const double top_margin_ = 96;
-const double full_glyph_top_margin_ = 48;
+const double page_title_height_ = 12;
+const double full_glyph_top_margin_ = margin_ + page_title_height_;
 
 //////////////////////////////////////////////////////////////////////////////
 //                             FullGlyphPrinter                             //
@@ -111,7 +112,7 @@ void FullGlyphPrinter::draw_page(size_t page_number,
     init_document(cr, printable_area, page_title, full_glyph_top_margin_);
 
     // We are already in point units. Further rescale surface, exclude the top
-    // 12 pt for glyph title
+    // margin and the glyph title
     cr->translate(0, full_glyph_top_margin_);
     Cairo::Rectangle shifted_printable_area{
         0, 0, printable_area.width,
@@ -475,7 +476,7 @@ void FullDisplayPrinter::draw_glyphs_line(
 
     cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
                          Cairo::FONT_WEIGHT_BOLD);
-    cr->set_font_size(12.0);
+    cr->set_font_size(page_title_height_);
     draw_centered_text(cr, slot, glyph_line.label);
 
     cr->set_font_face(font_rec_.face);
@@ -1163,7 +1164,7 @@ void init_document(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->set_source_rgb(0, 0, 0);
     cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
                          Cairo::FONT_WEIGHT_BOLD);
-    cr->set_font_size(12.0);
+    cr->set_font_size(page_title_height_);
     draw_centered_text(cr, {0, 0, printable_area.width, top_margin},
                        document_title);
 }
