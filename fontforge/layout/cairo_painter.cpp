@@ -494,16 +494,17 @@ void FullDisplayPrinter::draw_glyphs_line(
             continue;
         }
 
-        unichar_t glyph_unistr[2] = {0, 0};
-        glyph_unistr[0] = (unichar_t)codepoint;
-        char* glyph_utf8 = u2utf8_copy(glyph_unistr);
-
         Cairo::Rectangle glyph_slot{margin_ + left_code_area_width +
                                         extrahspace +
                                         j * (extrahspace + pointsize),
                                     y_start, pointsize, pointsize};
         if (glyph_line.encoded) {
+            unichar_t glyph_unistr[2] = {0, 0};
+            glyph_unistr[0] = (unichar_t)codepoint;
+            char* glyph_utf8 = u2utf8_copy(glyph_unistr);
+
             draw_centered_text(cr, glyph_slot, glyph_utf8);
+            free(glyph_utf8);
         } else {
             draw_centered_glyph(cr, glyph_slot, codepoint);
         }
