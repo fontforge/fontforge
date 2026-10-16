@@ -1,0 +1,9 @@
+#Needs: fonts/SFDv1AnchorClass2.sfd
+#Version 1 AnchorClass2: records used to read past their allocations when
+# converting old style lookups. Without ASan this may still open normally.
+
+Open($1)
+if ( SizeOf(GetLookups("GPOS"))!=1 )
+    Error("AnchorClass2: missing anchor lookup")
+endif
+Close()

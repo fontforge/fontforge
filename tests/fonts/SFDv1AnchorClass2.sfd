@@ -1,0 +1,6 @@
+SplineFontDB: 1.0
+FontName: A
+AnchorClass2: "A" ""
+BeginChars: 256 0
+EndChars
+EndSplineFont
