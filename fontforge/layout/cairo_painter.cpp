@@ -207,9 +207,9 @@ FullGlyphPrinter::calculate_full_glyph_location(
         double y_max = std::max(sf_ascent, -text_extents.y_bearing);
 
         double x_scale =
-            (x_max > x_min) ? printable_area.width / (x_max - x_min) : 1e-5;
+            (x_max > x_min) ? printable_area.width / (x_max - x_min) : 1000;
         double y_scale =
-            (y_max > y_min) ? printable_area.height / (y_max - y_min) : 1e-5;
+            (y_max > y_min) ? printable_area.height / (y_max - y_min) : 1000;
         scale = std::min(x_scale, y_scale);
     } else if (scaling_option_ == kScaleEmSize) {
         x_min = std::min(0.0, text_extents.x_bearing);
