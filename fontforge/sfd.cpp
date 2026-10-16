@@ -8479,7 +8479,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
     orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
 
     sf = SplineFontEmpty();
-    if ( sfdversion>0 && sfdversion<2 ) {
+    if ( sfdversion<2 ) {
 	/* If it's an old style sfd file with old style features we need some */
 	/*  extra data space to do the conversion from old to new */
 	sf = (SplineFont *)realloc(sf,sizeof(SplineFont1));
@@ -8676,7 +8676,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	    AnchorClass *lastan = NULL, *an;
 	    int old = strchr(tok,'2')==NULL;
 	    while ( (name=SFDReadUTF7Str(sfd))!=NULL ) {
-		an = (AnchorClass *)chunkalloc(old ? sizeof(AnchorClass1) : sizeof(AnchorClass));
+		an = (AnchorClass *)chunkalloc((old || sf->sfd_version<2) ? sizeof(AnchorClass1) : sizeof(AnchorClass));
 		an->name = name;
 		if ( old ) {
 		    getname(sfd,tok);
@@ -9014,6 +9014,10 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	SFD_DoAltUnis(sf);
     else
 	AltUniFigure(sf,sf->map,true);
+    /* Keep v0 during parsing to preserve rejection and SFDIR behavior. */
+    /* Any free after glyph parsing must normalize v0 for SplineFontFree. */
+    if ( sf->sfd_version==0 )
+	sf->sfd_version = 1;
     if ( sf->sfd_version<2 )
 	SFD_AssignLookups((SplineFont1 *) sf);
     if ( !d.hadtimes )

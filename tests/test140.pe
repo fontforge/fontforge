@@ -1,0 +1,14 @@
+#Needs: fonts/SFDv0Kerns.sfd
+#Old SFD files (version 0 and 1) store kerning in an old
+# format that is converted when the font is opened. A version 0 file with a
+# Kerns: line used to read past the end of the font during conversion.
+
+Open($1)
+if ( SizeOf(GetLookups("GPOS"))!=1 )
+    Error("Kerns: in a version 0 sfd did not become a kerning lookup")
+endif
+Select("A")
+if ( CharInfo("Kern","A")!=-346 )
+    Error("Kerns: in a version 0 sfd lost its value")
+endif
+Close()
