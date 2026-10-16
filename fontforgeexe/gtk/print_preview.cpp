@@ -193,6 +193,8 @@ PrintPreviewWidget::PrintPreviewWidget(layout::CairoPainter&& cairo_painter,
         "Scale glyphs to maximum height");
     scaling_option_->set_active_id(persistent.full_page_scaling);
     scaling_option_->set_valign(Gtk::ALIGN_START);
+    scaling_option_->signal_changed().connect(
+        [this] { preview_area.queue_draw(); });
 
     Gtk::VBox* sample_text_controls = build_sample_text_controls();
     if (persistent.sample_text.empty())
