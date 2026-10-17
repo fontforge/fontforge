@@ -172,6 +172,63 @@ std::map<std::string, std::string> RichTextFontSelector::map_fonts(
     return font_mapping;
 }
 
+// Determine the most appropriate font face for each text segment based on the
+// HTML tags which apply to it. Currently only <b> and <i> tags are supported,
+// which are mapped to the closest available font face with the corresponding
+// weight and style.
+ParsedRichText RichTextFontSelector::remap_html_tags(
+    const ParsedRichText& parsed) const {
+    static const std::regex font_size_regex(
+        R"-(font-size\s*:\s*([0-9]+(?:\.[0-9]+)?)pt\b)-",
+        std::regex_constants::icase);
+    std::set<int16_t> available_weights;
+    for (const auto& properties : properties_list_) {
+        if (properties.os2_weight >= 0) {
+            available_weights.insert(properties.os2_weight);
+        }
+    }
+
+    ParsedRichText remapped;
+    for (const auto& [tags, text] : parsed) {
+        // Skip the <head> section, which contains styles and no actual text.
+        if (std::any_of(tags.begin(), tags.end(), [](const std::string& tag) {
+                return tag == "head" || tag.substr(0, 5) == "head ";
+            })) {
+            continue;
+        }
+
+        SplineFontProperties props;
+        std::string point_size;
+        for (const std::string& tag : tags) {
+            if (tag == "b")
+                props.os2_weight = *available_weights.rbegin();
+            else if (tag == "i")
+                props.italic = true;
+
+            std::smatch match;
+            if (std::regex_search(tag, match, font_size_regex)) {
+                point_size = match[1];
+            }
+        }
+        // Absent bold tag is mapped to the lightest available weight.
+        if (props.os2_weight == -1)
+            props.os2_weight = *available_weights.begin();
+
+        auto closest_face =
+            std::min_element(properties_list_.begin(), properties_list_.end(),
+                             [&props](const auto& a, const auto& b) {
+                                 return props.distance(a) < props.distance(b);
+                             });
+        std::vector<std::string> remapped_tags = {"font|" +
+                                                  closest_face->full_name};
+        if (!point_size.empty()) {
+            remapped_tags.push_back("size|" + point_size);
+        }
+        remapped.emplace_back(remapped_tags, text);
+    }
+    return remapped;
+}
+
 const std::string RichTextFontSelector::rich_text_mime_type =
     "application/vnd.fontforge.rich-text+xml";
 

@@ -62,6 +62,8 @@ class RichTextFontSelector {
     std::map<std::string, std::string> map_fonts(
         const std::vector<SplineFontProperties>& imported_fonts) const;
 
+    ParsedRichText remap_html_tags(const ParsedRichText& parsed) const;
+
     static const std::string rich_text_mime_type;
 
  private:
