@@ -39,15 +39,6 @@
 
 namespace ff::widget {
 
-static std::string normalize_ff_xml_tag(const std::string& raw_tag) {
-    auto [tag_name, tag_value] = ff::layout::parse_tag(raw_tag);
-    if (tag_value == "set") {
-        return tag_name;
-    }
-
-    return tag_name + "|" + tag_value;
-}
-
 void dump_character(Glib::ustring& unicode_buffer, const gunichar& character) {
     Glib::ustring seq;
     switch (character) {
@@ -162,8 +153,7 @@ void RichTextEditor::load_buffer(const Glib::RefPtr<Gtk::TextBuffer>& buffer,
         buffer->remove_all_tags(start_mark->get_iter(),
                                 cursor_mark->get_iter());
 
-        for (const std::string& raw_tag : raw_tags) {
-            std::string tag_name = normalize_ff_xml_tag(raw_tag);
+        for (const std::string& tag_name : raw_tags) {
             if (tag_name == "ff-sample") {
                 continue;
             }

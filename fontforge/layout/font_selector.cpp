@@ -410,6 +410,18 @@ std::vector<SplineFontProperties> parse_manifest(const ParsedRichText& parsed) {
     return font_list;
 }
 
+// Convert XML-compliant tags, like <font value="Font Name">, to normalized tags
+// like <font|Font Name>. The result is used by the RichTextEditor widget, which
+// uses normalized tags for its internal representation of text styles.
+static std::string normalize_ff_xml_tag(const std::string& raw_tag) {
+    auto [tag_name, tag_value] = ff::layout::parse_tag(raw_tag);
+    if (tag_value == "set") {
+        return tag_name;
+    }
+
+    return tag_name + "|" + tag_value;
+}
+
 ParsedRichText remap_font_names(
     const ParsedRichText& parsed,
     const std::map<std::string, std::string>& font_name_mapping) {
@@ -431,6 +443,7 @@ ParsedRichText remap_font_names(
                     }
                 }
             }
+            tag = normalize_ff_xml_tag(tag);
         }
     }
     return remapped;
