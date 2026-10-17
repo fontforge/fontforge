@@ -136,4 +136,13 @@ uint32_t* shaper_default_features(cpp_IShaper* shaper, uint32_t script,
 
 #ifdef __cplusplus
 }
+
+#include <memory>
+
+namespace ff::shapers {
+
+class IShaper;
+std::shared_ptr<IShaper> Factory(std::shared_ptr<ShaperContext> context);
+
+}  // namespace ff::shapers
 #endif

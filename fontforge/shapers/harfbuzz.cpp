@@ -287,7 +287,7 @@ std::vector<int> HarfBuzzShaper::compute_width_deltas(
 
 std::vector<MetricsCore> HarfBuzzShaper::apply_features(
     const std::vector<unichar_t>& ubuf, const std::map<Tag, bool>& feature_map,
-    Tag script, Tag lang, bool vertical) {
+    Tag script, Tag lang, bool vertical, bool mv) {
     hb_buffer_t* hb_buffer = hb_buffer_create();
     hb_buffer_add_codepoints(hb_buffer, ubuf.data(), -1, 0, -1);
 
@@ -319,7 +319,7 @@ std::vector<MetricsCore> HarfBuzzShaper::apply_features(
     // Perhaps counterintuitively, when setting RTL direction for RTL
     // languages, HarfBuzz would reverse the glyph order in the output
     // buffer. We therefore need to recompute metrics in reverse direction
-    if (rtl) {
+    if (mv && rtl) {
         metrics = reverse_rtl_metrics(metrics);
     }
 

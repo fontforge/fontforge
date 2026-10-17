@@ -41,6 +41,44 @@
 namespace ff::dlg {
 
 // A simple dialog to query the user for a number of new encoding slots to add.
+class MessageDialog final : public DialogBase {
+ private:
+    MessageDialog(GWindow parent, const std::string& title,
+                  const std::string& label)
+        : DialogBase(parent) {
+        set_title(title);
+        set_resizable(false);
+
+        auto label_widget = Gtk::make_managed<Gtk::Label>(label);
+        label_widget->set_use_markup(true);
+        label_widget->set_line_wrap(true);
+        label_widget->set_max_width_chars(70);
+        get_content_area()->pack_start(*label_widget);
+
+        show_all();
+    }
+
+ public:
+    static int show(
+        GWindow parent, const std::string& title, const std::string& label,
+        const std::vector<std::pair<Gtk::ResponseType, std::string>>& buttons) {
+        MessageDialog dialog(parent, title, label);
+
+        // Remove predefined buttons
+        dialog.remove_cancel_button();
+        auto ok_button = dialog.get_widget_for_response(Gtk::RESPONSE_OK);
+        if (ok_button) {
+            dialog.get_action_area()->remove(*ok_button);
+        }
+
+        for (const auto& [response, text] : buttons) {
+            dialog.add_button(text, response);
+        }
+        return dialog.run();
+    }
+};
+
+// A simple dialog to query the user for a number of new encoding slots to add.
 class NumericalInputDialog final : public DialogBase {
  private:
     Gtk::SpinButton* input;
@@ -94,7 +132,19 @@ class NumericalInputDialog final : public DialogBase {
 
 }  // namespace ff::dlg
 
-// Shim for the C code to call the dialog
+// Shims for the C code to call the dialogs
+
+int show_yesno_message_dialog(GWindow parent, const char* title,
+                              const char* message) {
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
+
+    return ff::dlg::MessageDialog::show(
+        parent, title, message,
+        {{Gtk::RESPONSE_YES, _("Yes")}, {Gtk::RESPONSE_NO, _("No")}});
+}
+
 int add_encoding_slots_dialog(GWindow parent, bool cid) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.

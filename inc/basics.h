@@ -148,6 +148,13 @@ static inline int imax(int a, int b)
 # endif
 #endif
 
+/* PATH_MAX - use MAX_PATH on Windows */
+#ifdef _MSC_VER
+# ifndef PATH_MAX
+#  define PATH_MAX 260
+# endif
+#endif
+
 /* Common MIN/MAX macros */
 #ifndef MAX
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))

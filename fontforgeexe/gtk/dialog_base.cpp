@@ -39,6 +39,16 @@ typedef struct gevent GEvent;
 
 namespace ff::dlg {
 
+static bool on_help_key_press(GdkEventKey* event, const std::string& file,
+                              const std::string& section) {
+    if (event->keyval == GDK_KEY_F1 || event->keyval == GDK_KEY_Help) {
+        help(file.c_str(), section.c_str());
+        return true;
+    }
+
+    return false;
+}
+
 static GdkWindow* get_toplevel_gdk_window(GWindow gwin) {
     // Redeclare GWindow to avoid dependency on the legacy headers.
     struct ggdkwindow_local { /* :GWindow */
@@ -59,6 +69,19 @@ static GdkWindow* get_toplevel_gdk_window(GWindow gwin) {
     } else {
         return nullptr;
     }
+}
+
+void install_help_key_handler(Gtk::Widget* widget, const std::string& file,
+                              const std::string& section) {
+    if (file.empty() || widget == nullptr) {
+        return;
+    }
+
+    widget->signal_key_press_event().connect(
+        [file, section](GdkEventKey* event) {
+            return on_help_key_press(event, file, section);
+        },
+        false);
 }
 
 DialogBase::DialogBase(GWindow parent_gwin) : parent_gwindow_(parent_gwin) {
@@ -97,13 +120,7 @@ Gtk::ResponseType DialogBase::run() {
 
 void DialogBase::set_help_context(const std::string& file,
                                   const std::string& section) {
-    help_file_ = file;
-    help_section_ = section;
-
-    if (!help_file_.empty()) {
-        signal_key_press_event().connect(
-            sigc::mem_fun(*this, &DialogBase::on_help_key_press), false);
-    }
+    install_help_key_handler(this, file, section);
 }
 
 void DialogBase::set_hints_horizontal_resize_only() {
@@ -123,14 +140,6 @@ void DialogBase::remove_cancel_button() {
     if (cancel_button) {
         get_action_area()->remove(*cancel_button);
     }
-}
-
-bool DialogBase::on_help_key_press(GdkEventKey* event) {
-    if (event->keyval == GDK_KEY_F1 || event->keyval == GDK_KEY_Help) {
-        help(help_file_.c_str(), help_section_.c_str());
-        return true;
-    }
-    return false;  // let other keys be processed normally
 }
 
 }  // namespace ff::dlg
