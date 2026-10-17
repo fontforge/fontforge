@@ -48,57 +48,6 @@ static std::string normalize_ff_xml_tag(const std::string& raw_tag) {
     return tag_name + "|" + tag_value;
 }
 
-bool ff_deserialize_html(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
-                         Gtk::TextBuffer::iterator& iter, const guint8* data,
-                         gsize length, bool create_tags) {
-    if (data == nullptr || length == 0) return true;
-    if (data[length - 1] == '\0') length -= 1;
-
-    std::string html((const char*)data, length);
-    std::istringstream html_stream(html);
-    layout::ParsedRichText parsed =
-        layout::collapse_html_spaces(layout::parse_xml_stream(html_stream));
-
-    Glib::RefPtr<Gtk::TextBuffer> target_buffer = iter.get_buffer();
-    auto tag_table = target_buffer->get_tag_table();
-    auto bold_tag =
-        tag_table ? tag_table->lookup("bold") : Glib::RefPtr<Gtk::TextTag>();
-    auto italic_tag =
-        tag_table ? tag_table->lookup("italic") : Glib::RefPtr<Gtk::TextTag>();
-
-    Glib::RefPtr<Gtk::TextBuffer::Mark> cursor_mark =
-        target_buffer->create_mark(iter, false);
-
-    for (const auto& [current_tags, text] : parsed) {
-        if (text.empty()) continue;
-
-        // Skip the <head> tag, which contains styles and no actual text.
-        bool has_head = std::find(current_tags.begin(), current_tags.end(),
-                                  "head") != current_tags.end();
-        if (has_head) continue;
-
-        Glib::RefPtr<Gtk::TextBuffer::Mark> start_mark =
-            target_buffer->create_mark(cursor_mark->get_iter());
-        target_buffer->insert(cursor_mark->get_iter(), text);
-
-        bool has_b = std::find(current_tags.begin(), current_tags.end(), "b") !=
-                     current_tags.end();
-        bool has_i = std::find(current_tags.begin(), current_tags.end(), "i") !=
-                     current_tags.end();
-        if (has_b && bold_tag) {
-            target_buffer->apply_tag(bold_tag, start_mark->get_iter(),
-                                     cursor_mark->get_iter());
-        }
-        if (has_i && italic_tag) {
-            target_buffer->apply_tag(italic_tag, start_mark->get_iter(),
-                                     cursor_mark->get_iter());
-        }
-        target_buffer->delete_mark(start_mark);
-    }
-
-    return true;
-}
-
 void dump_character(Glib::ustring& unicode_buffer, const gunichar& character) {
     Glib::ustring seq;
     switch (character) {
@@ -187,9 +136,6 @@ RichTextEditor::RichTextEditor(const std::vector<double>& pointsizes,
     g_signal_connect(text_view_.gobj(), "paste-clipboard",
                      G_CALLBACK(&RichTextEditor::on_text_view_paste_clipboard),
                      this);
-
-    text_view_.get_buffer()->register_deserialize_format("text/html",
-                                                         &ff_deserialize_html);
 
     scrolled_.add(text_view_);
     attach(*toolbar_, 0, 0);

@@ -75,6 +75,10 @@ class PrintPreviewWidget : public Gtk::Grid {
                             const Gtk::TextBuffer::iterator& insert_iter,
                             const guint8* data, gsize length,
                             bool /*create_tags*/);
+    bool ff_html_deserialize(
+        const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+        Gtk::TextBuffer::iterator& insert_iter, const guint8* data,
+        gsize length, bool /*create_tags*/);
 
     // Build controls for sample text mode.
     Gtk::Widget* build_opentype_controls();

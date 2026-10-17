@@ -413,6 +413,58 @@ bool PrintPreviewWidget::ff_xml_deserialize(
     return true;
 }
 
+bool PrintPreviewWidget::ff_html_deserialize(
+    const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+    Gtk::TextBuffer::iterator& iter, const guint8* data, gsize length,
+    bool /*create_tags*/) {
+    if (data == nullptr || length == 0) return true;
+    if (data[length - 1] == '\0') length -= 1;
+
+    std::string html((const char*)data, length);
+    std::istringstream html_stream(html);
+    layout::ParsedRichText parsed =
+        layout::collapse_html_spaces(layout::parse_xml_stream(html_stream));
+
+    Glib::RefPtr<Gtk::TextBuffer> target_buffer = iter.get_buffer();
+    auto tag_table = target_buffer->get_tag_table();
+    auto bold_tag =
+        tag_table ? tag_table->lookup("bold") : Glib::RefPtr<Gtk::TextTag>();
+    auto italic_tag =
+        tag_table ? tag_table->lookup("italic") : Glib::RefPtr<Gtk::TextTag>();
+
+    Glib::RefPtr<Gtk::TextBuffer::Mark> cursor_mark =
+        target_buffer->create_mark(iter, false);
+
+    for (const auto& [current_tags, text] : parsed) {
+        if (text.empty()) continue;
+
+        // Skip the <head> tag, which contains styles and no actual text.
+        bool has_head = std::find(current_tags.begin(), current_tags.end(),
+                                  "head") != current_tags.end();
+        if (has_head) continue;
+
+        Glib::RefPtr<Gtk::TextBuffer::Mark> start_mark =
+            target_buffer->create_mark(cursor_mark->get_iter());
+        target_buffer->insert(cursor_mark->get_iter(), text);
+
+        bool has_b = std::find(current_tags.begin(), current_tags.end(), "b") !=
+                     current_tags.end();
+        bool has_i = std::find(current_tags.begin(), current_tags.end(), "i") !=
+                     current_tags.end();
+        if (has_b && bold_tag) {
+            target_buffer->apply_tag(bold_tag, start_mark->get_iter(),
+                                     cursor_mark->get_iter());
+        }
+        if (has_i && italic_tag) {
+            target_buffer->apply_tag(italic_tag, start_mark->get_iter(),
+                                     cursor_mark->get_iter());
+        }
+        target_buffer->delete_mark(start_mark);
+    }
+
+    return true;
+}
+
 void PrintPreviewWidget::build_sample_text_editor() {
     bool generic = true;
     std::vector<SplineFontProperties> font_list =
@@ -451,6 +503,11 @@ void PrintPreviewWidget::build_sample_text_editor() {
     sample_text_->get_buffer()->register_deserialize_format(
         layout::RichTextFontSelector::rich_text_mime_type,
         sigc::mem_fun(*this, &PrintPreviewWidget::ff_xml_deserialize));
+    // This deserializer is used by the GTK clipboard, when the user pastes HTML
+    // content.
+    sample_text_->get_buffer()->register_deserialize_format(
+        "text/html",
+        sigc::mem_fun(*this, &PrintPreviewWidget::ff_html_deserialize));
 }
 
 Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
