@@ -39,45 +39,6 @@
 
 namespace ff::widget {
 
-static layout::ParsedRichText collapse_html_spaces(
-    const layout::ParsedRichText& input) {
-    layout::ParsedRichText collapsed;
-    bool in_space = false;
-    bool prev_in_p = false;
-    auto tag_is_p = [](const std::string& tag) {
-        return tag == "p" || tag.substr(0, 2) == "p ";
-    };
-
-    for (const auto& [tags, text] : input) {
-        bool cur_in_p =
-            std::find_if(tags.begin(), tags.end(), tag_is_p) != tags.end();
-        bool new_paragraph = cur_in_p && !prev_in_p;
-        prev_in_p = cur_in_p;
-
-        std::string normalized_text;
-        for (char ch : text) {
-            if (std::isspace(static_cast<unsigned char>(ch))) {
-                if (!in_space) {
-                    normalized_text += ' ';
-                    in_space = true;
-                }
-            } else {
-                normalized_text += ch;
-                in_space = false;
-            }
-        }
-
-        if (new_paragraph && !collapsed.empty()) {
-            normalized_text = '\n' + normalized_text;
-        }
-        if (!normalized_text.empty()) {
-            collapsed.emplace_back(tags, normalized_text);
-        }
-    }
-
-    return collapsed;
-}
-
 static std::string normalize_ff_xml_tag(const std::string& raw_tag) {
     auto [tag_name, tag_value] = ff::layout::parse_tag(raw_tag);
     if (tag_value == "set") {
@@ -96,7 +57,7 @@ bool ff_deserialize_html(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
     std::string html((const char*)data, length);
     std::istringstream html_stream(html);
     layout::ParsedRichText parsed =
-        collapse_html_spaces(layout::parse_xml_stream(html_stream));
+        layout::collapse_html_spaces(layout::parse_xml_stream(html_stream));
 
     Glib::RefPtr<Gtk::TextBuffer> target_buffer = iter.get_buffer();
     auto tag_table = target_buffer->get_tag_table();

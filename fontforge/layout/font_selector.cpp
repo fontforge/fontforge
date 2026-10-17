@@ -436,4 +436,43 @@ ParsedRichText remap_font_names(
     return remapped;
 }
 
+layout::ParsedRichText collapse_html_spaces(
+    const layout::ParsedRichText& input) {
+    layout::ParsedRichText collapsed;
+    bool in_space = false;
+    bool prev_in_p = false;
+    auto tag_is_p = [](const std::string& tag) {
+        return tag == "p" || tag.substr(0, 2) == "p ";
+    };
+
+    for (const auto& [tags, text] : input) {
+        bool cur_in_p =
+            std::find_if(tags.begin(), tags.end(), tag_is_p) != tags.end();
+        bool new_paragraph = cur_in_p && !prev_in_p;
+        prev_in_p = cur_in_p;
+
+        std::string normalized_text;
+        for (char ch : text) {
+            if (std::isspace(static_cast<unsigned char>(ch))) {
+                if (!in_space) {
+                    normalized_text += ' ';
+                    in_space = true;
+                }
+            } else {
+                normalized_text += ch;
+                in_space = false;
+            }
+        }
+
+        if (new_paragraph && !collapsed.empty()) {
+            normalized_text = '\n' + normalized_text;
+        }
+        if (!normalized_text.empty()) {
+            collapsed.emplace_back(tags, normalized_text);
+        }
+    }
+
+    return collapsed;
+}
+
 }  // namespace ff::layout

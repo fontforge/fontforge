@@ -90,4 +90,6 @@ ParsedRichText remap_font_names(
     const ParsedRichText& parsed,
     const std::map<std::string, std::string>& font_name_mapping);
 
+layout::ParsedRichText collapse_html_spaces(
+    const layout::ParsedRichText& input);
 }  // namespace ff::layout
