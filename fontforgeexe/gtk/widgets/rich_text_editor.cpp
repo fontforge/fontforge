@@ -649,9 +649,6 @@ void apply_property_tag(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
             tag_end.forward_to_tag_toggle(tag);
         }
     }
-
-    // TODO(iorsh): Determine the new state of all relevant widgets based on the
-    // current selection.
 }
 
 template <typename PROPERTY_PROXY>
