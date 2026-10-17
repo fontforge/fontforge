@@ -112,7 +112,8 @@ PrintPreviewWidget::PrintPreviewWidget(layout::CairoPainter&& cairo_painter,
                                        const std::string& sample_text)
     : aspect_wrapper(0.5, 0.5, 0.5),
       current_setup_(default_setup_),
-      cairo_painter_(std::move(cairo_painter)) {
+      cairo_painter_(std::move(cairo_painter)),
+      font_selector_(cairo_painter_.get_font_list()) {
     if (is_win32_display()) {
         // In Windows the GTK preview tab is embedded in the native Print
         // Dialog. The native dialog is not resizable, and its size can't be
@@ -364,14 +365,10 @@ guint8* PrintPreviewWidget::ff_xml_serialize(
     const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
     const Gtk::TextBuffer::iterator& start,
     const Gtk::TextBuffer::iterator& end, gsize& length) {
-    std::vector<SplineFontProperties> font_list =
-        cairo_painter_.get_font_list();
-    layout::RichTextFontSelector font_selector(font_list);
-
     std::string tagged_text =
         widget::dump_text_buffer(content_buffer, start, end);
     std::string sample_text_xml =
-        font_selector.compose_sample_text_xml(tagged_text);
+        font_selector_.compose_sample_text_xml(tagged_text);
 
     length = sample_text_xml.size();
     char* utf8_buffer = new char[length + 1];
@@ -392,11 +389,8 @@ bool PrintPreviewWidget::ff_xml_deserialize(
     std::vector<SplineFontProperties> imported_fonts =
         layout::parse_manifest(parsed);
 
-    std::vector<SplineFontProperties> font_list =
-        cairo_painter_.get_font_list();
-    layout::RichTextFontSelector font_selector(font_list);
     std::map<std::string, std::string> mapped_fonts =
-        font_selector.map_fonts(imported_fonts);
+        font_selector_.map_fonts(imported_fonts);
 
     layout::ParsedRichText remapped =
         layout::remap_font_names(parsed, mapped_fonts);
@@ -424,12 +418,8 @@ bool PrintPreviewWidget::ff_html_deserialize(
     std::istringstream html_stream(html);
     layout::ParsedRichText parsed =
         layout::collapse_html_spaces(layout::parse_xml_stream(html_stream));
+    layout::ParsedRichText remapped = font_selector_.remap_html_tags(parsed);
 
-    std::vector<SplineFontProperties> font_list =
-        cairo_painter_.get_font_list();
-    layout::RichTextFontSelector font_selector(font_list);
-
-    layout::ParsedRichText remapped = font_selector.remap_html_tags(parsed);
     sample_text_->load_buffer(content_buffer, iter, remapped);
     return true;
 }

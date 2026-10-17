@@ -142,6 +142,10 @@ class PrintPreviewWidget : public Gtk::Grid {
     Glib::RefPtr<Gtk::PageSetup> current_setup_;
 
     layout::CairoPainter cairo_painter_;
+
+    // Selector responsible for choosing the best font face for a given set of
+    // tags.
+    layout::RichTextFontSelector font_selector_;
 };
 
 }  // namespace ff::dlg

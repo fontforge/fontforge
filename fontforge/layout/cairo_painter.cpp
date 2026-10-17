@@ -609,7 +609,6 @@ SampleTextPrinter::SampleTextPrinter(const Cairo::RefPtr<Cairo::Context>& cr,
                   [&properties_list](const auto& font) {
                       properties_list.push_back(font.props);
                   });
-    selector_ = RichTextFontSelector(properties_list);
 
     calculate_layout(cr, printable_area, sample_text_);
     paginate(printable_area.height - top_margin_);
@@ -702,15 +701,12 @@ void SampleTextPrinter::calculate_layout(
 
     std::istringstream stream(sample_text);
     ParsedRichText parsed_text = parse_xml_stream(stream);
-    SplineFontProperties default_properties = get_default_style(parsed_text);
 
     // Buffer of text blocks for a single line of output
     RichTextLineBuffer line_buffer;
     double line_buffer_width = 0;
 
     for (const auto& [current_tags, raw_text] : parsed_text) {
-        // Ignore manifest
-        // TODO(iorsh): consider manifest for font selection
         if (current_tags.size() >= 2 && current_tags[1] == "manifest") continue;
 
         std::vector<ParsedTag> parsed_tags;
@@ -718,10 +714,11 @@ void SampleTextPrinter::calculate_layout(
             parsed_tags.emplace_back(parse_tag(tag));
         }
 
-        size_t font_idx =
-            selector_.select_face(parsed_tags, default_properties);
+        // We expect the font names to be already resolved by font selector and
+        // available.
+        size_t font_idx = get_font_index(parsed_tags);
         Cairo::RefPtr<Cairo::FtFontFace> font_face = cairo_list_[font_idx].face;
-        double font_size = get_size(current_tags);
+        double font_size = get_size(parsed_tags);
         cr->set_font_face(font_face);
         cr->set_font_size(font_size);
 
@@ -821,56 +818,6 @@ void SampleTextPrinter::paginate(double layout_height) {
     }
 }
 
-SplineFontProperties SampleTextPrinter::get_default_style(
-    const ParsedRichText& rich_text) const {
-    if (rich_text.empty()) {
-        return cairo_list_[0].props;
-    }
-
-    // Collect values for all tags in the sample text. A special value "set" is
-    // used for tags without arguments, like <bold> and <italic>. A special
-    // value "" is used for tags which are sometimes set and sometimes unset.
-    std::map<std::string, std::vector<std::string>> sample_text_values;
-    for (size_t i = 0; i <= rich_text.size(); ++i) {
-        // Traverse the first segment once again to collect tags which were
-        // initially unset.
-        const std::vector<std::string>& segment_tags =
-            (i < rich_text.size()) ? rich_text[i].first : rich_text[0].first;
-
-        for (const std::string& tag : segment_tags) {
-            auto [tag_name, tag_value] = parse_tag(tag);
-            if (sample_text_values.count(tag_name) == 0) {
-                sample_text_values[tag_name] = {tag_value};
-            } else {
-                sample_text_values[tag_name].push_back(tag_value);
-            }
-        }
-    }
-
-    // If a particular property is not mentioned explicitly in the text, its
-    // default should be taken from the currently active face.
-    //
-    // For example, consider text tagged with upright and italics only, without
-    // any weight mentions. If the active face is normal, we should use Normal
-    // and Italic. If the active face is bold, we should use Bold and Bold
-    // Italic.
-    SplineFontProperties default_properties{
-        0,
-        0,  // ascent and descent are not used
-        (sample_text_values.count("italic") == 0) ? cairo_list_[0].props.italic
-                                                  : false,
-        (sample_text_values.count("bold") == 0)
-            ? cairo_list_[0].props.os2_weight
-            : (int16_t)400,
-        (sample_text_values.count("width") == 0)
-            ? cairo_list_[0].props.os2_width
-            : (int16_t)5,
-        ""  // style names are not used
-    };
-
-    return default_properties;
-}
-
 void SampleTextPrinter::draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
                                   const RichTextLineBuffer& line_buffer,
                                   double width, double y_baseline, Tag script,
@@ -943,10 +890,32 @@ void SampleTextPrinter::draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
     }
 }
 
-double SampleTextPrinter::get_size(const std::vector<std::string>& tags) {
+size_t SampleTextPrinter::get_font_index(
+    const std::vector<ParsedTag>& parsed_tags) const {
+    std::string font_name;
+    for (const auto& [tag_name, tag_value] : parsed_tags) {
+        if (tag_name == "font") {
+            font_name = tag_value;
+            break;
+        }
+    }
+    auto font_rec = std::find_if(cairo_list_.begin(), cairo_list_.end(),
+                                 [&font_name](const auto& font) {
+                                     return font.props.full_name == font_name;
+                                 });
+    size_t font_idx = 0;  // Fallback to the default face if not found
+    if (font_rec == cairo_list_.end()) {
+        std::cerr << "Font not found for tag: " << font_name << std::endl;
+    } else {
+        font_idx = std::distance(cairo_list_.begin(), font_rec);
+    }
+    return font_idx;
+}
+
+double SampleTextPrinter::get_size(
+    const std::vector<ParsedTag>& parsed_tags) const {
     double size = 36.0;
-    for (const std::string& tag : tags) {
-        auto [tag_name, tag_value] = parse_tag(tag);
+    for (const auto& [tag_name, tag_value] : parsed_tags) {
         double result{};
 
         if (tag_name == "size" &&

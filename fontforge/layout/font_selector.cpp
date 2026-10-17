@@ -54,27 +54,6 @@ static const std::map<std::string, int16_t> name_to_stretch = {
     {"semi-condensed", 4},  {"normal", 5},          {"semi-expanded", 6},
     {"expanded", 7},        {"extra-expanded", 8},  {"ultra-expanded", 9}};
 
-size_t RichTextFontSelector::select_face(
-    const std::vector<ParsedTag>& parsed_tags,
-    const SplineFontProperties& default_properties) const {
-    // Desired properties are derived from the default ones, with
-    // segment-specific tags overriding them when applicable.
-    SplineFontProperties text_props =
-        SplineFontProperties::from_tags(parsed_tags);
-    SplineFontProperties desired_properties = default_properties;
-    desired_properties.merge(text_props);
-
-    // Find the face with properties closest to the desired properties.
-    auto closest_face =
-        std::min_element(properties_list_.begin(), properties_list_.end(),
-                         [&desired_properties](const auto& a, const auto& b) {
-                             return desired_properties.distance(a) <
-                                    desired_properties.distance(b);
-                         });
-
-    return closest_face - properties_list_.begin();
-}
-
 std::stringstream RichTextFontSelector::xml_manifest() const {
     std::stringstream unicode_buffer;
     unicode_buffer << "<manifest>";

@@ -36,17 +36,14 @@ namespace ff::layout {
 // A sequence of text segments with associated tags.
 using ParsedRichText = std::vector<
     std::pair<std::vector<std::string> /*tags*/, std::string /*text*/>>;
+using ParsedTag =
+    std::pair<std::string /*tag name*/, std::string /*tag value*/>;
 
 class RichTextFontSelector {
  public:
     explicit RichTextFontSelector(
         const std::vector<SplineFontProperties>& properties_list = {})
         : properties_list_(properties_list) {}
-
-    // Select specific face to print a text segment based on the tags which
-    // apply to it. Returns an index into properties_list vector.
-    size_t select_face(const std::vector<ParsedTag>& parsed_tags,
-                       const SplineFontProperties& default_properties) const;
 
     std::stringstream xml_manifest() const;
 

@@ -48,9 +48,6 @@ cpp_SplineFontProperties* make_SplineFontProperties(
 
 namespace ff::layout {
 
-using ParsedTag =
-    std::pair<std::string /*tag name*/, std::string /*tag value*/>;
-
 struct SplineFontProperties {
     int ascent = -1, descent = -1;
     bool italic = false;
@@ -59,12 +56,6 @@ struct SplineFontProperties {
     std::string family_name;
     std::string styles;
     std::string full_name;
-
-    static SplineFontProperties from_tags(const std::vector<ParsedTag>& tags);
-
-    // Merge properties, with the other object's meaningful fields taking
-    // priority.
-    void merge(const SplineFontProperties& other);
 
     // Despite its name, distance() is not guaranteed to be a metric in
     // mathematical sense.

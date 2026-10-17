@@ -37,47 +37,6 @@ extern "C" cpp_SplineFontProperties* make_SplineFontProperties(
                                         full_name});
 }
 
-SplineFontProperties SplineFontProperties::from_tags(
-    const std::vector<ParsedTag>& parsed_tags) {
-    static const std::map<std::string, int16_t> widths{
-        {"ultra-condensed", 1}, {"extra-condensed", 2}, {"condensed", 3},
-        {"semi-condensed", 4},  {"medium", 5},          {"semi-expanded", 6},
-        {"expanded", 7},        {"extra-expanded", 8},  {"ultra-expanded", 9},
-    };
-    static const std::map<std::string, int16_t> weights{
-        {"thin", 100},    {"extra-light", 200}, {"light", 300},
-        {"regular", 400}, {"medium", 500},      {"semi-bold", 600},
-        {"bold", 700},    {"extra-bold", 800},  {"black", 900},
-    };
-    SplineFontProperties props;
-    for (const auto& [tag_name, tag_value] : parsed_tags) {
-        if (tag_name == "italic") {
-            props.italic = true;
-        } else if (tag_name == "bold") {
-            props.os2_weight = 700;
-        } else if (tag_name == "width") {
-            props.os2_width =
-                widths.count(tag_value) ? widths.at(tag_value) : 5;
-        } else if (tag_name == "weight") {
-            props.os2_weight =
-                weights.count(tag_value) ? weights.at(tag_value) : 400;
-        } else if (tag_name == "font") {
-            props.full_name = tag_value;
-        }
-    }
-    return props;
-}
-
-void SplineFontProperties::merge(const SplineFontProperties& other) {
-    if (other.ascent != -1) ascent = other.ascent;
-    if (other.descent != -1) descent = other.descent;
-    italic = other.italic;
-    if (other.os2_weight != -1) os2_weight = other.os2_weight;
-    if (other.os2_width != -1) os2_width = other.os2_width;
-    if (!other.styles.empty()) styles = other.styles;
-    if (!other.full_name.empty()) full_name = other.full_name;
-}
-
 int SplineFontProperties::distance(const SplineFontProperties& other) const {
     // A wildly heuristic mapping preference for width property. As a general
     // rule, we prefer exact match, of course, but if there is no exact match we

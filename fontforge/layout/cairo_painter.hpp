@@ -194,10 +194,6 @@ class SampleTextPrinter : public ff::layout::IPrinter {
     // All the currently open faces.
     const CairoFontList& cairo_list_;
 
-    // Selector responsible for choosing the best font face for a given set of
-    // tags.
-    layout::RichTextFontSelector selector_;
-
     std::string sample_text_;
     Tag script_;
     Tag lang_;
@@ -222,8 +218,6 @@ class SampleTextPrinter : public ff::layout::IPrinter {
                           const Cairo::Rectangle& printable_area,
                           const std::string& sample_text);
     void paginate(double layout_height);
-    SplineFontProperties get_default_style(
-        const layout::ParsedRichText& rich_text) const;
 
     // Draw a single rich text buffer.
     void draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -231,7 +225,8 @@ class SampleTextPrinter : public ff::layout::IPrinter {
                    double y_baseline, Tag script, Tag lang,
                    const std::map<Tag, bool>& features);
 
-    double get_size(const std::vector<std::string>& tags);
+    size_t get_font_index(const std::vector<ParsedTag>& parsed_tags) const;
+    double get_size(const std::vector<ParsedTag>& parsed_tags) const;
 };
 
 class CairoPainter {
