@@ -342,23 +342,51 @@ Gtk::Widget* PrintPreviewWidget::build_opentype_controls() {
     return opentype_frame;
 }
 
-static widget::RichTextFontProperties make_rt_properties(
-    const SplineFontProperties& font_props, const std::string& default_family) {
-    widget::RichTextFontProperties rt_props;
-    rt_props.weight = kWeightMap.count(font_props.os2_weight)
-                          ? kWeightMap.at(font_props.os2_weight)
-                          : Pango::WEIGHT_NORMAL;
-    rt_props.style =
-        font_props.italic ? Pango::STYLE_ITALIC : Pango::STYLE_NORMAL;
-    rt_props.stretch = kWidthMap.count(font_props.os2_width)
-                           ? kWidthMap.at(font_props.os2_width)
-                           : Pango::STRETCH_NORMAL;
+static widget::RichTextFontList make_rt_properties(
+    const std::vector<SplineFontProperties>& font_list) {
+    widget::RichTextFontList rt_font_list;
 
-    // Fonts outside the family being proofed are underlined for distinction.
-    rt_props.underline = (font_props.family_name == default_family)
-                             ? Pango::UNDERLINE_NONE
-                             : Pango::UNDERLINE_SINGLE;
-    return rt_props;
+    std::set<int> weights;
+    for (const auto& properties : font_list) {
+        weights.insert(properties.os2_weight);
+    }
+
+    std::string default_family = font_list.front().family_name;
+    for (const auto& font_props : font_list) {
+        widget::RichTextFontProperties rt_props;
+
+        // Skip weight color coding in TextView UI if there are two or fewer
+        // weights.
+        if (weights.size() == 1) {
+            rt_props.weight = (font_props.os2_weight < Pango::WEIGHT_SEMIBOLD)
+                                  ? Pango::WEIGHT_NORMAL
+                                  : Pango::WEIGHT_BOLD;
+        } else if (weights.size() == 2) {
+            rt_props.weight = (font_props.os2_weight == *weights.begin())
+                                  ? Pango::WEIGHT_NORMAL
+                                  : Pango::WEIGHT_BOLD;
+        } else {
+            rt_props.weight = kWeightMap.count(font_props.os2_weight)
+                                  ? kWeightMap.at(font_props.os2_weight)
+                                  : Pango::WEIGHT_NORMAL;
+        }
+
+        rt_props.style =
+            font_props.italic ? Pango::STYLE_ITALIC : Pango::STYLE_NORMAL;
+        rt_props.stretch = kWidthMap.count(font_props.os2_width)
+                               ? kWidthMap.at(font_props.os2_width)
+                               : Pango::STRETCH_NORMAL;
+
+        // Fonts outside the family being proofed are underlined for
+        // distinction.
+        rt_props.underline = (font_props.family_name == default_family)
+                                 ? Pango::UNDERLINE_NONE
+                                 : Pango::UNDERLINE_SINGLE;
+
+        rt_font_list.emplace_back(font_props.full_name, rt_props);
+    }
+
+    return rt_font_list;
 }
 
 guint8* PrintPreviewWidget::ff_xml_serialize(
@@ -428,12 +456,7 @@ void PrintPreviewWidget::build_sample_text_editor() {
     bool generic = true;
     std::vector<SplineFontProperties> font_list =
         cairo_painter_.get_font_list();
-    widget::RichTextFontList rt_font_list;
-    for (const auto& font_props : font_list) {
-        rt_font_list.emplace_back(
-            font_props.full_name,
-            make_rt_properties(font_props, font_list.front().family_name));
-    }
+    widget::RichTextFontList rt_font_list = make_rt_properties(font_list);
     sample_text_ = Gtk::make_managed<widget::RichTextEditor>(kMultiPointsizes,
                                                              rt_font_list);
     sample_text_->set_hexpand();
