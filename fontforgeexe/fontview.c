@@ -277,6 +277,14 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_exp
         return;
     }
 
+    if ( index >= fv->b.map->enccount ) {
+        box.width = fv->cbw + 1;
+        box.y = i*fv->cbh + 1;
+        box.height = fv->cbw + fv->lab_height + 1;
+        GDrawFillRect( pixmap, &box, view_bgcol );
+        return;
+    }
+
     if ( index<fv->b.map->enccount && fv->b.selected[index] ) {
 	GDrawFillRect(pixmap,&box,fv->b.selected[index] ? fvselcol : view_bgcol );
     }
