@@ -8484,6 +8484,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	/*  extra data space to do the conversion from old to new */
 	sf = (SplineFont *)realloc(sf,sizeof(SplineFont1));
 	memset(((uint8_t *) sf) + sizeof(SplineFont),0,sizeof(SplineFont1)-sizeof(SplineFont));
+	sf->old_sfd_layout = true;
     }
     sf->sfd_version = sfdversion;
     sf->cidmaster = cidmaster;
@@ -9014,10 +9015,6 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	SFD_DoAltUnis(sf);
     else
 	AltUniFigure(sf,sf->map,true);
-    /* Keep v0 during parsing to preserve rejection and SFDIR behavior. */
-    /* Any free after glyph parsing must normalize v0 for SplineFontFree. */
-    if ( sf->sfd_version==0 )
-	sf->sfd_version = 1;
     if ( sf->sfd_version<2 )
 	SFD_AssignLookups((SplineFont1 *) sf);
     if ( !d.hadtimes )

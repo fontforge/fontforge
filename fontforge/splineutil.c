@@ -6535,7 +6535,7 @@ return;
     }
     CopyBufferClearCopiedFrom(sf);
     PasteRemoveSFAnchors(sf);
-    if ( sf->sfd_version>0 && sf->sfd_version<2 ) {
+    if ( sf->old_sfd_layout ) {
       // Free special data.
       SplineFont1* oldsf = (SplineFont1*)sf;
       // First the script language lists.
