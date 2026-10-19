@@ -254,6 +254,9 @@ class CairoPainter {
         }
     }
 
+    bool has_active_printer() const { return active_printer_ != nullptr; }
+    void invalidate_active_printer() { active_printer_.reset(); }
+
     // Draw full font display as a character grid.
     void activate_full_display_printer(const Cairo::Rectangle& printable_area,
                                        double pointsize);

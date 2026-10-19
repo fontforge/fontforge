@@ -182,7 +182,7 @@ PrintPreviewWidget::PrintPreviewWidget(layout::CairoPainter&& cairo_painter,
     size->set_halign(Gtk::ALIGN_START);
     size->set_valign(Gtk::ALIGN_START);
     size_entry_->signal_value_changed().connect(
-        [this] { preview_area.queue_draw(); });
+        [this] { invalidate_active_printer(); });
 
     scaling_option_ = Gtk::make_managed<Gtk::ComboBoxText>();
     scaling_option_->append(std::string(layout::FullGlyphPrinter::kScaleToPage),
@@ -195,7 +195,7 @@ PrintPreviewWidget::PrintPreviewWidget(layout::CairoPainter&& cairo_painter,
     scaling_option_->set_active_id(persistent.full_page_scaling);
     scaling_option_->set_valign(Gtk::ALIGN_START);
     scaling_option_->signal_changed().connect(
-        [this] { preview_area.queue_draw(); });
+        [this] { invalidate_active_printer(); });
 
     Gtk::VBox* sample_text_controls = build_sample_text_controls();
     if (persistent.sample_text.empty())
@@ -318,7 +318,7 @@ Gtk::Widget* PrintPreviewWidget::build_opentype_controls() {
         sigc::mem_fun(*this, &PrintPreviewWidget::refresh_feature_tags_list));
 
     feature_tags_list_->get_selection()->signal_changed().connect(
-        sigc::mem_fun(preview_area, &Gtk::DrawingArea::queue_draw));
+        sigc::mem_fun(this, &PrintPreviewWidget::invalidate_active_printer));
 
     // Wrap feature list in a scrolled window
     Gtk::ScrolledWindow* feature_tags_scroll =
@@ -462,7 +462,7 @@ void PrintPreviewWidget::build_sample_text_editor() {
     sample_text_->set_hexpand();
     sample_text_->set_vexpand();
     sample_text_->get_buffer()->signal_changed().connect([this] {
-        preview_area.queue_draw();
+        invalidate_active_printer();
         if (sample_text_oneliner_ != nullptr)
             sample_text_oneliner_->set_text(
                 sample_text_->get_buffer()->get_text());
@@ -471,13 +471,13 @@ void PrintPreviewWidget::build_sample_text_editor() {
         [this](const Glib::RefPtr<Gtk::TextBuffer::Tag>&,
                const Gtk::TextBuffer::iterator&,
                const Gtk::TextBuffer::iterator&) {
-            preview_area.queue_draw();
+            invalidate_active_printer();
         });
     sample_text_->get_buffer()->signal_remove_tag().connect(
         [this](const Glib::RefPtr<Gtk::TextBuffer::Tag>&,
                const Gtk::TextBuffer::iterator&,
                const Gtk::TextBuffer::iterator&) {
-            preview_area.queue_draw();
+            invalidate_active_printer();
         });
     sample_text_->get_buffer()->register_serialize_format(
         layout::RichTextFontSelector::rich_text_mime_type,
@@ -560,7 +560,7 @@ void PrintPreviewWidget::update_page_setup(
         current_setup_->get_paper_height(Gtk::UNIT_MM);
 
     aspect_wrapper.set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, page_ratio, false);
-    preview_area.queue_draw();
+    invalidate_active_printer();
 }
 
 size_t PrintPreviewWidget::begin_print(
@@ -718,6 +718,8 @@ Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
 void PrintPreviewWidget::activate_cairo_printer(
     const Cairo::RefPtr<Cairo::Context>& cr,
     const Cairo::Rectangle& printable_area) {
+    if (cairo_painter_.has_active_printer()) return;
+
     if (radio_full_display_->get_active()) {
         double font_size = size_entry_->get_value();
         persistent.full_display_size = (size_t)font_size;
@@ -787,6 +789,11 @@ size_t PrintPreviewWidget::paginate() {
     return num_pages;
 }
 
+void PrintPreviewWidget::invalidate_active_printer() {
+    cairo_painter_.invalidate_active_printer();
+    preview_area.queue_draw();
+}
+
 bool PrintPreviewWidget::draw_preview_area(
     const Cairo::RefPtr<Cairo::Context>& cr) {
     Cairo::Rectangle printable_area =
@@ -843,7 +850,7 @@ void PrintPreviewWidget::on_display_toggled() {
             stack_->set_visible_child(persistent.radio_selection);
         }
     }
-    preview_area.queue_draw();
+    invalidate_active_printer();
 }
 
 }  // namespace ff::dlg

@@ -101,6 +101,8 @@ class PrintPreviewWidget : public Gtk::Grid {
     void draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                    const Cairo::Rectangle& printable_area, int page_nr);
 
+    void invalidate_active_printer();
+
     bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr);
 
     bool on_preview_area_scroll(GdkEventScroll* event);
