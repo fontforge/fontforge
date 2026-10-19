@@ -7066,6 +7066,32 @@ static void SFDSizeMap(EncMap *map,int glyphcnt,int enccnt) {
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	int fromdir, char *dirname, float sfdversion);
 
+static void SFD_FreeOldLookupData(SplineFont *sf) {
+    if ( sf->sfd_version>=2 )
+        return;
+
+    /* Only the SFD parser may call this: it extends pre-v2 fonts first. */
+    SplineFont1 *oldsf = (SplineFont1 *) sf;
+    int i, j;
+    if ( oldsf->script_lang!=NULL ) {
+	for ( i=0; oldsf->script_lang[i]!=NULL; ++i ) {
+	    for ( j=0; oldsf->script_lang[i][j].script!=0; ++j )
+		free(oldsf->script_lang[i][j].langs);
+	    free(oldsf->script_lang[i]);
+	}
+	free(oldsf->script_lang);
+	oldsf->script_lang = NULL;
+    }
+    struct table_ordering *ord = oldsf->orders;
+    while ( ord!=NULL ) {
+	struct table_ordering *next = ord->next;
+	free(ord->ordered_features);
+	chunkfree(ord,sizeof(struct table_ordering));
+	ord = next;
+    }
+    oldsf->orders = NULL;
+}
+
 static SplineFont *SFD_FigureDirType(SplineFont *sf,char *tok, char *dirname,
 	Encoding *enc, struct remap *remap,int had_layer_cnt) {
     /* In a sfdir a directory will either contain glyph files */
@@ -7186,6 +7212,7 @@ return( sf );
 	}
 	ff_progress_next_stage();
 	sf->mm = NULL;
+	SFD_FreeOldLookupData(sf);
 	SplineFontFree(sf);
 	sf = mm->normal;
 	if ( sf->map->enc!=&custom ) {
@@ -8484,7 +8511,6 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	/*  extra data space to do the conversion from old to new */
 	sf = (SplineFont *)realloc(sf,sizeof(SplineFont1));
 	memset(((uint8_t *) sf) + sizeof(SplineFont),0,sizeof(SplineFont1)-sizeof(SplineFont));
-	sf->old_sfd_layout = true;
     }
     sf->sfd_version = sfdversion;
     sf->cidmaster = cidmaster;
@@ -8638,6 +8664,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	    int imax, jmax, kmax;
 	    if ( sf->sfd_version==0 || sf->sfd_version>=2 ) {
 		IError( "Script lang lists should not happen in version 2 sfd files." );
+                SFD_FreeOldLookupData(sf);
                 SplineFontFree(sf);
                 return NULL;
 	    }
@@ -8677,7 +8704,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	    AnchorClass *lastan = NULL, *an;
 	    int old = strchr(tok,'2')==NULL;
 	    while ( (name=SFDReadUTF7Str(sfd))!=NULL ) {
-		an = (AnchorClass *)chunkalloc((old || sf->sfd_version<2) ? sizeof(AnchorClass1) : sizeof(AnchorClass));
+		an = (AnchorClass *)chunkalloc(sizeof(AnchorClass1));
 		an->name = name;
 		if ( old ) {
 		    getname(sfd,tok);
@@ -8768,6 +8795,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	    struct table_ordering *ord;
 	    if ( sfdversion==0 || sfdversion>=2 ) {
 		IError("Table ordering specified in version 2 sfd file.\n" );
+                SFD_FreeOldLookupData(sf);
                 SplineFontFree(sf);
                 return NULL;
 	    }
@@ -8977,6 +9005,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	mm->normal = SFD_GetFont(sfd,NULL,tok,fromdir,dirname,sfdversion);
 	mm->normal->mm = mm;
 	sf->mm = NULL;
+	SFD_FreeOldLookupData(sf);
 	SplineFontFree(sf);
 	sf = mm->normal;
 	if ( sf->map->enc!=&custom ) {
@@ -9036,6 +9065,19 @@ void SFTimesFromFile(SplineFont *sf,FILE *file) {
     }
 }
 
+/* Keep old lookup lists until the returned CID/MM font is converted. */
+static void SFD_FreeOldLookupDataTree(SplineFont *sf) {
+    int i;
+    for ( i=0; i<sf->subfontcnt; ++i )
+	if ( sf->subfonts[i]!=NULL )
+	    SFD_FreeOldLookupDataTree(sf->subfonts[i]);
+    if ( sf->mm!=NULL && sf->mm->normal==sf )
+	for ( i=0; i<sf->mm->instance_count; ++i )
+	    if ( sf->mm->instances[i]!=NULL )
+		SFD_FreeOldLookupDataTree(sf->mm->instances[i]);
+    SFD_FreeOldLookupData(sf);
+}
+
 static double SFDStartsCorrectly(FILE *sfd,char *tok) {
     real dval;
     int ch;
@@ -9085,6 +9127,8 @@ return( NULL );
     ff_progress_change_stages(2);
     if ( (version = SFDStartsCorrectly(sfd,tok))!=-1 )
 	sf = SFD_GetFont(sfd,NULL,tok,fromdir,filename,version);
+    if ( sf!=NULL )
+	SFD_FreeOldLookupDataTree(sf);
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     if ( sf!=NULL ) {
 	sf->filename = copy(filename);
