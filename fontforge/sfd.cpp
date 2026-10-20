@@ -8479,7 +8479,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
     orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
 
     sf = SplineFontEmpty();
-    if ( sfdversion>0 && sfdversion<2 ) {
+    if ( sfdversion<2 ) {
 	/* If it's an old style sfd file with old style features we need some */
 	/*  extra data space to do the conversion from old to new */
 	sf = (SplineFont *)realloc(sf,sizeof(SplineFont1));
@@ -8676,7 +8676,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	    AnchorClass *lastan = NULL, *an;
 	    int old = strchr(tok,'2')==NULL;
 	    while ( (name=SFDReadUTF7Str(sfd))!=NULL ) {
-		an = (AnchorClass *)chunkalloc(old ? sizeof(AnchorClass1) : sizeof(AnchorClass));
+		an = (AnchorClass *)chunkalloc(sizeof(AnchorClass1));
 		an->name = name;
 		if ( old ) {
 		    getname(sfd,tok);
