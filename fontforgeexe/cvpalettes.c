@@ -769,6 +769,34 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
     d.reg = gcd[6].ret;
     d.pts = gcd[7].ret;
 
+    /* Translated labels may be wider than the fixed layout expects: put
+     * the second radio button of each pair after the first one and widen
+     * the dialog when needed. */
+    {
+	static const int pairs[2][2] = { {0, 1}, {6, 7} };
+	int gap = GDrawPointsToPixels(NULL, 10);
+	int right = 0, i, extra;
+	GRect first, second, win, button;
+
+	for ( i=0; i<2; ++i ) {
+	    GGadgetGetSize(gcd[pairs[i][0]].ret, &first);
+	    GGadgetGetSize(gcd[pairs[i][1]].ret, &second);
+	    if ( second.x < first.x + first.width + gap ) {
+		second.x = first.x + first.width + gap;
+		GGadgetMove(gcd[pairs[i][1]].ret, second.x, second.y);
+	    }
+	    if ( second.x + second.width > right )
+		right = second.x + second.width;
+	}
+	GDrawGetSize(d.gw, &win);
+	extra = right + GDrawPointsToPixels(NULL, 5) - win.width;
+	if ( extra > 0 ) {
+	    GDrawResize(d.gw, win.width + extra, win.height);
+	    GGadgetGetSize(gcd[5].ret, &button);
+	    GGadgetMove(gcd[5].ret, button.x + extra, button.y);
+	}
+    }
+
     GDrawSetVisible(d.gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
