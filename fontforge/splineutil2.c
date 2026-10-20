@@ -2399,6 +2399,9 @@ SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed,
 	    }
 	}
     }
+    if ( *changed == false )
+    	LogError(_("Warning: No endpoint pairs found within a tolerance of %g."), fudge);
+
 return(start);
 }
 
