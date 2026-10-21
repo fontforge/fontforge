@@ -3516,7 +3516,10 @@ docs are wrong.
 	os2->maxContext = 1;	/* Kerning will set this to 2, ligature to whatever */
     }
 
-    if ( os2->version>=3 && os2->v3_avgCharWid!=0 )
+    int width = SFOneWidth(sf);
+    if ( width>0 )
+	os2->avgCharWid = width;
+    else if ( os2->version>=3 && os2->v3_avgCharWid!=0 )
 	os2->avgCharWid = os2->v3_avgCharWid;
     else if ( os2->v1_avgCharWid!=0 )
 	os2->avgCharWid = os2->v1_avgCharWid;
