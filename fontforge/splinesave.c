@@ -1824,32 +1824,34 @@ bool SFIsFixedWidth(SplineFont *sf) {
 }
 
 /* Return value:
-	-2: unknown pitch
-	-1: variable or dual pitch
-	width>0: fixed pitch with given character width
+        -2: unknown pitch
+        -1: variable pitch
+        width>0: fixed pitch with given character width or dual pitch with given
+                 base character width
 */
-int SFOneWidth(SplineFont *_sf) {
+int SFOneWidth(SplineFont* _sf) {
     int width, total_width = -2;
     int k = 0;
-    SplineFont *sf;
+    SplineFont* sf;
     FontPitch pitch = pitch_unknown;
 
-    if ( _sf->cidmaster!=NULL ) _sf = _sf->cidmaster;
+    if (_sf->cidmaster != NULL) _sf = _sf->cidmaster;
     do {
-	sf = _sf->subfonts==NULL? _sf : _sf->subfonts[k];
-	pitch = SFComputePitch(sf, &width);
-	if (pitch == pitch_unknown) {
-	    continue;
-	}
+        sf = _sf->subfonts == NULL ? _sf : _sf->subfonts[k];
+        pitch = SFComputePitch(sf, &width);
+        if (pitch == pitch_unknown) {
+            continue;
+        }
 
-	if (pitch == pitch_dual || pitch == pitch_variable ||
-	    (pitch == pitch_fixed && total_width != -2 && width != total_width)) {
-	    total_width = -1;
-	    break;
-	}
-	total_width = width;
-	++k;
-    } while ( k<_sf->subfontcnt );
+        if (pitch == pitch_variable ||
+            ((pitch == pitch_fixed || pitch == pitch_dual) &&
+             total_width != -2 && width != total_width)) {
+            total_width = -1;
+            break;
+        }
+        total_width = width;
+        ++k;
+    } while (k < _sf->subfontcnt);
     return total_width;
 }
 
