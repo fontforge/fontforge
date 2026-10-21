@@ -3639,6 +3639,8 @@ return( ret );
 static void privateadd(struct psdict *private_dict,char *key,char *value) {
     if ( value==NULL )
 return;
+    if (private_dict->next >= private_dict->cnt)
+return;
     private_dict->keys[private_dict->next] = copy(key);
     private_dict->values[private_dict->next++] = value;
 }
@@ -3668,9 +3670,9 @@ return;
 }
 
 static void cffprivatefillup(struct psdict *private_dict, struct topdicts *dict) {
-    private_dict->cnt = 14;
-    private_dict->keys = malloc(14*sizeof(char *));
-    private_dict->values = malloc(14*sizeof(char *));
+    private_dict->cnt = 15;
+    private_dict->keys = malloc(15*sizeof(char *));
+    private_dict->values = malloc(15*sizeof(char *));
     privateadd(private_dict,"BlueValues",
 	    realarray2str(dict->bluevalues,sizeof(dict->bluevalues)/sizeof(dict->bluevalues[0]),true));
     privateadd(private_dict,"OtherBlues",
