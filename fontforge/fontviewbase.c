@@ -42,6 +42,7 @@
 #include "fvfonts.h"
 #include "gfile.h"
 #include "groups.h"
+#include "lookups.h"
 #include "namelist.h"
 #include "psfont.h"
 #include "pua.h"
@@ -52,8 +53,11 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottf.h"
+#include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
+#include "shapers/shaper_shim.hpp"
 
 #include <math.h>
 #include "ffunistd.h"
@@ -2231,4 +2235,27 @@ SplineChar** FVGetSelection(FontViewBase* fv) {
     result[cnt] = NULL;
 
     return result;
+}
+
+static void char_metrics(MetricsView*, SplineChar* sc, int16_t* width,
+                         int16_t* vwidth) {
+    SCCharMetrics(sc, width, vwidth);
+}
+
+static int dummy_get_kern_offset(struct opentype_str*) { return 0; }
+
+ShaperContext* MakeEmptyShaperContext() {
+    ShaperContext* context = calloc(1, sizeof(ShaperContext));
+    context->sf = NULL;
+    context->mv = NULL;
+    context->apply_ticked_features = ApplyTickedFeatures;
+    context->get_char_metrics = char_metrics;
+    context->get_kern_offset = dummy_get_kern_offset;
+    context->script_is_rtl = ScriptIsRightToLeft;
+    context->get_or_make_char = SFGetOrMakeChar;
+    context->write_font_into_memory = WriteTTFFontForShaper;
+    context->get_name = SCGetName;
+    context->get_encoding = SCGetEncoding;
+
+    return context;
 }

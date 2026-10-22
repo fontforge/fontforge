@@ -37,16 +37,12 @@
 extern "C" {
 #include "../fffreetype.h"
 
+extern ShaperContext* MakeEmptyShaperContext();
 extern int SCRightToLeft(SplineChar* sc);
-extern int ScriptIsRightToLeft(uint32_t script);
-extern SplineCharTTFMap* WriteTTFFontForShaper(FILE* ttf, SplineFont* sf);
 extern const char* SCGetName(const SplineChar* sc);
 extern void SCGetEncoding(const SplineChar* sc, int* p_unicodeenc,
                           int* p_ttf_glyph);
-extern void SCCharMetrics(SplineChar* sc, int16_t* width, int16_t* vwidth);
 extern SplineChar* SFGetChar(SplineFont* sf, int unienc, const char* name);
-extern SplineChar* SFGetOrMakeChar(SplineFont* sf, int unienc,
-                                   const char* name);
 extern SplineFont** FVCollectFonts(SplineFont* sf);
 extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont* sf);
 SplineChar** FVGetSelection(FontViewBase* fv);
@@ -1033,35 +1029,9 @@ Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
     return cairo_face;
 }
 
-struct opentype_str* dummy_apply_ticked_features(SplineFont*, uint32_t*,
-                                                 uint32_t, uint32_t, bool, int,
-                                                 SplineChar** glyphs) {
-    size_t len;
-    for (len = 0; glyphs[len] != NULL; ++len);
-    struct opentype_str* out =
-        (struct opentype_str*)calloc(len + 1, sizeof(struct opentype_str));
-    for (size_t i = 0; glyphs[i] != NULL; ++i) out[i].sc = glyphs[i];
-    return out;
-}
-
-static void char_metrics(MetricsView*, SplineChar* sc, int16_t* width,
-                         int16_t* vwidth) {
-    SCCharMetrics(sc, width, vwidth);
-}
-
-static int dummy_get_kern_offset(struct opentype_str*) { return 0; }
-
 std::shared_ptr<ShaperContext> make_shaper_context(SplineFont* sf) {
-    auto context = std::make_shared<ShaperContext>();
+    auto context = std::shared_ptr<ShaperContext>(MakeEmptyShaperContext());
     context->sf = sf;
-    context->apply_ticked_features = dummy_apply_ticked_features;
-    context->get_char_metrics = char_metrics;
-    context->get_kern_offset = dummy_get_kern_offset;
-    context->script_is_rtl = ScriptIsRightToLeft;
-    context->get_or_make_char = SFGetOrMakeChar;
-    context->write_font_into_memory = WriteTTFFontForShaper;
-    context->get_name = SCGetName;
-    context->get_encoding = SCGetEncoding;
 
     return context;
 }
