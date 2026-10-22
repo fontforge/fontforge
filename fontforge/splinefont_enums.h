@@ -108,7 +108,8 @@ enum ttf_flags {
         1 << 29,  // Allow only mapped glyphs in the old-style "kern" table,
                   // required for Windows compatibility
     ttf_flag_nomacnames = 1 << 30,  // Don't autogenerate mac name entries
-    ttf_flag_nospecialnullcr = 1 << 31,  // Do not specially treat ".null" and "nonmarkingreturn"
+    ttf_flag_nospecialnullcr =
+        1 << 31,  // Do not specially treat ".null" and "nonmarkingreturn"
 };
 
 enum ttc_flags { ttc_flag_trymerge = 0x1, ttc_flag_cff = 0x2 };
