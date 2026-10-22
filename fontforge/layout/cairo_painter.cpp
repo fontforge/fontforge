@@ -49,7 +49,6 @@ extern SplineChar* SFGetOrMakeChar(SplineFont* sf, int unienc,
                                    const char* name);
 extern SplineFont** FVCollectFonts(SplineFont* sf);
 extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont* sf);
-extern char* SFGetFullName(SplineFont* sf);
 SplineChar** FVGetSelection(FontViewBase* fv);
 extern char* WordlistEscapedInputStringToUTF8(SplineFont* sf,
                                               const char* input);
@@ -108,7 +107,7 @@ void FullGlyphPrinter::draw_page(size_t page_number,
     // Print page title for glyph
     std::string page_title(SCGetName(glyph_it->second));
     page_title += " from ";
-    page_title += SFGetFullName(font_rec_.sf);
+    page_title += font_rec_.props.full_name;
     init_document(cr, printable_area, page_title, full_glyph_top_margin_);
 
     // We are already in point units. Further rescale surface, exclude the top
@@ -269,7 +268,7 @@ void MultiSizePrinter::draw_page(size_t page_nr, const PageContext* context) {
     auto printable_area = cairo_ctx->printable_area_;
 
     init_document(cr, printable_area,
-                  std::string("Sample Sizes of ") + SFGetFullName(font_rec_.sf),
+                  std::string("Sample Sizes of ") + font_rec_.props.full_name,
                   top_margin_);
 
     // Set the user font face
@@ -521,7 +520,7 @@ void FullDisplayPrinter::draw_page(size_t page_number,
     auto printable_area = cairo_ctx->printable_area_;
 
     std::string title =
-        std::string("Font Display for ") + SFGetFullName(font_rec_.sf);
+        std::string("Font Display for ") + font_rec_.props.full_name;
     init_document(cr, printable_area, title, top_margin_);
 
     cr->set_source_rgb(0, 0, 0);
@@ -626,7 +625,7 @@ void SampleTextPrinter::draw_page(size_t page_number,
     auto cr = cairo_ctx->cr_;
     auto printable_area = cairo_ctx->printable_area_;
 
-    std::string font_name = SFGetFullName(cairo_list_[0].sf);
+    std::string font_name = cairo_list_[0].props.full_name;
     init_document(cr, printable_area, "Sample Text from " + font_name,
                   top_margin_);
 

@@ -393,10 +393,6 @@ void SplineFontSetUnChanged(SplineFont *sf) {
 	    _SplineFontSetUnChanged(sf->mm->instances[i]);
 }
 
-char* SFGetFullName(SplineFont *sf) {
-    return sf->fullname ? sf->fullname : sf->fontname;
-}
-
 cpp_SplineFontProperties* SFGetProperties(SplineFont* sf) {
     return make_SplineFontProperties(
         sf->ascent, sf->descent,
@@ -407,7 +403,7 @@ cpp_SplineFontProperties* SFGetProperties(SplineFont* sf) {
         sf->pfminfo.pfmset ? sf->pfminfo.weight : 400,
         sf->pfminfo.pfmset ? sf->pfminfo.width : 5,
         sf->familyname ? sf->familyname : "", SFGetModifiers(sf),
-        SFGetFullName(sf));
+        sf->fullname ? sf->fullname : sf->fontname);
 }
 
 static char *scaleString(char *string, double scale) {
