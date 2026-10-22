@@ -2239,12 +2239,12 @@ SplineChar** FVGetSelection(FontViewBase* fv) {
     return result;
 }
 
-static void char_metrics(MetricsView*, SplineChar* sc, int16_t* width,
-                         int16_t* vwidth) {
+static void char_metrics(MetricsView* UNUSED(mv), SplineChar* sc,
+                         int16_t* width, int16_t* vwidth) {
     SCCharMetrics(sc, width, vwidth);
 }
 
-static int dummy_get_kern_offset(struct opentype_str*) { return 0; }
+static int dummy_get_kern_offset(struct opentype_str* UNUSED(ots)) { return 0; }
 
 static ShaperContext* MakeEmptyShaperContext() {
     ShaperContext* context = calloc(1, sizeof(ShaperContext));
