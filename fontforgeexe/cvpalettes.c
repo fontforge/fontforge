@@ -1410,7 +1410,15 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 		    msg = _("Add a next constraint point (sometimes like a tangent)");
 	    }
 	    // We want to display the hotkey for the key in question if possible.
-	    char * mininame = HKTextInfoToUntranslatedTextFromTextInfo(&cvtoollist[pos].ti);
+	    /* cvtoollist has separators, so it can not be indexed by tool */
+	    GMenuItem2 *toolmi = cvtoollist;
+	    while ( toolmi->ti.text!=NULL || toolmi->ti.image!=NULL || toolmi->ti.line ) {
+		if ( !toolmi->ti.line && toolmi->mid==pos )
+		    break;
+		++toolmi;
+	    }
+	    char * mininame = toolmi->ti.text!=NULL || toolmi->ti.image!=NULL ?
+		    HKTextInfoToUntranslatedTextFromTextInfo(&toolmi->ti) : NULL;
 	    char * menuname = NULL;
 	    Hotkey* toolhotkey = NULL;
             if (mininame != NULL) {
