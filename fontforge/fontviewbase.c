@@ -57,7 +57,9 @@
 #include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
+#include "wordlistparser.h"
 #include "shapers/shaper_shim.hpp"
+#include "layout/layout_shim.hpp"
 
 #include <math.h>
 #include "ffunistd.h"
@@ -2244,7 +2246,7 @@ static void char_metrics(MetricsView*, SplineChar* sc, int16_t* width,
 
 static int dummy_get_kern_offset(struct opentype_str*) { return 0; }
 
-ShaperContext* MakeEmptyShaperContext() {
+static ShaperContext* MakeEmptyShaperContext() {
     ShaperContext* context = calloc(1, sizeof(ShaperContext));
     context->sf = NULL;
     context->mv = NULL;
@@ -2256,6 +2258,23 @@ ShaperContext* MakeEmptyShaperContext() {
     context->write_font_into_memory = WriteTTFFontForShaper;
     context->get_name = SCGetName;
     context->get_encoding = SCGetEncoding;
+
+    return context;
+}
+
+LayoutContext* MakeLayoutContext(SplineFont* sf, FontViewBase* fv) {
+    LayoutContext* context = calloc(1, sizeof(LayoutContext));
+    context->sf = sf;
+    context->fv = fv;
+    context->make_shaper_context = MakeEmptyShaperContext;
+    context->char_is_rtl = SCRightToLeft;
+    context->get_name = SCGetName;
+    context->get_encoding = SCGetEncoding;
+    context->get_char = SFGetChar;
+    context->collect_fonts = FVCollectFonts;
+    context->make_glyph_ttf_map = MakeGlyphTTFMap;
+    context->get_selection = FVGetSelection;
+    context->escaped_input_string_to_utf8 = WordlistEscapedInputStringToUTF8;
 
     return context;
 }

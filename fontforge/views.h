@@ -48,6 +48,7 @@ struct statemachinedlg;
 
 /* Dummy incomplete type which can be casted to C++ type ff::shapers::IShaper */
 typedef struct cpp_IShaper cpp_IShaper;
+typedef struct layout_context LayoutContext;
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -1314,6 +1315,7 @@ extern void Prefs_LoadDefaultPreferences( void );
 
 extern void SPSelectNextPoint( SplinePoint *sp, int state );
 extern void SPSelectPrevPoint( SplinePoint *sp, int state );
+extern LayoutContext* MakeLayoutContext(SplineFont* sf, FontViewBase* fv);
 
 #ifndef _NO_PYTHON
 extern void CVSetToolsSubmenu(GMenuItem2 *py_menu);

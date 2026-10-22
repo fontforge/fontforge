@@ -29,6 +29,35 @@ extern "C" {
 #include <stdint.h>
 
 typedef struct splinefont SplineFont;
+typedef struct fontviewbase FontViewBase;
+typedef struct splinechar SplineChar;
+typedef struct shaper_context ShaperContext;
+typedef struct splinechar_ttf_map SplineCharTTFMap;
+
+typedef struct layout_context {
+    SplineFont* sf;
+    FontViewBase* fv;
+
+    ShaperContext* (*make_shaper_context)();
+
+    int (*char_is_rtl)(SplineChar* sc);
+
+    const char* (*get_name)(const SplineChar* sc);
+
+    void (*get_encoding)(const SplineChar* sc, int* p_unicodeenc,
+                         int* p_ttf_glyph);
+
+    SplineChar* (*get_char)(SplineFont* sf, int unienc, const char* name);
+
+    SplineFont** (*collect_fonts)(SplineFont* sf);
+
+    SplineCharTTFMap* (*make_glyph_ttf_map)(SplineFont* sf);
+
+    SplineChar** (*get_selection)(FontViewBase* fv);
+
+    char* (*escaped_input_string_to_utf8)(SplineFont* sf, const char* input);
+
+} LayoutContext;
 
 /* Dummy incomplete type which can be casted to C++ type
  * ff::layout::SplineFontProperties */

@@ -1418,7 +1418,8 @@ return;
     char *sample_text = u2utf8_copy(u_sample_text);
     free(u_sample_text);
 
-    print_dialog(gw, fv->b.sf, &fv->b, sample_text);
+    LayoutContext* context = MakeLayoutContext(fv->b.sf, &fv->b);
+    print_dialog(gw, context, sample_text);
     free(sample_text);
 }
 

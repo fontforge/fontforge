@@ -2234,7 +2234,8 @@ static void MVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
 
     char *sample_text = GGadgetGetTitle8(mv->text);
-    print_dialog(gw, mv->sf, &mv->fv->b, sample_text);
+    LayoutContext* context = MakeLayoutContext(mv->sf, &mv->fv->b);
+    print_dialog(gw, context, sample_text);
     free(sample_text);
 }
 

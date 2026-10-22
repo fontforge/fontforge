@@ -37,9 +37,6 @@
 #include "i_shaper.hpp"
 #include "shaper_shim.hpp"
 
-typedef struct splinechar SplineChar;
-typedef struct fontviewbase FontViewBase;
-
 namespace ff::layout {
 
 using PrintGlyphMap = std::map<int, SplineChar*>;
@@ -75,7 +72,8 @@ class CairoContext : public ff::layout::PageContext {
 
 class FullGlyphPrinter : public ff::layout::IPrinter {
  public:
-    FullGlyphPrinter(const PrintGlyphVec& print_map,
+    FullGlyphPrinter(std::shared_ptr<LayoutContext> context,
+                     const PrintGlyphVec& print_map,
                      const CairoFontRec& font_rec,
                      const std::string& scaling_option);
 
@@ -89,6 +87,7 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
         "scale_to_max_height";
 
  private:
+    std::shared_ptr<LayoutContext> context_;
     // TODO(iorsh): Storing reference is dangerous, consider other non-copying
     // storage options.
     const PrintGlyphVec& print_map_;
@@ -110,7 +109,8 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
 
 class FullDisplayPrinter : public ff::layout::IPrinter {
  public:
-    FullDisplayPrinter(const Cairo::Rectangle& printable_area,
+    FullDisplayPrinter(std::shared_ptr<LayoutContext> context,
+                       const Cairo::Rectangle& printable_area,
                        const PrintGlyphVec& print_map,
                        const CairoFontRec& font_rec, double pointsize);
 
@@ -136,6 +136,7 @@ class FullDisplayPrinter : public ff::layout::IPrinter {
         std::vector<int> indexes;
     };
 
+    std::shared_ptr<LayoutContext> context_;
     const PrintGlyphVec& print_map_;
     const CairoFontRec& font_rec_;
     double pointsize_;
@@ -180,7 +181,8 @@ class MultiSizePrinter : public ff::layout::IPrinter {
 
 class SampleTextPrinter : public ff::layout::IPrinter {
  public:
-    SampleTextPrinter(const Cairo::RefPtr<Cairo::Context>& cr,
+    SampleTextPrinter(std::shared_ptr<LayoutContext> context,
+                      const Cairo::RefPtr<Cairo::Context>& cr,
                       const Cairo::Rectangle& printable_area,
                       const CairoFontList& cairo_list,
                       const std::string& sample_text, Tag script, Tag lang,
@@ -191,6 +193,7 @@ class SampleTextPrinter : public ff::layout::IPrinter {
                    const ff::layout::PageContext* context) override;
 
  private:
+    std::shared_ptr<LayoutContext> context_;
     // All the currently open faces.
     const CairoFontList& cairo_list_;
 
@@ -231,7 +234,7 @@ class SampleTextPrinter : public ff::layout::IPrinter {
 
 class CairoPainter {
  public:
-    CairoPainter(SplineFont* sf, FontViewBase* fv);
+    CairoPainter(std::shared_ptr<LayoutContext> context);
 
     // The currently active face. By convention, the first element of the
     // CairoFontList is the default face, and it must always be present.
@@ -276,6 +279,8 @@ class CairoPainter {
                                       const std::map<Tag, bool>& features);
 
  private:
+    std::shared_ptr<LayoutContext> context_;
+
     // All the faces available to the painter.
     CairoFontList cairo_list_;
 
@@ -285,12 +290,12 @@ class CairoPainter {
 
     std::unique_ptr<ff::layout::IPrinter> active_printer_;
 
+    CairoFontList create_cairo_list();
+
     void sort_glyphs(const PrintGlyphMap& print_map);
 };
 
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
-CairoFontList create_cairo_list(SplineFont* current_sf);
-PrintGlyphMap build_glyph_map(SplineFont* sf);
 
 void setup_context(const Cairo::RefPtr<Cairo::Context>& cr);
 void init_document(const Cairo::RefPtr<Cairo::Context>& cr,

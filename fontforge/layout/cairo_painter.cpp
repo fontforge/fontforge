@@ -36,18 +36,6 @@
 
 extern "C" {
 #include "../fffreetype.h"
-
-extern ShaperContext* MakeEmptyShaperContext();
-extern int SCRightToLeft(SplineChar* sc);
-extern const char* SCGetName(const SplineChar* sc);
-extern void SCGetEncoding(const SplineChar* sc, int* p_unicodeenc,
-                          int* p_ttf_glyph);
-extern SplineChar* SFGetChar(SplineFont* sf, int unienc, const char* name);
-extern SplineFont** FVCollectFonts(SplineFont* sf);
-extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont* sf);
-SplineChar** FVGetSelection(FontViewBase* fv);
-extern char* WordlistEscapedInputStringToUTF8(SplineFont* sf,
-                                              const char* input);
 }
 #include "gutils.h"
 #include "ustring.h"
@@ -64,10 +52,12 @@ const double full_glyph_top_margin_ = margin_ + page_title_height_;
 //                             FullGlyphPrinter                             //
 //////////////////////////////////////////////////////////////////////////////
 
-FullGlyphPrinter::FullGlyphPrinter(const PrintGlyphVec& print_map,
+FullGlyphPrinter::FullGlyphPrinter(std::shared_ptr<LayoutContext> context,
+                                   const PrintGlyphVec& print_map,
                                    const CairoFontRec& font_rec,
                                    const std::string& scaling_option)
-    : print_map_(print_map),
+    : context_(context),
+      print_map_(print_map),
       font_rec_(font_rec),
       scaling_option_(scaling_option) {
     if (scaling_option_ == kScaleMaxHeight) {
@@ -101,7 +91,7 @@ void FullGlyphPrinter::draw_page(size_t page_number,
     auto glyph_it = print_map_.begin() + page_number;
 
     // Print page title for glyph
-    std::string page_title(SCGetName(glyph_it->second));
+    std::string page_title(context_->get_name(glyph_it->second));
     page_title += " from ";
     page_title += font_rec_.props.full_name;
     init_document(cr, printable_area, page_title, full_glyph_top_margin_);
@@ -317,11 +307,15 @@ size_t MultiSizePrinter::page_count() const {
 //                            FullDisplayPrinter                            //
 //////////////////////////////////////////////////////////////////////////////
 
-FullDisplayPrinter::FullDisplayPrinter(const Cairo::Rectangle& printable_area,
+FullDisplayPrinter::FullDisplayPrinter(std::shared_ptr<LayoutContext> context,
+                                       const Cairo::Rectangle& printable_area,
                                        const PrintGlyphVec& print_map,
                                        const CairoFontRec& font_rec,
                                        double pointsize)
-    : print_map_(print_map), font_rec_(font_rec), pointsize_(pointsize) {
+    : context_(context),
+      print_map_(print_map),
+      font_rec_(font_rec),
+      pointsize_(pointsize) {
     extravspace_ = pointsize_ / 6;
     extrahspace_ = pointsize_ / 3;
 
@@ -349,7 +343,7 @@ std::vector<FullDisplayPrinter::GlyphLine> FullDisplayPrinter::split_to_lines(
 
     size_t line_length = 0;
     int unicodeenc;
-    SCGetEncoding(print_map_.front().second, &unicodeenc, NULL);
+    context_->get_encoding(print_map_.front().second, &unicodeenc, NULL);
     bool no_encoded_glyphs = unicodeenc == -1;
 
     if (no_encoded_glyphs) {
@@ -373,7 +367,7 @@ std::vector<FullDisplayPrinter::GlyphLine> FullDisplayPrinter::split_to_lines(
     PrintGlyphVec::const_iterator map_it = print_map_.begin();
     for (; map_it != print_map_.end(); ++map_it) {
         int codepoint;
-        SCGetEncoding(map_it->second, &codepoint, NULL);
+        context_->get_encoding(map_it->second, &codepoint, NULL);
         if (codepoint == -1) {
             break;
         }
@@ -588,13 +582,15 @@ void FullDisplayPrinter::draw_page(size_t page_number,
 //                            SampleTextPrinter                             //
 //////////////////////////////////////////////////////////////////////////////
 
-SampleTextPrinter::SampleTextPrinter(const Cairo::RefPtr<Cairo::Context>& cr,
+SampleTextPrinter::SampleTextPrinter(std::shared_ptr<LayoutContext> context,
+                                     const Cairo::RefPtr<Cairo::Context>& cr,
                                      const Cairo::Rectangle& printable_area,
                                      const CairoFontList& cairo_list,
                                      const std::string& sample_text, Tag script,
                                      Tag lang,
                                      const std::map<Tag, bool>& features)
-    : cairo_list_(cairo_list),
+    : context_(context),
+      cairo_list_(cairo_list),
       sample_text_(sample_text),
       script_(script),
       lang_(lang),
@@ -718,7 +714,7 @@ void SampleTextPrinter::calculate_layout(
         cr->set_font_size(font_size);
 
         // Unescape glyph names
-        char* unescaped = WordlistEscapedInputStringToUTF8(
+        char* unescaped = context_->escaped_input_string_to_utf8(
             cairo_list_[font_idx].sf, raw_text.c_str());
         const std::string text(unescaped);
         free(unescaped);
@@ -845,9 +841,9 @@ void SampleTextPrinter::draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
         // For RTL lines, start x at the right edge and move left.
         // For LTR lines, start at 0 and move right.
         if (!first_char && uni_buf[0] > 0) {
-            first_char =
-                SFGetChar(cairo_list_[font_idx].sf, uni_buf[0], nullptr);
-            rtl = first_char != nullptr && SCRightToLeft(first_char);
+            first_char = context_->get_char(cairo_list_[font_idx].sf,
+                                            uni_buf[0], nullptr);
+            rtl = first_char != nullptr && context_->char_is_rtl(first_char);
             if (rtl) {
                 x = width;
             }
@@ -925,12 +921,18 @@ double SampleTextPrinter::get_size(
 //                               CairoPainter                               //
 //////////////////////////////////////////////////////////////////////////////
 
-CairoPainter::CairoPainter(SplineFont* sf, FontViewBase* fv) {
-    cairo_list_ = create_cairo_list(sf);
+PrintGlyphMap build_glyph_map(SplineCharTTFMap* ttf_map);
+std::shared_ptr<shapers::IShaper> create_shaper(
+    SplineFont* sf, std::shared_ptr<LayoutContext> context);
 
-    PrintGlyphMap print_map = build_glyph_map(sf);
-    if (fv) {
-        SplineChar** selected = FVGetSelection(fv);
+CairoPainter::CairoPainter(std::shared_ptr<LayoutContext> context)
+    : context_(context) {
+    cairo_list_ = create_cairo_list();
+
+    PrintGlyphMap print_map =
+        build_glyph_map(context_->make_glyph_ttf_map(context_->sf));
+    if (context_->fv) {
+        SplineChar** selected = context_->get_selection(context_->fv);
         std::set<SplineChar*> selected_set;
         for (SplineChar** it = selected; *it != NULL; ++it) {
             selected_set.insert(*it);
@@ -955,13 +957,13 @@ CairoPainter::CairoPainter(SplineFont* sf, FontViewBase* fv) {
 void CairoPainter::activate_full_glyph_printer(
     const std::string& scaling_option) {
     active_printer_ = std::make_unique<FullGlyphPrinter>(
-        print_map_, cairo_list_[0], scaling_option);
+        context_, print_map_, cairo_list_[0], scaling_option);
 }
 
 void CairoPainter::activate_full_display_printer(
     const Cairo::Rectangle& printable_area, double pointsize) {
     active_printer_ = std::make_unique<FullDisplayPrinter>(
-        printable_area, print_map_, cairo_list_[0], pointsize);
+        context_, printable_area, print_map_, cairo_list_[0], pointsize);
 }
 
 void CairoPainter::activate_multisize_printer(
@@ -976,18 +978,64 @@ void CairoPainter::activate_sample_text_printer(
     const Cairo::Rectangle& printable_area, const std::string& sample_text,
     Tag script, Tag lang, const std::map<Tag, bool>& features) {
     active_printer_ = std::make_unique<SampleTextPrinter>(
-        cr, printable_area, cairo_list_, sample_text, script, lang, features);
+        context_, cr, printable_area, cairo_list_, sample_text, script, lang,
+        features);
+}
+
+CairoFontList CairoPainter::create_cairo_list() {
+    SplineFont* current_sf = context_->sf;
+    SplineFont** open_sfs = context_->collect_fonts(current_sf);
+    SplineFontProperties* sf_properties = nullptr;
+    Cairo::RefPtr<Cairo::FtFontFace> ft_face;
+    std::shared_ptr<shapers::IShaper> shaper;
+    std::map<Tag, bool> features;
+
+    CairoFontList font_list;
+
+    // By convention, the first element is the default font
+    sf_properties = toCPP(SFGetProperties(current_sf));
+    ft_face = create_cairo_face(current_sf);
+    shaper = create_shaper(current_sf, context_);
+    font_list.push_back(
+        CairoFontRec{*sf_properties, ft_face, shaper, current_sf});
+    delete sf_properties;
+
+    if (open_sfs) {
+        for (SplineFont** sf_it = open_sfs; *sf_it != nullptr; ++sf_it) {
+            sf_properties = toCPP(SFGetProperties(*sf_it));
+            ft_face = create_cairo_face(*sf_it);
+            shaper = create_shaper(*sf_it, context_);
+            font_list.push_back(
+                CairoFontRec{*sf_properties, ft_face, shaper, *sf_it});
+            delete sf_properties;
+        }
+    }
+
+    // Generate unique full names in case of duplicates (e.g. multiple font
+    // versions loaded together).
+    std::map<std::string, int /*count*/> full_names;
+    for (auto& font_rec : font_list) {
+        std::string full_name = font_rec.props.full_name;
+        int name_count = full_names[full_name]++;
+        if (name_count > 0)
+            font_rec.props.full_name +=
+                " (" + std::to_string(name_count + 1) + ")";
+    }
+
+    free(open_sfs);
+    return font_list;
 }
 
 void CairoPainter::sort_glyphs(const PrintGlyphMap& print_map) {
     std::copy(print_map.begin(), print_map.end(), back_inserter(print_map_));
     // Sort encoded glyphs first, unenecoded glyphs second.
     std::sort(
-        print_map_.begin(), print_map_.end(), [](const auto& a, const auto& b) {
+        print_map_.begin(), print_map_.end(),
+        [this](const auto& a, const auto& b) {
             int a_unicode;
             int b_unicode;
-            SCGetEncoding(a.second, &a_unicode, NULL);
-            SCGetEncoding(b.second, &b_unicode, NULL);
+            context_->get_encoding(a.second, &a_unicode, NULL);
+            context_->get_encoding(b.second, &b_unicode, NULL);
             return (a_unicode == -1)
                        ? ((b_unicode == -1) ? (a.first < b.first) : false)
                        : ((b_unicode == -1) ? true : (a_unicode < b_unicode));
@@ -1029,65 +1077,17 @@ Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
     return cairo_face;
 }
 
-std::shared_ptr<ShaperContext> make_shaper_context(SplineFont* sf) {
-    auto context = std::shared_ptr<ShaperContext>(MakeEmptyShaperContext());
-    context->sf = sf;
-
-    return context;
+std::shared_ptr<shapers::IShaper> create_shaper(
+    SplineFont* sf, std::shared_ptr<LayoutContext> context) {
+    auto shaper_context =
+        std::shared_ptr<ShaperContext>(context->make_shaper_context());
+    shaper_context->sf = sf;
+    return shapers::Factory(shaper_context);
 }
 
-std::shared_ptr<shapers::IShaper> create_shaper(SplineFont* sf) {
-    std::shared_ptr<ShaperContext> context = make_shaper_context(sf);
-    return shapers::Factory(context);
-}
-
-CairoFontList create_cairo_list(SplineFont* current_sf) {
-    SplineFont** open_sfs = FVCollectFonts(current_sf);
-    SplineFontProperties* sf_properties = nullptr;
-    Cairo::RefPtr<Cairo::FtFontFace> ft_face;
-    std::shared_ptr<shapers::IShaper> shaper;
-    std::map<Tag, bool> features;
-
-    CairoFontList font_list;
-
-    // By convention, the first element is the default font
-    sf_properties = toCPP(SFGetProperties(current_sf));
-    ft_face = create_cairo_face(current_sf);
-    shaper = create_shaper(current_sf);
-    font_list.push_back(
-        CairoFontRec{*sf_properties, ft_face, shaper, current_sf});
-    delete sf_properties;
-
-    if (open_sfs) {
-        for (SplineFont** sf_it = open_sfs; *sf_it != nullptr; ++sf_it) {
-            sf_properties = toCPP(SFGetProperties(*sf_it));
-            ft_face = create_cairo_face(*sf_it);
-            shaper = create_shaper(*sf_it);
-            font_list.push_back(
-                CairoFontRec{*sf_properties, ft_face, shaper, *sf_it});
-            delete sf_properties;
-        }
-    }
-
-    // Generate unique full names in case of duplicates (e.g. multiple font
-    // versions loaded together).
-    std::map<std::string, int /*count*/> full_names;
-    for (auto& font_rec : font_list) {
-        std::string full_name = font_rec.props.full_name;
-        int name_count = full_names[full_name]++;
-        if (name_count > 0)
-            font_rec.props.full_name +=
-                " (" + std::to_string(name_count + 1) + ")";
-    }
-
-    free(open_sfs);
-    return font_list;
-}
-
-PrintGlyphMap build_glyph_map(SplineFont* sf) {
+PrintGlyphMap build_glyph_map(SplineCharTTFMap* ttf_map) {
     // Build map of TTF codepoints
     PrintGlyphMap print_map;
-    SplineCharTTFMap* ttf_map = MakeGlyphTTFMap(sf);
     for (SplineCharTTFMap* entry = ttf_map; entry->glyph != NULL; ++entry) {
         print_map[entry->ttf_glyph] = entry->glyph;
     }

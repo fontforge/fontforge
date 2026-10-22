@@ -6351,7 +6351,8 @@ static void CVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED
     char *sample_text = u2utf8_copy(u_sample_text);
     free(u_sample_text);
 
-    print_dialog(gw, sf, fv, sample_text);
+    LayoutContext* context = MakeLayoutContext(sf, fv);
+    print_dialog(gw, context, sample_text);
     free(sample_text);
 }
 

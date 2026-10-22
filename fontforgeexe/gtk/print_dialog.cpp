@@ -35,8 +35,8 @@
 
 using ff::layout::PrintGlyphMap;
 
-void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv,
-                  char* sample_text) {
+// c_context is taken over, the caller should not free it.
+void print_dialog(GWindow gw, LayoutContext* c_context, char* sample_text) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
@@ -52,7 +52,8 @@ void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv,
     // The preview widget is also responsible for actual printing, which happens
     // after the print dialog has been closed. We should manage its lifecycle
     // independently.
-    ff::layout::CairoPainter cairo_painter(sf, fv);
+    std::shared_ptr<LayoutContext> context(c_context, &free);  // Take ownership
+    ff::layout::CairoPainter cairo_painter(context);
     ff::dlg::PrintPreviewWidget ff_preview_widget(std::move(cairo_painter),
                                                   sample_text);
 
