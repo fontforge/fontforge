@@ -29,6 +29,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <optional>
 #include <cairomm/context.h>
 
 #include "font_selector.hpp"
@@ -94,6 +95,7 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
     const CairoFontRec& font_rec_;
     std::string scaling_option_;
     std::vector<Cairo::Glyph> cairo_glyphs_;
+    mutable std::optional<std::pair<double, double>> sf_metrics_;
 
     // Get SplineFont ascent and descent in Cairo context units, normalized for
     // font size 1pt.

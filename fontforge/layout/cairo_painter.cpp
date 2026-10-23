@@ -140,6 +140,11 @@ void FullGlyphPrinter::draw_page(size_t page_number,
 
 std::pair<double, double> FullGlyphPrinter::get_splinefont_metrics(
     const Cairo::RefPtr<Cairo::Context>& cr) const {
+    // If metrics are already calculated, return them.
+    if (sf_metrics_) {
+        return *sf_metrics_;
+    }
+
     // Make sure the context state is not changed by accident.
     cr->save();
 
@@ -171,12 +176,12 @@ std::pair<double, double> FullGlyphPrinter::get_splinefont_metrics(
                        ? (double)(font_extents.ascent + font_extents.descent) /
                              (ft_ascender - ft_descender)
                        : 1000;
-    double sf_ascent = sf_properties.ascent * scale;
-    double sf_descent = -sf_properties.descent * scale;
+    sf_metrics_ = {sf_properties.ascent * scale,
+                   -sf_properties.descent * scale};
 
     cr->restore();
 
-    return {sf_ascent, sf_descent};
+    return *sf_metrics_;
 }
 
 std::tuple<double /*x_position*/, double /*y_position*/, double /*scale*/>
