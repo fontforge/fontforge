@@ -28,7 +28,7 @@
 #ifndef FONTFORGE_FFFREETYPE_H
 #define FONTFORGE_FFFREETYPE_H
 
-#include "baseviews.h"
+#include "splinefont_enums.h"
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -58,6 +58,9 @@
 
 extern FT_Library ff_ft_context;
 
+typedef struct splinechar SplineChar;
+typedef struct splinefont SplineFont;
+typedef struct fontviewbase FontViewBase;
 
 typedef struct freetypecontext {
     SplineFont *sf;
@@ -79,5 +82,8 @@ extern void *__FreeTypeFontContext(FT_Library context,
 	SplineFont *sf,SplineChar *sc,FontViewBase *fv,
 	int layer,
 	enum fontformat ff,int flags,void *shared_ftc);
+
+extern void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontviewbase *fv,
+	int layer, enum fontformat ff,int flags,void *shared_ftc);
 
 #endif /* FONTFORGE_FFFREETYPE_H */
