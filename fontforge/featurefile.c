@@ -2667,7 +2667,7 @@ return;
 				tag[3] = tok->tokbuf[3];
 			}
 		    }
-		    tok->tag = (tag[0]<<24) | (tag[1]<<16) | (tag[2]<<8) | tag[3];
+		    tok->tag = CHR(tag[0], tag[1], tag[2], tag[3]);
 		}
 	}
     } else {
@@ -5773,7 +5773,7 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 		    foo[i] = ch;
 		}
 		while ( (ch=getc(in))!=EOF && ch!='"' );
-		tok->value=(foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3];
+		tok->value=CHR(foo[0], foo[1], foo[2], foo[3]);
 	    } else {
 		LogError(_("Expected string on line %d of %s"),
 			tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );

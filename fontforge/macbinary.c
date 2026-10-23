@@ -319,7 +319,7 @@ return( NULL );
 	len = getc(pfbfile);
 	len |= (getc(pfbfile))<<8;
 	len |= (getc(pfbfile))<<16;
-	len |= (getc(pfbfile))<<24;
+	len |= (int)((uint32_t)getc(pfbfile)<<24);
 	while ( len>0 ) {
 	    int ilen = len;
 	    if ( ilen>0x800-2 )
@@ -2839,9 +2839,9 @@ static SplineFont *IsResourceFork(FILE *f, long offset,char *filename,int flags,
     fseek(f,offset,SEEK_SET);
     if ( fread(buffer,1,16,f)!=16 )
 return( NULL );
-    rdata_pos = offset + ((buffer[0]<<24)|(buffer[1]<<16)|(buffer[2]<<8)|buffer[3]);
-    map_pos = offset + ((buffer[4]<<24)|(buffer[5]<<16)|(buffer[6]<<8)|buffer[7]);
-    rdata_len = ((buffer[8]<<24)|(buffer[9]<<16)|(buffer[10]<<8)|buffer[11]);
+    rdata_pos = offset + (CHR(buffer[0],buffer[1],buffer[2],buffer[3]));
+    map_pos = offset + (CHR(buffer[4],buffer[5],buffer[6],buffer[7]));
+    rdata_len = (CHR(buffer[8],buffer[9],buffer[10],buffer[11]));
     /* map_len = ((buffer[12]<<24)|(buffer[13]<<16)|(buffer[14]<<8)|buffer[15]); */
     if ( rdata_pos+rdata_len!=map_pos || rdata_len==0 )
 return( NULL );
@@ -2962,8 +2962,8 @@ return( NULL );
     if ( header[0]!=0 || header[74]!=0 || header[82]!=0 || header[1]<=0 ||
 	    header[1]>33 || header[63]!=0 || header[2+header[1]]!=0 )
 return( NULL );
-    dlen = ((header[0x53]<<24)|(header[0x54]<<16)|(header[0x55]<<8)|header[0x56]);
-    rlen = ((header[0x57]<<24)|(header[0x58]<<16)|(header[0x59]<<8)|header[0x5a]);
+    dlen = (CHR(header[0x53],header[0x54],header[0x55],header[0x56]));
+    rlen = (CHR(header[0x57],header[0x58],header[0x59],header[0x5a]));
 	/* 128 bytes for header, then the dlen is padded to a 128 byte boundary */
     offset = 128 + ((dlen+127)&~127);
 /* Look for a bare truetype font in a binhex/macbinary wrapper */
@@ -3060,8 +3060,8 @@ return( NULL );
 return( NULL );
     }
     fread(header,1,20,binary);
-    dlen = (header[10]<<24)|(header[11]<<16)|(header[12]<<8)|header[13];
-    rlen = (header[14]<<24)|(header[15]<<16)|(header[16]<<8)|header[17];
+    dlen = CHR(header[10],header[11],header[12],header[13]);
+    rlen = CHR(header[14],header[15],header[16],header[17]);
 /* Look for a bare truetype font in a binhex/macbinary wrapper */
     if ( dlen!=0 && rlen<dlen ) {
 	int pos = ftell(binary);
