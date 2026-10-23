@@ -2109,7 +2109,10 @@ static void DumpMonotonic(Monotonic *input) {
 static Monotonic *FindMonoContaining(Monotonic *base, bigreal t) {
     Monotonic *m;
 
-    for ( m=base; m->s == base->s; m=m->next ) {
+    if ( base==NULL )
+return( NULL );
+
+    for ( m=base; m!=NULL && m->s == base->s; m=m->next ) {
 	FF_DUMP_MONOTONIC_IF_VERBOSE(m)
 	if ( t >= m->tstart && t <= m->tend )
 return( m );
@@ -2117,7 +2120,7 @@ return( m );
 	    break;
     }
 #ifdef FF_RELATIONAL_GEOM
-    for ( m=base; m->s == base->s; m=m->next ) {
+    for ( m=base; m!=NULL && m->s == base->s; m=m->next ) {
 	FF_DUMP_MONOTONIC_IF_VERBOSE(m)
 	if ( t >= m->otstart && t <= m->otend )
 return( m );
@@ -2126,14 +2129,14 @@ return( m );
     }
 #endif
     SOError("Failed to find monotonic containing %g\n", (double) t );
-    for ( m=base; m->s == base->s; m=m->prev ) {
+    for ( m=base; m!=NULL && m->s == base->s; m=m->prev ) {
 	if ( t >= m->tstart && t <= m->tend )
 return( m );
 	if ( m->prev == base ) /* don't search forever! */
 	    break;
     }
 #ifdef FF_RELATIONAL_GEOM
-    for ( m=base; m->s == base->s; m=m->prev ) {
+    for ( m=base; m!=NULL && m->s == base->s; m=m->prev ) {
 	FF_DUMP_MONOTONIC_IF_VERBOSE(m)
 	if ( t >= m->otstart && t <= m->otend )
 return( m );
@@ -2174,6 +2177,16 @@ static Intersection *TurnPreInter2Inter(Monotonic *ms) {
 		m2 = FindMonoContaining(p->m2,p->t2+1e-06);
 		if ( m2 != NULL )
 		    p->t2 = m2->tstart;
+	    }
+	    if ( m1 == NULL || m2 == NULL ) {
+		/* FindMonoContaining has already logged the failure. The
+		 * monotonic list for this spline does not cover the
+		 * recorded t (seen from SplineSetStroke's overlap removal,
+		 * #5357); recording the intersection against a NULL
+		 * monotonic would crash in AddIntersection, so drop it. */
+		SOError("Dropping intersection at (%g,%g): monotonic not found\n", (double) p->inter.x, (double) p->inter.y );
+		chunkfree(p,sizeof(PreIntersection));
+	continue;
 	    }
 	    if ( p->is_close )
 		ilist = AddCloseIntersection(ilist,m1,m2,p->t1,p->t2,&p->inter);
