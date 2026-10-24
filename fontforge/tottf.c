@@ -2724,12 +2724,66 @@ void cvt_unix_to_1904( long long time, int32_t result[2]) {
     result[1] = (tm[3]<<16) | tm[2];
 }
 
+static int VersionIsSpace(unsigned char ch) {
+    return ch==' ' || ch=='\t' || ch=='\n' || ch=='\r' || ch=='\v' || ch=='\f';
+}
+
+static const char *VersionNumberStart(const char *version) {
+    const char *pt;
+
+    pt = version;
+    while ( VersionIsSpace((unsigned char) *pt) ) ++pt;
+    if ( (*pt=='-' || *pt=='+') &&
+	    ((pt[1]>='0' && pt[1]<='9') ||
+	     pt[1]=='.') )
+	return pt;
+    for ( pt=version; *pt!='\0'; ++pt ) {
+	if ( (*pt>='0' && *pt<='9') ||
+		*pt=='.' )
+	    return pt;
+    }
+    return pt;
+}
+
+static int ParseHeadRevision(const char *version,int32_t *revision) {
+    char *end;
+    double dval;
+    int val, mant;
+
+    if ( version==NULL )
+	return false;
+    /* _WriteTTFFont switches to the C numeric locale before calling sethead. */
+    dval = strtod(version,&end);
+    if ( end==version &&
+	    (*version=='.' || (*version=='+' && version[1]=='.')) ) {
+	*revision = 0;
+	return true;
+    }
+    if ( end==version || !isfinite(dval) || signbit(dval) || dval>=32768.0 )
+	return false;
+    val = floor(dval);
+    mant = floor(65536.0*(dval-val));
+    *revision = ((int32_t) val<<16) | mant;
+    return true;
+}
+
+static int ParseNamedHeadRevision(const char *version,int32_t *revision) {
+    float vn;
+
+    if ( version==NULL || sscanf(version,"%f",&vn)!=1 || !isfinite(vn) ||
+	    signbit(vn) || vn>=32768.0f )
+	return false;
+    /* Preserve the historical float conversion for an explicit sfnt name. */
+    *revision = (int32_t) (vn*65536.0f);
+    return true;
+}
+
 static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
 	enum fontformat format, int32_t *bsizes) {
     int i, lr, rl, indic_rearrange, arabic;
+    int version_found;
     ASM *sm;
     struct ttflangname *useng;
-    float vn;
 
     if ( at->gi.xmin==15000 ) at->gi.xmin = 0;
     if ( at->gi.ymin==15000 ) at->gi.ymin = 0;
@@ -2758,27 +2812,28 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
     head->revision = sf->sfntRevision;
     if ( sf->sfntRevision==sfntRevisionUnset ) {
 	head->revision = 0x00010000;
+	version_found = false;
 	for ( useng=sf->names; useng!=NULL; useng=useng->next )
 	    if ( useng->lang==0x409 )
 	break;
 	if ( useng!=NULL && useng->names[ttf_version]!=NULL &&
-		sscanf(useng->names[ttf_version], "Version %f", &vn)==1 ) {
-	    head->revision = vn*65536;
-	} else if ( sf->subfontcnt!=0 ) {
-	    int val, mant;
-	    val = floor(sf->cidversion);
-	    mant = floor(65536.*((double)sf->cidversion-val));
-	    head->revision = (val<<16) | mant;
-	} else if ( sf->version!=NULL ) {
-	    char *pt=sf->version;
-	    double dval;
-	    int val, mant;
-	    while ( *pt && !isdigit(*pt) && *pt!='.' ) ++pt;
-	    if ( *pt ) {
-		dval = strtod(pt,NULL);
-		val = floor(dval);
-		mant = floor(65536.*(dval-val));
+		strncmp(useng->names[ttf_version],"Version",7)==0 ) {
+	    const char *pt = useng->names[ttf_version]+7;
+	    while ( VersionIsSpace((unsigned char) *pt) ) ++pt;
+	    version_found = ParseNamedHeadRevision(pt,&head->revision);
+	}
+	if ( !version_found && sf->subfontcnt!=0 ) {
+	    double cidversion = sf->cidversion;
+	    if ( isfinite(cidversion) && cidversion>=0.0 && cidversion<32768.0 ) {
+		int val, mant;
+		val = floor(cidversion);
+		mant = floor(65536.*(cidversion-val));
 		head->revision = (val<<16) | mant;
+	    }
+	} else if ( !version_found && sf->version!=NULL ) {
+	    const char *pt=VersionNumberStart(sf->version);
+	    if ( *pt!='\0' ) {
+		ParseHeadRevision(pt,&head->revision);
 	    }
 	}
     }

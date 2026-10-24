@@ -51,6 +51,7 @@
 #include "winfonts.h"
 
 #include <math.h>
+#include <stdio.h>
 #include "ffunistd.h"
 
 static char *cleancopy(const char *name) {
@@ -2412,6 +2413,64 @@ return( false );
 return( true );
 }
 
+static int BDFVersionIsSpace(unsigned char ch) {
+    return ch==' ' || ch=='\t' || ch=='\n' || ch=='\r' || ch=='\v' || ch=='\f';
+}
+
+static int BDFVersionHasControl(const char *version) {
+    const unsigned char *pt = (const unsigned char *) version;
+    unsigned int codepoint;
+
+    /* Decode canonical UTF-8 here; utf8_valid() accepts overlong sequences. */
+    while ( *pt!='\0' ) {
+	if ( *pt<0x80 ) {
+	    codepoint = *pt++;
+	} else if ( *pt>=0xc2 && *pt<=0xdf ) {
+	    if ( pt[1]<0x80 || pt[1]>=0xc0 )
+		return true;
+	    codepoint = ((*pt&0x1f)<<6) | (pt[1]&0x3f);
+	    pt += 2;
+	} else if ( *pt>=0xe0 && *pt<=0xef ) {
+	    if ( pt[1]<0x80 || pt[1]>=0xc0 || pt[2]<0x80 || pt[2]>=0xc0 ||
+		    (*pt==0xe0 && pt[1]<0xa0) ||
+		    (*pt==0xed && pt[1]>=0xa0) )
+		return true;
+	    codepoint = ((*pt&0x0f)<<12) | ((pt[1]&0x3f)<<6) | (pt[2]&0x3f);
+	    pt += 3;
+	} else if ( *pt>=0xf0 && *pt<=0xf4 ) {
+	    if ( pt[1]<0x80 || pt[1]>=0xc0 || pt[2]<0x80 || pt[2]>=0xc0 ||
+		    pt[3]<0x80 || pt[3]>=0xc0 ||
+		    (*pt==0xf0 && pt[1]<0x90) ||
+		    (*pt==0xf4 && pt[1]>=0x90) )
+		return true;
+	    codepoint = ((*pt&0x07)<<18) | ((pt[1]&0x3f)<<12) |
+		    ((pt[2]&0x3f)<<6) | (pt[3]&0x3f);
+	    pt += 4;
+	} else {
+	    return true;
+	}
+	if ( codepoint<0x20 || codepoint==0x7f ||
+		(codepoint>=0x80 && codepoint<=0x9f) )
+	    return true;
+    }
+    return false;
+}
+
+static int BDFVersionHasInteger(BDFFont *bdf,int *value,int *is_unsigned) {
+    int i;
+
+    for ( i=0; i<bdf->prop_cnt; ++i ) if ( strcmp(bdf->props[i].name,"FONT_VERSION")==0 ) {
+	int type = bdf->props[i].type & ~prt_property;
+	if ( type==prt_int || type==prt_uint ) {
+	    *value = bdf->props[i].u.val;
+	    *is_unsigned = type==prt_uint;
+	    return true;
+	}
+	return false;
+    }
+    return false;
+}
+
 SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
     SplineFont *sf = SplineFontBlank(256);
     EncMap *map = EncMapNew(256,256,&custom);
@@ -2420,6 +2479,50 @@ SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
     sf->onlybitmaps = true;
     bdf = SFImportBDF(sf,filename,ispk,toback, map);
     sf->map = map;
+    if ( bdf!=NULL && bdf!=(BDFFont *) -1 ) {
+	char numeric_version[32];
+	const char *version = BdfPropHasString(bdf,"FONT_VERSION",NULL);
+	if ( version==NULL ) {
+	    int integer_version, unsigned_version;
+	    if ( BDFVersionHasInteger(bdf,&integer_version,&unsigned_version) ) {
+		if ( unsigned_version )
+		    snprintf(numeric_version,sizeof(numeric_version),"%u",(unsigned int) integer_version);
+		else
+		    snprintf(numeric_version,sizeof(numeric_version),"%d",integer_version);
+		version = numeric_version;
+	    }
+	}
+	if ( version!=NULL ) {
+	    size_t version_len;
+	    char *imported;
+
+	    while ( BDFVersionIsSpace((unsigned char) *version) ) ++version;
+	    version_len = strlen(version);
+	    while ( version_len>0 &&
+		    BDFVersionIsSpace((unsigned char) version[version_len-1]) )
+		--version_len;
+	    if ( version_len>0 ) {
+		imported = malloc(version_len+1);
+		if ( imported!=NULL ) {
+		    memcpy(imported,version,version_len);
+		    imported[version_len] = '\0';
+		    if ( !utf8_valid(imported) ) {
+			char *converted = latin1_2_utf8_copy(imported);
+			free(imported);
+			imported = converted;
+		    }
+		    if ( imported!=NULL ) {
+			if ( BDFVersionHasControl(imported) )
+			    free(imported);
+			else {
+			    free(sf->version);
+			    sf->version = imported;
+			}
+		    }
+		}
+	    }
+	}
+    }
     if ( bdf==(BDFFont *) -1 )
 	/* Do Nothing: User cancelled a load of a duplicate pixelsize */;
     else if ( toback && bdf!=NULL )
