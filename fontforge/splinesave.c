@@ -1828,9 +1828,10 @@ bool SFIsFixedWidth(SplineFont *sf) {
         -1: variable pitch
         width>0: fixed pitch with given character width or dual pitch with given
                  base character width
-   NOTE: "fixed pitch" flag definition usually predates the dual-pitch font
-   technology. Following user reports, specifically regarding the font D2Coding,
-   we set this flag for dual-pitch fonts too.
+   NOTE: The "fixed pitch" flag predates the dual-width font problem.
+   Specifications like BDF, PostScript, and even recent (2026) OpenType never
+   explicitly addressed it. Following user reports, especially for Hangul
+   "D2Coding" font, we therefore treat dual-width fonts as fixed-pitch too.
 */
 int SFOneWidth(SplineFont* _sf) {
     int width, total_width = -2;
