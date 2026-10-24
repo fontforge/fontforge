@@ -3518,7 +3518,10 @@ docs are wrong.
 
     int width = SFOneWidth(sf);
     if ( width>0 )
-	os2->avgCharWid = width;
+        // OS/2 table specification predates dual-pitch fonts, but according to
+        // user reports, applications like Notepad expect to find the single
+        // pitch value in this field, and not any computed average.
+        os2->avgCharWid = width;
     else if ( os2->version>=3 && os2->v3_avgCharWid!=0 )
 	os2->avgCharWid = os2->v3_avgCharWid;
     else if ( os2->v1_avgCharWid!=0 )
