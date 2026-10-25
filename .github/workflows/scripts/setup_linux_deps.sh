@@ -22,12 +22,21 @@ echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib" >> $GITHUB_E
 echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig" >> $GITHUB_ENV
 echo "PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON "$GITHUB_WORKSPACE/repo/pyhook/get_pyhook_install_dir.py" "${DESTDIR}${PREFIX}")" >> $GITHUB_ENV
 
+FTVER=`dpkg -s libfreetype-dev | perl -ne 'print $1 if /^Version: (\d+(?:\.\d+)+)/'`
+SFFTVER=`echo $FTVER | perl -ne 'print $1 if /^((?:\d+\.){1,2}\d+)/'`
+
+if [ -f "$DEPSPREFIX/freetype/include/freetype/freetype.h" ]; then
+    CACHED_FTVER=$(grep -E '^#define[[:space:]]+FREETYPE_(MAJOR|MINOR|PATCH)' "$DEPSPREFIX/freetype/include/freetype/freetype.h" | awk '{print $3}' | paste -sd '.' -)
+    if [ "$CACHED_FTVER" != "$FTVER" ]; then
+        echo "Stale FreeType source cache detected: cached version is $CACHED_FTVER, system version is $FTVER. Removing cached deps and rebuilding them."
+        rm -rf "$GITHUB_WORKSPACE/deps"
+    fi
+fi
+
 if [ ! -d deps/install ]; then
     echo "Custom dependencies not present - will build them"
     rm -rf deps && mkdir deps && cd deps
 
-    FTVER=`dpkg -s libfreetype-dev | perl -ne 'print $1 if /^Version: (\d+(?:\.\d+)+)/'`
-    SFFTVER=`echo $FTVER | perl -ne 'print $1 if /^(\d+(?:\.\d+){1,2})/'`
 
     git clone --depth 1 https://github.com/fontforge/libspiro
     git clone --depth 1 https://github.com/fontforge/libuninameslist
