@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Language: vi_VN\n"
@@ -1369,6 +1369,9 @@ msgstr ""
 "Một số nguyên của vùng chọn sẽ được dùng để trải ra đường dẫn.\n"
 "Nếu chiều dài của đường dẫn không chia được cho bề cao vùng chọn,\n"
 "vùng chọn nên được co giãn một ít."
+
+msgid "An outline font editor"
+msgstr "Một trình biên tập viền chữ"
 
 msgid "An range in the \"Sizes\" field is incorrectly ordered."
 msgstr "Trường « Kích cỡ » chứa một phạm vi sai thứ tự."
@@ -5252,6 +5255,9 @@ msgstr "Chữ và tháng đã bao bọc tiếng Trung/Nhật/Hàn"
 msgid "Encoding Too Large"
 msgstr "Bảng mã quá lớn"
 
+msgid "Encoding name"
+msgstr "Tên bảng mã"
+
 #, c-format
 msgid ""
 "Encoding subtable for platform=%d, specific=%d (which must be 14)\n"
@@ -8693,12 +8699,6 @@ msgstr "Tiếng Lam-ba-ni"
 
 msgid "Language"
 msgstr "Ngôn ngữ"
-
-msgid "Language List"
-msgstr "Danh sách ngôn ngữ"
-
-msgid "Language Missing"
-msgstr "Thiếu ngôn ngữ"
 
 msgid "Language Tag:"
 msgstr "Thẻ ngôn ngữ:"
@@ -12351,6 +12351,10 @@ msgstr "Không nên làm đó"
 msgid "Please identify a glyph by name, and FontForge will add an anchor to that glyph."
 msgstr "Nhận diện hình tượng theo tên để FontForge thêm neo vào hình tượng đó."
 
+#, c-format
+msgid "Please name encoding %d in this file"
+msgstr "Hãy đặt tên bảng mã %d trong tập tin này"
+
 msgid "Please name this contour"
 msgstr "Hãy nhập tên cho đường viền này"
 
@@ -13019,19 +13023,15 @@ msgstr "Phản ánh"
 msgid "Refresh File List"
 msgstr "Cập nhật danh sách tập tin"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "ThamC"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs neste_d deeper than:"
 msgstr "Tham chiếu lồng nhau _sâu hơn:"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad ps transformation matrices"
 msgstr "Tham chiếu có ma trận chuyển dạng PS sai"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad tt transformation matrices"
 msgstr "Tham chiếu có ma trận chuyển dạng TT sai"
 
@@ -14303,15 +14303,6 @@ msgstr "Chọn _tất cả"
 msgid "Select a ligature to view"
 msgstr "Chọn chữ ghép cần xem"
 
-msgid ""
-"Select as many languages as needed\n"
-"Hold down the control key when clicking\n"
-"to make disjoint selections."
-msgstr ""
-"Chọn càng nhiều ngôn ngữ càng cần thiết.\n"
-"Ấn giữ phím Ctrl trong khi nhấn chuột,\n"
-"để chọn mỗi cái."
-
 msgid "Select by Color"
 msgstr "Chọn theo màu"
 
@@ -14836,10 +14827,6 @@ msgstr "Mã số thiết lập:"
 
 msgid "Settings"
 msgstr "Thiết lập"
-
-#, c-format
-msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
-msgstr "Vài thẻ ngôn ngữ, gồm « %s », không phải nằm trong danh sách các ngôn ngữ đã biết nên bị bỏ quên."
 
 msgid "Shades"
 msgstr "Sắc màu"
@@ -16958,10 +16945,6 @@ msgstr "Bảng phụ hạng định chỗ %s trong %s không tương ứng với
 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr "Các giá trị định chỗ cho hạng 0 (« Các gì khác ») lú nào cũng nên là 0."
-
-#, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "Ngôn ngữ này, « %s », không phải nằm trong danh sách các ngôn ngữ đã biết nên bị bỏ quên."
 
 msgid "The layers do not match"
 msgstr "Các lớp không tương ứng"
@@ -20362,14 +20345,6 @@ msgstr "Bạn phải chọn một sự tra tìm thích hợp để chứa cặp 
 msgid "You must select at least one language for each script."
 msgstr "Bạn phải chọn ít nhất một ngôn ngữ cho mỗi chữ viết."
 
-msgid ""
-"You must select at least one language.\n"
-"Use the \"Default\" language if nothing else fits."
-msgstr ""
-"Bạn phải chọn ít nhất một ngôn ngữ.\n"
-"Không có gì thích hợp thì chọn\n"
-"ngôn ngữ « Mặc định »."
-
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "Cung cấp một thẻ tính năng thì phải chọn ít nhất một chữ viết."
 
@@ -21070,6 +21045,9 @@ msgstr "Khô_ng có"
 
 msgid "_Normal"
 msgstr "Chuẩ_n"
+
+msgid "_OK"
+msgstr "Được (_O)"
 
 msgid "_OS/2 Version"
 msgstr "Phiên bản _OS/2"

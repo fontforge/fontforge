@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /* This file contains the SIL Open Font License */
-/* See http://scripts.sil.org/OFL for all the details */
+/* See https://openfontlicense.org for all the details */
 /* Check the extensive FAQ as well */
 
 #include <fontforge-config.h>
@@ -33,10 +33,10 @@
 #include "ofl.h"
 
 static char *ofl_eng[] = {
-/* sil.org license by Authors Nicolas Spalinger & Victor Gaultney, 2007feb26 */
+/* SIL license by Authors Nicolas Spalinger & Victor Gaultney, 2007feb26 */
     "This Font Software is licensed under the SIL Open Font License, Version 1.1.",
     "This license is copied below, and is also available with a FAQ at:",
-    "http://scripts.sil.org/OFL",
+    "https://openfontlicense.org",
     "",
     "",
     "-----------------------------------------------------------",
@@ -129,7 +129,7 @@ static char *ofl_eng[] = {
 };
 
 static char *oflurl_eng[] = {
-    "http://scripts.sil.org/OFL",
+    "https://openfontlicense.org",
     NULL
 };
 

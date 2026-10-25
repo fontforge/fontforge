@@ -142,7 +142,7 @@ struct scrollbarinit { int32_t sb_min, sb_max, sb_pagesize, sb_pos; };
 typedef int (*GGadgetHandler)(GGadget *,GEvent *);
 typedef unichar_t **(*GTextCompletionHandler)(GGadget *,int from_tab);
 
-enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
+enum gg_flags { gg_none=0, gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 		gg_sb_vert=8, gg_line_vert=gg_sb_vert,
 		gg_but_default=0x10, gg_but_cancel=0x20,
 		gg_cb_on=0x40, gg_rad_startnew=0x80,
@@ -185,8 +185,11 @@ enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 };
 
 #ifdef __cplusplus
-static inline enum gg_flags operator|(enum gg_flags lhs, enum gg_flags rhs) {
-    return (enum gg_flags) ((int) lhs | (int) rhs);
+extern "C++" {
+inline enum gg_flags operator|(enum gg_flags lhs, enum gg_flags rhs) {
+    return static_cast<enum gg_flags>(static_cast<int>(lhs) |
+                                      static_cast<int>(rhs));
+}
 }
 #endif
 

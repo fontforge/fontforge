@@ -665,8 +665,8 @@ Random questions
    -- but these generally do not meet the specific needs of font designers. I
    know of two licenses specifically produced for fonts:
 
-   * `The Open Font License from SIL <http://scripts.sil.org/OFL>`__ (and its
-     `FAQ <http://scripts.sil.org/OFL-FAQ_web>`__)
+   * `The Open Font License from SIL <https://openfontlicense.org>`__ (and its
+     `FAQ <https://openfontlicense.org/ofl-faq/>`__)
 
      The above is the license I would
      recommend.:doc:`A collection of unofficial translations of the OFL </appendices/OFL-Unofficial>`.

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -10047,12 +10047,6 @@ msgstr "Ламбані"
 msgid "Language"
 msgstr "Мова"
 
-msgid "Language List"
-msgstr "Список мов"
-
-msgid "Language Missing"
-msgstr "Не вказано мову"
-
 msgid "Language Tag:"
 msgstr "Теґ мови:"
 
@@ -14974,19 +14968,15 @@ msgstr "Відбиття"
 msgid "Refresh File List"
 msgstr "Оновити список файлів"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "Посилання"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs neste_d deeper than:"
 msgstr "Посилан_ня, вкладені глибше, ніж:"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad ps transformation matrices"
 msgstr "Посилання з помилковими матрицями перетворення ps"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad tt transformation matrices"
 msgstr "Посилання з помилковими матрицями перетворення tt"
 
@@ -16370,15 +16360,6 @@ msgstr "Позначити _все"
 msgid "Select a ligature to view"
 msgstr "Вибрати лігатуру для перегляду"
 
-msgid ""
-"Select as many languages as needed\n"
-"Hold down the control key when clicking\n"
-"to make disjoint selections."
-msgstr ""
-"Позначте потрібні мови.\n"
-"Утримуйте натиснутою клавішу Ctrl для\n"
-"позначення відокремлених пунктів."
-
 msgid "Select by Color"
 msgstr "Вибрати за кольором"
 
@@ -16972,10 +16953,6 @@ msgstr ""
 
 msgid "Settings"
 msgstr "Параметри"
-
-#, c-format
-msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
-msgstr "Декількох міток мов, зокрема «%s», немає у списку відомих мов, отже їх буде пропущено"
 
 msgid "Shades"
 msgstr "Тіні"
@@ -19326,10 +19303,6 @@ msgstr "Підтаблиця класів кернінґу %s у %s не від�
 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr "Значення кернінґу для класу 0 («Все інше») має завжди дорівнювати 0"
-
-#, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "Мови «%s» немає у списку відомих мов, її буде пропущено"
 
 msgid "The layers do not match"
 msgstr "Ці шари не збігаються"
@@ -23212,13 +23185,6 @@ msgstr "Вам слід вибрати належний фільтр, який �
 
 msgid "You must select at least one language for each script."
 msgstr "Вам слід вказати принаймні одну мову для кожної з писемностей."
-
-msgid ""
-"You must select at least one language.\n"
-"Use the \"Default\" language if nothing else fits."
-msgstr ""
-"Вам слід вибрати принаймні одну мову.\n"
-"Скористайтеся мовою «Типова», якщо жодна з мов не є відповідною."
 
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "Якщо ви вказуєте теґ модифікації, вам слід вказати принаймні один скрипт."

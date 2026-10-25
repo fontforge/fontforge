@@ -1010,10 +1010,20 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             Log(LOGDEBUG, "Button %7s: [%f %f]", evt->type == GDK_BUTTON_PRESS ? "press" : "release", evt->x, evt->y);
 
 #ifdef GDK_WINDOWING_QUARTZ
-            // Quartz backend fails to give a button press event
+            // Quartz backend fails to give a button press event when the click
+            // lands outside a grabbed window (e.g. clicking off an open menu to
+            // dismiss it): only the release is delivered, never the press.
             // https://bugzilla.gnome.org/show_bug.cgi?id=769961
+            //
+            // Synthesize the missing press when an out-of-bounds release arrives
+            // and no real press is currently held down (which is what tells us
+            // the press was swallowed, rather than this being the release of a
+            // genuine press-inside/drag-outside gesture). Gating on the button
+            // actually being down fixes dismissal on the *first* click; the old
+            // heuristic (release_w == gw) only became true after a first,
+            // wasted click had already set release_w to this window.
             if (!evt->send_event && evt->type == GDK_BUTTON_RELEASE &&
-                    gdisp->bs.release_w == gw &&
+                    !gdisp->bs.is_pressed &&
                     (evt->x < 0 || evt->x > gw->pos.width ||
                      evt->y < 0 || evt->y > gw->pos.height)) {
                 evt->send_event = true;
@@ -1040,12 +1050,19 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                     gdisp->bs.cur_click = 1;
                 }
                 gdisp->bs.last_press_time = gevent.u.mouse.time;
+                // Track only genuine presses; a synthetic press (see the Quartz
+                // workaround above) is marked send_event and must not register as
+                // a real button-down, or the paired release would look unbalanced.
+                if (!evt->send_event) {
+                    gdisp->bs.is_pressed = true;
+                }
             } else {
                 gevent.type = et_mouseup;
                 gdisp->bs.release_w = gw;
                 gdisp->bs.release_x = evt->x;
                 gdisp->bs.release_y = evt->y;
                 gdisp->bs.release_button = evt->button;
+                gdisp->bs.is_pressed = false;
             }
             gevent.u.mouse.clicks = gdisp->bs.cur_click;
         }

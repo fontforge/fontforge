@@ -15,6 +15,7 @@ fontforge/shapers/*.cpp
 fontforge/shapers/*.hpp
 fontforge/shapers/*.h
 fontforgeexe/bitmapdlg.cpp
+fontforgeexe/histograms.cpp
 fontforgeexe/gtk/*.cpp
 fontforgeexe/gtk/*.hpp
 fontforgeexe/gtk/widgets/*.cpp

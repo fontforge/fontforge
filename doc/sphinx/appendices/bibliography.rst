@@ -141,7 +141,7 @@ Font File Formats
     $ weave pktype.web
 
     $ pdftex pktype.tex
-* `SIL Graphite Fonts <http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&cat_id=RenderingGraphite>`__
+* `SIL Graphite Fonts <https://graphite.sil.org/>`__
   (smart font extension to TrueType. Additional tables containing rules for
   composing, reordering, spacing, etc. glyphs)
 * Palm pilot fonts (pdb files)

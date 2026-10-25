@@ -790,7 +790,7 @@ return;
     }
 }
 
-static BDFChar *BCScale(BDFChar *old,int from, int to) {
+BDFChar *BCScale(BDFChar *old,int from, int to) {
     BDFChar *new;
     int x,y, ox,oy, oxs,oys, oxend, oyend;
     real tot, scale;
@@ -856,7 +856,7 @@ return( new );
 }
 
 /* Scale a greymap character to either another greymap or a bitmap */
-static BDFChar *BCScaleGrey(BDFChar *old,int from, int from_depth, int to, int to_depth) {
+BDFChar *BCScaleGrey(BDFChar *old,int from, int from_depth, int to, int to_depth) {
     BDFChar *new;
     int x,y, ox,oy, oxs,oys, oxend, oyend;
     real tot, scale, bscale;

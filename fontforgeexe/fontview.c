@@ -66,6 +66,7 @@
 
 #include "fv_mids.h"
 
+#include "gtk/show_histogram_shim.hpp"
 #include "gtk/simple_dialogs.hpp"
 
 #include <math.h>
@@ -273,6 +274,14 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_exp
         if (index < fv->b.map->enccount) {
             GDrawRequestExpose(pixmap, &box, false);
         }
+        return;
+    }
+
+    if ( index >= fv->b.map->enccount ) {
+        box.width = fv->cbw + 1;
+        box.y = i*fv->cbh + 1;
+        box.height = fv->cbw + fv->lab_height + 1;
+        GDrawFillRect( pixmap, &box, view_bgcol );
         return;
     }
 
@@ -3598,7 +3607,7 @@ static void FVMenuClearHints(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
 
 static void FVMenuHistograms(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFHistogram(fv->b.sf, fv->b.active_layer, NULL,
+    SFHistogram(gw, fv->b.sf, fv->b.active_layer, NULL,
 			FVAnyCharSelected(fv)!=-1?fv->b.selected:NULL,
 			fv->b.map,
 			mi->mid==FV_MID_HStemHist ? hist_hstem :
@@ -5774,6 +5783,15 @@ static void do_Adobe_Pua(unichar_t *buf,int sob,int uni) {
     buf[j] = 0;
 }
 
+static int compoundCharsToImage(FontView *fv, unichar_t *buf, const char *name, int n) {
+    if ( compoundCodepointsToUniString(buf, name, n) )
+	return 1;
+    else if ( compoundNamesToUniString(buf, name, n, fv->b.sf->uni_interp, fv->b.map->enc) )
+	return 1;
+    else
+	return 0;
+}
+
 static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     int i, j, y, width, gid;
     int changed;
@@ -5841,7 +5859,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	    if ( sc==NULL )
 		sc = SCBuildDummy(&dummy,fv->b.sf,fv->b.map,index);
 	    uni = sc->unicodeenc;
-	    buf[0] = buf[1] = 0;
+	    memset(buf, 0, sizeof buf);
 	    if ( fv->b.sf->uni_interp==ui_ams && uni>=0xe000 && uni<=0xf8ff &&
 		    amspua[uni-0xe000]!=0 )
 		uni = amspua[uni-0xe000];
@@ -5901,6 +5919,9 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			if ( n==7 && sc->name[0]=='u' && sc->name[1]=='n' && sc->name[2]=='i' &&
 				(i=strtol(sc->name+3,&end,16), end-sc->name==7))
 			    buf[0] = i;
+			else if ( compoundCharsToImage(fv, buf, sc->name, n) ) {
+			    fg = fvunenclabelcol;
+			}
 			else if ( n>=5 && n<=7 && sc->name[0]=='u' &&
 				(i=strtol(sc->name+1,&end,16), end-sc->name==n))
 			    buf[0] = i;
@@ -5925,6 +5946,8 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			    if ( strstr(pt,".italic")!=NULL )
 				styles = _uni_italic;
 			}
+		    } else if ( compoundCharsToImage(fv, buf, sc->name, 0) ) {
+			fg = fvunenclabelcol;
 		    } else if ( strncmp(sc->name,"hwuni",5)==0 ) {
 			int uni=-1;
 			sscanf(sc->name,"hwuni%x", (unsigned *) &uni );
@@ -7108,8 +7131,7 @@ extern GResFont fontinfo_font;
 extern Color fi_originlinescol;
 extern GResFont glyphinfo_font;
 extern GResFont groups_font;
-extern Color histogram_graphcol;
-extern GResFont histogram_font;
+Color histogram_graphcol = 0x2020ff;
 extern GResFont kernclass_font;
 extern Color kernclass_classfgcol;
 extern GResFont kernformat_font;
@@ -7151,7 +7173,6 @@ static struct resed miscwin_re[] = {
     {N_("GlyphInfo.Font"), "GlyphInfo.Font", rt_font, &glyphinfo_font, N_("Font used in the Glyph Info dialog"), NULL, { 0 }, 0, 0 },
     {N_("Groups.Font"), "Groups.Font", rt_font, &groups_font, N_("Font used in the Define Encoding Groups dialog"), NULL, { 0 }, 0, 0 },
     {N_("Histogram Graph Color"), "Histogram.GraphColor", rt_color, &histogram_graphcol, N_("Color used for the hint histogram graphs"), NULL, { 0 }, 0, 0 },
-    {N_("Histogram.Font"), "Histogram.Font", rt_font, &histogram_font, N_("Font used in the Histogram dialog"), NULL, { 0 }, 0, 0 },
     {N_("Kern Class Text Color"), "KernClass.TextColor", rt_color, &kernclass_classfgcol, N_("Color for kerning class names"), NULL, { 0 }, 0, 0 },
     {N_("KernClass.Font"), "KernClass.Font", rt_font, &kernclass_font, N_("Font used in the Kerning Classes dialog"), NULL, { 0 }, 0, 0 },
     {N_("KernFormat.Font"), "KernFormat.Font", rt_font, &kernformat_font, N_("Normal font used in the Kerning Format dialog"), NULL, { 0 }, 0, 0 },

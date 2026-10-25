@@ -556,7 +556,7 @@ The various strings and a brief description of their meanings are:
    A string describing the license terms under which the font is marketed.
 
    If you want to use the
-   `SIL Open Font License <http://scripts.sil.org/OFL/>`__, there is a button at
+   `SIL Open Font License <https://openfontlicense.org>`__, there is a button at
    the bottom of the dialog which will add that directly (so you don't need to
    type it in).
 
@@ -768,7 +768,7 @@ FONTLOG
 This has the same interface as the Comment above. The FONTLOG is an idea stolen
 from the Open Font License. It is description of the font and a log of changes
 made to it over time and includes some more information about the font as well
-(see the `OFL FAQ) <http://scripts.sil.org/OFL-FAQ_web>`__. This pane allows you
+(see the `OFL FAQ) <https://openfontlicense.org/ofl-faq/>`__. This pane allows you
 to store this information within the font itself where it won't get lost.
 
 

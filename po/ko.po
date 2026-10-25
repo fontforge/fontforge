@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Language: ko_KR\n"
@@ -10884,12 +10884,6 @@ msgstr "람바니어"
 msgid "Language"
 msgstr "언어"
 
-msgid "Language List"
-msgstr "언어 리스트"
-
-msgid "Language Missing"
-msgstr "해당 언어가 없습니다"
-
 msgid "Language Tag:"
 msgstr "언어 태그:"
 
@@ -16057,19 +16051,15 @@ msgstr "반영"
 msgid "Refresh File List"
 msgstr "파일 목록 새로고침"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "참조"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs neste_d deeper than:"
 msgstr "참조 삽입자의 상한(_D):"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad ps transformation matrices"
 msgstr "올바르지 않은 PostScript변환행렬를 포함하는 참조"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad tt transformation matrices"
 msgstr "올바르지 않은 TrueType변환행렬를 포함하는 참조"
 
@@ -17510,15 +17500,6 @@ msgstr "모두 선택(_A)"
 msgid "Select a ligature to view"
 msgstr "표시할 합음자를 선택해 주십시오."
 
-msgid ""
-"Select as many languages as needed\n"
-"Hold down the control key when clicking\n"
-"to make disjoint selections."
-msgstr ""
-"클릭할 때 컨트롤 키를 누른 상태로\n"
-"필요한 만큼의 언어를 선택하여 \n"
-"연결을 해제합니다."
-
 msgid "Select by Color"
 msgstr "색상별로 선택"
 
@@ -18090,10 +18071,6 @@ msgstr ""
 
 msgid "Settings"
 msgstr "설정"
-
-#, c-format
-msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
-msgstr "'%s'를 포함한 여러 언어 태그가 알려진 언어 목록에 없으므로 생략됩니다."
 
 msgid "Shades"
 msgstr "셰이드"
@@ -20626,10 +20603,6 @@ msgstr "%2$s의 커닝 클래스 서브 테이블 %1$s가 %4$s의 %3$s와 일치
 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr "클래스0(\"그 외모두\")の커닝값은 ,0 이어야 합니다"
-
-#, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "'%s' 언어가 알려진 언어 목록에 없으므로 생략됩니다."
 
 msgid "The layers do not match"
 msgstr "레이어가 일치하지 않음"
@@ -24678,14 +24651,6 @@ msgstr "이 커닝 쌍을 포함하려면 lookup 하위 테이블을 선택해�
 
 msgid "You must select at least one language for each script."
 msgstr "각 스크립트에 대해 하나 이상의 언어를 선택해야 합니다."
-
-msgid ""
-"You must select at least one language.\n"
-"Use the \"Default\" language if nothing else fits."
-msgstr ""
-"최소 1개의 언어를 선택해야합니다.\n"
-"다른 선택지중에 적절한 언어이름이 없다면\n"
-"언어명으로 \"기본\"를 선택해 주십시오."
 
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "기능 태그를 제공하는 경우 스크립트를 하나 이상 선택해야 합니다."

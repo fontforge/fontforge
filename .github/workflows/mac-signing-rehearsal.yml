@@ -1,0 +1,162 @@
+# Manual rehearsal of the macOS Developer ID signing path, using a throwaway
+# self-signed certificate generated on the runner.
+#
+# Purpose: exercise everything the real signing path does EXCEPT notarization,
+# which a self-signed cert cannot do (Apple's notary service requires a genuine
+# Developer ID Application certificate). In particular this validates the one
+# thing the ad-hoc path can never test: that under the hardened runtime, the
+# `disable-library-validation` entitlement actually lets FontForge's embedded
+# Python interpreter load a third-party (foreign-signed) C extension.
+#
+# This workflow is workflow_dispatch only: it never runs on push and never
+# produces a release artifact. The bundle it builds is SELF-SIGNED and must
+# NOT be distributed.
+name: macOS signing rehearsal (self-signed)
+
+on:
+  workflow_dispatch:
+    inputs:
+      foreign_test_package:
+        description: 'PyPI package with a compiled C extension, used to test disable-library-validation under the hardened runtime'
+        type: string
+        default: cffi
+
+jobs:
+  rehearsal:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: repo
+
+      # --- Mirror the normal mac build (deps + build) -----------------------
+      - name: Install dependencies
+        run: |
+          brew install cairo coreutils fontconfig gettext giflib gtk+3 gtkmm3 jpeg libpng libspiro libtiff libtool libuninameslist python@3 wget woff2 --quiet
+          PREFIX=$GITHUB_WORKSPACE/target
+          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
+          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig" >> $GITHUB_ENV
+          echo "PATH=/usr/local/opt/ruby/bin:/usr/local/opt/gettext/bin:$PATH" >> $GITHUB_ENV
+          echo "PYTHONPATH=$PREFIX" >> $GITHUB_ENV
+      - name: Build FontForge
+        working-directory: repo
+        run: |
+          FFCONFIG="-DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_FONTFORGE_EXTRAS=ON -DCMAKE_FIND_ROOT_PATH=/usr/local/opt/gettext"
+          mkdir build && pushd build && cmake -GNinja $FFCONFIG .. && popd
+          ninja -C build install
+
+      # --- Generate + import a throwaway self-signed code-signing cert -------
+      # Use the system (LibreSSL) openssl so the PKCS#12 is readable by the
+      # macOS keychain without needing the `-legacy` flag.
+      - name: Generate and import self-signed certificate
+        run: |
+          WORK="$RUNNER_TEMP/selfsign"
+          mkdir -p "$WORK"
+          cat > "$WORK/cert.conf" <<'EOF'
+          [req]
+          distinguished_name = dn
+          x509_extensions = v3
+          prompt = no
+          [dn]
+          CN = FontForge Rehearsal Self-Signed
+          [v3]
+          basicConstraints = critical,CA:FALSE
+          keyUsage = critical,digitalSignature
+          extendedKeyUsage = critical,codeSigning
+          EOF
+          /usr/bin/openssl req -x509 -newkey rsa:2048 -nodes \
+            -keyout "$WORK/key.pem" -out "$WORK/cert.pem" \
+            -days 2 -config "$WORK/cert.conf"
+          /usr/bin/openssl pkcs12 -export \
+            -inkey "$WORK/key.pem" -in "$WORK/cert.pem" \
+            -out "$WORK/cert.p12" -passout pass:rehearsal \
+            -name "FontForge Rehearsal Self-Signed"
+
+          KEYCHAIN="$RUNNER_TEMP/rehearsal.keychain-db"
+          security create-keychain -p actions "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p actions "$KEYCHAIN"
+          security import "$WORK/cert.p12" -k "$KEYCHAIN" -P rehearsal -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k actions "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          security find-identity -v -p codesigning "$KEYCHAIN"
+
+          # Drive ffosxbuild.sh down its Developer ID branch (hardened runtime +
+          # entitlements). NOTE: we intentionally do NOT set any notary secrets,
+          # so notarization is correctly skipped -- self-signed cannot notarize.
+          echo "CODESIGN_IDENTITY=FontForge Rehearsal Self-Signed" >> "$GITHUB_ENV"
+
+      - name: Build App Bundle (hardened runtime, self-signed)
+        working-directory: repo/build
+        run: ninja macbundle
+
+      # --- Verify the signing we just rehearsed -----------------------------
+      - name: Verify signature and hardened runtime
+        working-directory: repo/build/osx
+        run: |
+          set -e
+          APP="$PWD/FontForge.app"
+          MAIN="$APP/Contents/Resources/opt/local/bin/fontforge"
+
+          echo "::group::codesign --verify (whole bundle)"
+          codesign --verify --strict --verbose=2 "$APP"
+          echo "::endgroup::"
+
+          echo "::group::Main executable signature (expect runtime flag + entitlements)"
+          codesign -dvvv "$MAIN" 2>&1 | grep -Ei 'Identifier|Signature|flags|TeamIdentifier' || true
+          codesign -d --entitlements :- "$MAIN" 2>&1 || true
+          echo "::endgroup::"
+
+          # Sanity: the hardened runtime flag must be present on the main exec.
+          if ! codesign -dvvv "$MAIN" 2>&1 | grep -q 'flags=.*runtime'; then
+            echo "ERROR: hardened runtime flag not set on main executable"
+            exit 1
+          fi
+
+          # Expected: spctl REJECTS a self-signed (un-notarized) bundle. This is
+          # not a failure of our signing -- only Developer ID + notarization
+          # passes spctl. We log it for visibility but do not fail on it.
+          echo "::group::spctl assessment (expected to be rejected)"
+          spctl -a -t exec -vv "$APP" || echo "(expected) spctl rejected the self-signed bundle"
+          echo "::endgroup::"
+
+      - name: Test embedded interpreter loads a foreign C extension
+        working-directory: repo/build/osx
+        env:
+          FOREIGN_PKG: ${{ inputs.foreign_test_package }}
+        run: |
+          set -e
+          APP="$PWD/FontForge.app"
+          FF="$APP/Contents/Resources/opt/local/bin/fontforge"
+          FFPY="$APP/Contents/MacOS/FFPython"
+          SITE="$RUNNER_TEMP/foreign-site"
+
+          # Install the foreign package AFTER the bundle was signed, so its .so
+          # keeps its own (non-our-identity) signature. Importing it through the
+          # hardened-runtime `fontforge` binary therefore exercises
+          # disable-library-validation: without that entitlement, Library
+          # Validation would reject the foreign-signed module.
+          "$FFPY" -m pip install --target "$SITE" --no-input "$FOREIGN_PKG"
+
+          cat > "$RUNNER_TEMP/import_test.py" <<EOF
+          import importlib, os, sys
+          print("python:", sys.version.split()[0])
+          import fontforge
+          print("fontforge:", fontforge.version())
+          # Import the package's compiled module to force a foreign dlopen.
+          mod = importlib.import_module("$FOREIGN_PKG")
+          print("imported foreign package:", mod.__name__, getattr(mod, "__file__", "?"))
+          # Confirm at least one compiled .so came from the foreign site dir.
+          so = [f for r,_,fs in os.walk("$SITE") for f in fs if f.endswith(".so")]
+          print("foreign .so files:", so or "(none -- pick a package with a C extension)")
+          EOF
+
+          echo "Running import test through the hardened-runtime fontforge binary..."
+          PYTHONPATH="$SITE" "$FF" -lang=py -script "$RUNNER_TEMP/import_test.py"
+          echo "OK: embedded interpreter loaded the foreign C extension under the hardened runtime."
+
+      - name: Rehearsal artifact (self-signed -- DO NOT DISTRIBUTE)
+        uses: actions/upload-artifact@v7
+        with:
+          name: macOS_appbundle_REHEARSAL_self-signed_DO_NOT_DISTRIBUTE
+          path: repo/build/osx/FontForge-*.dmg

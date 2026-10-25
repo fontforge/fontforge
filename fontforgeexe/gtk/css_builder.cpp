@@ -33,6 +33,13 @@
 #include <map>
 #include <vector>
 
+typedef struct gdisplay GDisplay;
+
+extern Color histogram_graphcol;
+extern "C" Color GDrawGetDefaultForeground(GDisplay*);
+extern "C" Color GDrawGetDefaultBackground(GDisplay*);
+extern "C" Color GDrawGetWarningForeground(GDisplay*);
+
 namespace ff::app {
 
 using CssPropertyEvalCB =
@@ -314,6 +321,7 @@ std::string build_styles(const GResInfo* gdraw_ri) {
         {"GNumericFieldSpinner", {"spinbutton button", {}}},
         {"GTextField", {"entry", {"spinbutton"}}},
         {"GGadget.Popup", {"tooltip", {}}},
+        {"GScrollBar", {"scrollbar", {}}},
     };
 
     std::string styles;
@@ -365,6 +373,15 @@ std::string build_styles(const GResInfo* gdraw_ri) {
 
     styles += build_color_only_styles(gdraw_ri);
     styles += "tab { margin-bottom: 1px; }\n";
+
+    styles += "@define-color ff_histogram_bg " +
+              css_color(GDrawGetDefaultBackground(nullptr)) + ";\n";
+    styles += "@define-color ff_histogram_axis " +
+              css_color(GDrawGetDefaultForeground(nullptr)) + ";\n";
+    styles += "@define-color ff_histogram_bars " +
+              css_color(histogram_graphcol) + ";\n";
+    styles += "@define-color ff_histogram_moving_average " +
+              css_color(GDrawGetWarningForeground(nullptr)) + ";\n";
 
     return styles;
 }

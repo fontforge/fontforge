@@ -549,6 +549,13 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     nsc->vkerns = NULL;
     nsc->possub = PSTCopy(nsc->possub,nsc,mc);
     nsc->altuni = AltUniCopy(nsc->altuni,into);
+    nsc->vert_variants = GlyphVariantsCopy(sc->vert_variants);
+    nsc->horiz_variants = GlyphVariantsCopy(sc->horiz_variants);
+    nsc->italic_adjusts = DeviceTableCopy(sc->italic_adjusts);
+    nsc->top_accent_adjusts = DeviceTableCopy(sc->top_accent_adjusts);
+    nsc->mathkern = MathKernCopy(sc->mathkern);
+    nsc->user_decomp = sc->user_decomp==NULL?NULL:u_copy(sc->user_decomp);
+    nsc->glif_name = copy(sc->glif_name);
     nsc->charinfo = NULL;
     nsc->views = NULL;
 #ifndef _NO_PYTHON

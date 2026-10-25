@@ -141,7 +141,6 @@ fontforge.FontInfo.Font: ^View.DefaultFont
 fontforge.GlyphInfo.Font: ^View.MonoFont
 fontforge.Groups.Font: ^View.DefaultFont
 fontforge.Histogram.GraphColor: #2020ff
-fontforge.Histogram.Font: 83% ^View.DefaultFont
 fontforge.KernClass.Font: ^View.MonoFont
 fontforge.KernClass.TextColor: #006080
 fontforge.KernFormat.Font: ^View.DefaultFont
@@ -441,7 +440,7 @@ Gdraw.GGroup.Box.Padding: 0
 Gdraw.GMenuBar.Box.BorderOuter: False
 Gdraw.GMenuBar.Box.GradientStartCol: #e5e4e3
 Gdraw.GMenuBar.Box.BorderInnerCol: #edeceb
-Gdraw.GMenuBar.Box.ActiveBorder: #ededed
+Gdraw.GMenuBar.Box.ActiveBorder: #88b2de
 Gdraw.GMenuBar.Box.BorderShape: rect
 Gdraw.GMenuBar.Box.BorderWidth: 1
 Gdraw.GMenuBar.Box.Radius: 2

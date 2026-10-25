@@ -2743,10 +2743,21 @@ return( NULL );
 	    }
 	    --i;
 	} else {
-	    names[i] = malloc(offsets[i+1]-offsets[i]+1);
-	    for ( j=0; j<offsets[i+1]-offsets[i]; ++j )
-		names[i][j] = getc(ttf);
-	    names[i][j] = '\0';
+	    uint32_t len = offsets[i+1]-offsets[i];
+	    /* offsets are uint32_t, so a negative difference wraps to a huge
+	     * value.  'len+1' then wraps to 0, so malloc() returns a zero-length
+	     * block while the loop below still copies len bytes into it.  The same
+	     * bound readcffsubrs() uses keeps the loop inside a sane allocation. */
+	    if ( len==0 || len>=0x10000 ) {
+	        LogError( _("Bad CFF name INDEX") );
+	        if ( info!=NULL ) info->bad_cff = true;
+	        names[i] = copy("");
+	    } else {
+	        names[i] = malloc(len+1);
+	        for ( j=0; j<len; ++j )
+		    names[i][j] = getc(ttf);
+	        names[i][j] = '\0';
+	    }
 	}
     }
     names[i] = NULL;
@@ -3628,6 +3639,8 @@ return( ret );
 static void privateadd(struct psdict *private_dict,char *key,char *value) {
     if ( value==NULL )
 return;
+    if (private_dict->next >= private_dict->cnt)
+return;
     private_dict->keys[private_dict->next] = copy(key);
     private_dict->values[private_dict->next++] = value;
 }
@@ -3657,9 +3670,9 @@ return;
 }
 
 static void cffprivatefillup(struct psdict *private_dict, struct topdicts *dict) {
-    private_dict->cnt = 14;
-    private_dict->keys = malloc(14*sizeof(char *));
-    private_dict->values = malloc(14*sizeof(char *));
+    private_dict->cnt = 15;
+    private_dict->keys = malloc(15*sizeof(char *));
+    private_dict->values = malloc(15*sizeof(char *));
     privateadd(private_dict,"BlueValues",
 	    realarray2str(dict->bluevalues,sizeof(dict->bluevalues)/sizeof(dict->bluevalues[0]),true));
     privateadd(private_dict,"OtherBlues",

@@ -1175,9 +1175,9 @@ char* tostr( int v )
 
 void realloc_tail(char** p_buf, size_t size_delta, char** p_tail,
                   char** p_proc) {
-    size_t new_size = size_delta + (*p_tail - *p_buf);
+    size_t new_size = size_delta + (*p_tail - *p_buf) + 1;
     char* new_buf = (char*) realloc(*p_buf, new_size);
-    *p_tail = new_buf + new_size;
+    *p_tail = new_buf + new_size - 1; /* point to the last allocated byte */
     if (p_proc) *p_proc = new_buf + (*p_proc - *p_buf);
     *p_buf = new_buf;
 }

@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -694,7 +694,7 @@ msgid "932, JIS/Japan"
 msgstr "932, JIS/японский"
 
 msgid "936, Simplified Chinese"
-msgstr "936, упрощенный китайский"
+msgstr "936, упрощённый китайский"
 
 msgid "949, Korean Wansung"
 msgstr "949, корейский вансон"
@@ -2515,6 +2515,9 @@ msgstr "Авестийское письмо"
 msgid "Awadhi"
 msgstr "Авадхи"
 
+msgid "Ax => xA"
+msgstr "Ax → xA"
+
 msgid "Axerbaijani (Arabic)"
 msgstr "Азербайджанский (арабское письмо)"
 
@@ -3128,7 +3131,7 @@ msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
 msgstr "Неверная таблица lookup: format=8, first=%d cnt=%d общее количество глифов в шрифте font=%d"
 
 msgid "Bad lookup type"
-msgstr "Некорректный тип lookup"
+msgstr "Некорректный тип таблицы поиска"
 
 msgid "Bad magic number"
 msgstr "Неверное «волшебное» число"
@@ -3909,7 +3912,7 @@ msgid "CJK Compatibility"
 msgstr "CJK, совместимость"
 
 msgid "CJK Compatibility Forms"
-msgstr "CJK, формы для совместимости"
+msgstr "ККЯ совместимые формы"
 
 msgid "CJK Compatibility Ideographs"
 msgstr "Совместимые идеограммы ККЯ"
@@ -3921,7 +3924,7 @@ msgid "CJK Ideographic"
 msgstr "Идеограммы ККЯ"
 
 msgid "CJK Radicals Supplement"
-msgstr "Дополнение к ключам ККЯ"
+msgstr "Ключи ККЯ дополнительные"
 
 msgid "CJK Strokes"
 msgstr "Черты ККЯ"
@@ -3936,7 +3939,7 @@ msgid "CJK Unified Ideographs"
 msgstr "CJK, объединенные идеограммы, расширение A"
 
 msgid "CJK Unified Ideographs Extension A"
-msgstr "Унифицированные идеограммы ККЯ — расширение А"
+msgstr "ККЯ унифицированные иероглифы расширение A"
 
 msgid "CJK Unified Ideographs Extension B"
 msgstr "Унифицированные идеограммы ККЯ. Расширение B"
@@ -4754,7 +4757,7 @@ msgid "Chinese, Phonetic"
 msgstr "Китайский (фонетическое письмо)"
 
 msgid "Chinese, Simplified"
-msgstr "Китайский (упрощенное письмо)"
+msgstr "Китайский (упрощённое письмо)"
 
 msgid "Chinese, Traditional"
 msgstr "Китайский (традиционное письмо)"
@@ -4781,7 +4784,7 @@ msgid "Choose the appropriate method depending on the glyph's script"
 msgstr "Выберите подходящий метод в зависимости от системы письменности глифа"
 
 msgid "Choose which lookups to copy"
-msgstr "Выберите копируемые lookup"
+msgstr "Выберите копируемые таблицы поиска"
 
 msgid "Chorasmian"
 msgstr "Хорезмийское письмо"
@@ -5127,10 +5130,10 @@ msgid "Combining Diacritical Marks Extended"
 msgstr "Расширенные комбинируемые диакритические знаки"
 
 msgid "Combining Diacritical Marks Supplement"
-msgstr "Объединяющие диакритические знаки, дополнение"
+msgstr "Комбинирующие диакритические знаки дополнительные"
 
 msgid "Combining Diacritical Marks for Symbols"
-msgstr "Комбинируемые диакритические знаки для символов"
+msgstr "Комбинирующие диакритические знаки для символов"
 
 msgid "Combining Half Marks"
 msgstr "Комбинируемые полузнаки"
@@ -9306,7 +9309,7 @@ msgid "Gupapuyngu"
 msgstr "Купапуйнгу"
 
 msgid "Gurmukhi"
-msgstr "Гурмухи"
+msgstr "Гурмукхи"
 
 msgid "Gurmukhi2"
 msgstr "Гурмукхи 2"
@@ -9366,10 +9369,10 @@ msgid "Hangul"
 msgstr "Хангыль"
 
 msgid "Hangul Compatibility Jamo"
-msgstr "Хангыль, совместимый с Ямо"
+msgstr "Хангыль — совместимые чамо"
 
 msgid "Hangul Jamo"
-msgstr "Хангыль Ямо"
+msgstr "Хангыль чамо"
 
 msgid "Hangul Jamo Extended-A"
 msgstr "Расширенные элементы хангыля — A"
@@ -9866,7 +9869,7 @@ msgid "Identify by"
 msgstr "Идентифицировать по"
 
 msgid "Ideographic Description Characters"
-msgstr "Идеографические пояснительные символы"
+msgstr "Символы описания иероглифов"
 
 msgid "Ideographic Symbols and Punctuation"
 msgstr "Идеографические символы и пунктуация"
@@ -10276,7 +10279,7 @@ msgstr "Изменение горизонтального размера в ку
 
 #, c-format
 msgid "In character %s, could not find reference to %s"
-msgstr "У символа %s, не удалось найти ссылку на %s"
+msgstr "У символа %s не удалось найти ссылку на %s"
 
 #, c-format
 msgid "In character %s, there are too few points on a path in the base"
@@ -11468,12 +11471,6 @@ msgstr "Лампунгский"
 msgid "Language"
 msgstr "Язык"
 
-msgid "Language List"
-msgstr "Список языков"
-
-msgid "Language Missing"
-msgstr "Отсутствует язык"
-
 msgid "Language Tag:"
 msgstr "Тег языка:"
 
@@ -11768,7 +11765,7 @@ msgstr ""
 "Извлекает из стека два значения, помещает в стек (0 или 1), если нижний эл. <= верхнему"
 
 msgid "Letterlike Symbols"
-msgstr "Буквообразные символы"
+msgstr "Буквоподобные символы"
 
 msgid "Letters:"
 msgstr "Буквы:"
@@ -11959,6 +11956,9 @@ msgstr "Алфавитно-цифровые символы"
 msgid "Lithuanian"
 msgstr "Литовский"
 
+msgid "Liv"
+msgstr "Ливский"
+
 msgid "Load Bitmap Fonts"
 msgstr "Загрузка растровых шрифтов"
 
@@ -12045,7 +12045,7 @@ msgid "Lookahead coverage %d: "
 msgstr "Опережающий охват %d: "
 
 msgid "Lookup"
-msgstr "Справка"
+msgstr "Таблица поиска"
 
 #, c-format
 msgid "Lookup %s is not in %s\n"
@@ -12058,18 +12058,18 @@ msgid "Lookup Name:"
 msgstr "Имя lookup:"
 
 msgid "Lookup Names"
-msgstr "Имена lookup"
+msgstr "Имена таблиц поиска"
 
 #, c-format
 msgid "Lookup Subtable, %s"
-msgstr "Подтаблица lookup, %s"
+msgstr "Подтаблица таблицы поиска, %s"
 
 #, c-format
 msgid "Lookup Subtable: %s"
 msgstr "Подтаблица lookup: %s"
 
 msgid "Lookup Table Edit"
-msgstr "Изменение таблицы lookup"
+msgstr "Изменение таблицы поиска"
 
 msgid "Lookup Type|Unspecified"
 msgstr "Не указан"
@@ -12121,7 +12121,7 @@ msgstr "Подтаблица lookup:"
 
 #, c-format
 msgid "Lookup, %s, does not exist"
-msgstr "Lookup %s не существует"
+msgstr "Таблица поиска %s не существует"
 
 msgid "LookupName|New"
 msgstr "Создать"
@@ -12130,7 +12130,7 @@ msgid "LookupType|Unknown"
 msgstr "Неизвестен"
 
 msgid "Lookups"
-msgstr "Lookup"
+msgstr "Таблицы поиска"
 
 msgid "Lookups Disabled for Expansion"
 msgstr "Lookup отключены для расширения"
@@ -12158,9 +12158,7 @@ msgstr "Lookup, присутствующие в %s, но отсутствующ�
 msgid ""
 "Lookups in contextual state machines must be simple substitutions,\n"
 ", but %s is not"
-msgstr ""
-"Lookup в автоматах состояния контекстной подстановки должны представлять\n"
-"собой простые подстановки, но %s не является таковым"
+msgstr "Таблица поиска в автоматах состояния контекстной подстановки должна представлять собой простые подстановки, но %s не является таковой"
 
 #, c-format
 msgid "Lookups may only be specified after marked glyphs on line %d of %s"
@@ -13796,7 +13794,7 @@ msgid "Mutually Exclusive"
 msgstr "Взаимоисключающие"
 
 msgid "Myanmar"
-msgstr "Бирманское письмо"
+msgstr "Бирманский"
 
 msgid "Myanmar Extended-A"
 msgstr "Расширенное бирманское письмо — A"
@@ -14288,7 +14286,7 @@ msgid "No Lookup Type Selected"
 msgstr "Ни один тип lookup не выбран"
 
 msgid "No Lookups"
-msgstr "Lookup отсутствуют"
+msgstr "Таблицы поиска отсутствуют"
 
 msgid "No Lookups Disabled for Expansion"
 msgstr "Lookup не отключены для расширения"
@@ -14472,10 +14470,10 @@ msgstr "Ни один lookup не выбран"
 
 #, c-format
 msgid "No lookups may be specified in a reverse contextual lookup (use a replacement list instead), starting at: %.20s..."
-msgstr "Lookup не могут указываться в обратном контекстном lookup (вместо этого необходимо использовать список замещения), начиная с: %.20s…"
+msgstr "Lookup не могут указываться в обратном контекстном Lookup (вместо этого необходимо использовать список замещения), начиная с: %.20s…"
 
 msgid "No lookups to copy"
-msgstr "Нет копируемых lookup"
+msgstr "Нет копируемых таблиц поиска"
 
 msgid "No mark in ] (close array)"
 msgstr "Отсутствует метка в ] (завершение массива)"
@@ -14712,13 +14710,13 @@ msgstr ""
 "равном 0, глифы будут визуально соприкасаться."
 
 msgid "Normally simplify will not change the slope of the contour at the points."
-msgstr "Обычно при упрощении кривой ее изгибы не меняются"
+msgstr "Обычно при упрощении кривой её изгибы не меняются"
 
 msgid ""
 "Normally simplify will not remove points at the extrema of curves\n"
 "(both PostScript and TrueType suggest you retain these points)"
 msgstr ""
-"Обычно при упрощении кривой ее экстремумы не удаляются\n"
+"Обычно при упрощении кривой её экстремумы не удаляются\n"
 "(как PostScript, так и TrueType требуют наличия этих точек)"
 
 msgid ""
@@ -15236,7 +15234,7 @@ msgstr "Только один шрифт может быть импортиро�
 
 #, c-format
 msgid "Only one replacement list may be specified in a reverse contextual chaining lookup, starting at: %.20s..."
-msgstr "В обратном контекстом lookup цепочек может быть указан только один список замещения, начиная с: %.20s…"
+msgstr "В обратной контекстной цепочечной таблице поиска может быть указан только один список замен, начиная с: %.20s…"
 
 msgid ""
 "Only relevant in a truetype font, this flag indicates that if the reference\n"
@@ -15330,6 +15328,9 @@ msgstr "Несоответствие открытого/закрытого ко�
 
 msgid "OpenCharsInNewWindow"
 msgstr "Открывать символы в новом окне"
+
+msgid "OpenType CID (dfont)"
+msgstr "OpenType CID (dfont)"
 
 msgid ""
 "OpenType Contextual or Chaining subtables may be in one\n"
@@ -16468,7 +16469,7 @@ msgid "Preserve cross-font kerning"
 msgstr "Сохранять кернинг при переносе"
 
 msgid "Preserve the names of the GPOS/GSUB lookups and subtables"
-msgstr "Сохранить имена lookup и подтаблиц GPOS/GSUB"
+msgstr "Сохранить имена таблиц поиска и подтаблиц GPOS/GSUB"
 
 msgid "PreserveTables"
 msgstr "Сохранять таблицы"
@@ -16887,7 +16888,7 @@ msgstr "Ссылка на имя глифа в шрифте CID-keyed на ст�
 
 #, c-format
 msgid "Reference to a lookup which is not in the feature file but which is in the font, %.50s"
-msgstr "Ссылка на lookup, который отсутствует в файле функций, но присутствует в данном шрифте, %.50s"
+msgstr "Ссылка на таблицу поиска, которая отсутствует в файле функций, но присутствует в данном шрифте, %.50s"
 
 #, c-format
 msgid "Reference to a non-existent glyph name on line %d of %s: %s"
@@ -16920,19 +16921,15 @@ msgstr "Отражение"
 msgid "Refresh File List"
 msgstr "Обновить список файлов"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "Ссылки"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs neste_d deeper than:"
 msgstr "Ссылки вложены глубже, чем:"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad ps transformation matrices"
 msgstr "Ссылки с неверными матрицами преобразования PostScript"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad tt transformation matrices"
 msgstr "Ссылки с неверными матрицами преобразования TrueType"
 
@@ -18293,7 +18290,7 @@ msgid "Script|Wancho"
 msgstr "Ванчо"
 
 msgid "Script|Yezidi"
-msgstr "Script|Езидское"
+msgstr "Езидское"
 
 msgid "Script|Yi"
 msgstr "Носу"
@@ -18428,15 +18425,6 @@ msgstr "В_ыделить все"
 
 msgid "Select a ligature to view"
 msgstr "Выбрать лигатуру для просмотра"
-
-msgid ""
-"Select as many languages as needed\n"
-"Hold down the control key when clicking\n"
-"to make disjoint selections."
-msgstr ""
-"Выберите необходимое количество языков\n"
-"Удерживайте клавишу Ctrl для раздельного\n"
-"выбора."
 
 msgid "Select by Color"
 msgstr "Выбрать по цвету"
@@ -19037,10 +19025,6 @@ msgstr ""
 msgid "Settings"
 msgstr "Параметры"
 
-#, c-format
-msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
-msgstr "Несколько тегов языков, включая «%s», отсутствуют в списке известных языков и будут пропущены"
-
 msgid "Shades"
 msgstr "Тени"
 
@@ -19226,10 +19210,10 @@ msgid "Simple Substitution"
 msgstr "Простая подстановка"
 
 msgid "Simplified Chinese"
-msgstr "Упрощенный китайский"
+msgstr "Упрощённый китайский"
 
 msgid "Simplified Forms"
-msgstr "Упрощенные формы"
+msgstr "Упрощённые формы"
 
 msgid "Simplify"
 msgstr "Упрощение"
@@ -19269,7 +19253,7 @@ msgid "Single and Multi-Density Fonts"
 msgstr "Шрифты с одинарной и несколькими плотностями"
 
 msgid "Sinhala"
-msgstr "Сингальское письмо"
+msgstr "Сингальский"
 
 msgid "Sinhala Archaic Numbers"
 msgstr "Сингальские архаические цифры"
@@ -20310,7 +20294,7 @@ msgid "Supplemental Mathematical Operators"
 msgstr "Дополнительные математические операторы"
 
 msgid "Supplemental Punctuation"
-msgstr "Знаки препинания, дополнение"
+msgstr "Знаки препинания дополнительные"
 
 msgid "Supplemental Symbols and Pictographs"
 msgstr "Дополнительные символы и пиктограммы"
@@ -20577,6 +20561,9 @@ msgstr "Таджикский"
 
 msgid "Takri"
 msgstr "Такри"
+
+msgid "Talysh"
+msgstr "Талышский"
 
 msgid "Tamashek"
 msgstr "Тамашек"
@@ -21038,6 +21025,10 @@ msgstr "Фон для окна отладки инструкций TTF"
 
 msgid "The box around the up/down arrows of a numeric field (spinner)"
 msgstr "Область вокруг верхней и нижней стрелки числового поля (счётчика)"
+
+#, c-format
+msgid "The character list in the cvParameters block in feature %c%c%c%c is ignored."
+msgstr "Список символов в блоке cvParameters функции %c%c%c%c проигнорирован."
 
 #, c-format
 msgid ""
@@ -21651,10 +21642,6 @@ msgstr "Подтаблица класса кернинга %s в %s не сов�
 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr "Значения кернинга для класса 0 («Всё остальное») всегда должен быть равен 0"
-
-#, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "Язык, «%s», отсутствует в списке известных языков и будет пропущен"
 
 msgid "The layers do not match"
 msgstr "Эти слои не совпадают"
@@ -23308,6 +23295,9 @@ msgstr "К их собственным именам"
 msgid "To:"
 msgstr "В:"
 
+msgid "Todhri"
+msgstr "Албанский Тодри"
+
 msgid "Todo"
 msgstr "Тодо"
 
@@ -23992,6 +23982,12 @@ msgstr "Расширенное канадское слоговое письмо"
 msgid "Unified Canadian Aboriginal Syllabics Extended-A"
 msgstr "Расширенное канадское слоговое письмо — A"
 
+msgid "Unified Font Object"
+msgstr "Unified Font Object"
+
+msgid "Unified Font Object (UFO3)"
+msgstr "Unified Font Object (UFO3)"
+
 msgid "Uniform scaling for horizontal counters and side bearings"
 msgstr "Единообразно масштабировать по горизонтальным просветам и апрошам"
 
@@ -24254,6 +24250,9 @@ msgstr "Прямой/Без огибания"
 
 msgid "Upright/Some Wrapping"
 msgstr "Прямой/Умеренное огибание"
+
+msgid "Uralic Phonetic Alphabet"
+msgstr "Уральский фонетический алфавит"
 
 msgid "Urdu"
 msgstr "Урду"
@@ -25492,6 +25491,9 @@ msgstr "Смещение верхней выносной (Win):"
 msgid "Win Descent Offset:"
 msgstr "Смещение нижней выносной (Win):"
 
+msgid "Win FNT"
+msgstr "Win FNT"
+
 msgid "Window"
 msgstr "Окно"
 
@@ -25855,13 +25857,6 @@ msgstr "Необходимо выбрать подтаблицу lookup для �
 
 msgid "You must select at least one language for each script."
 msgstr "Необходимо выбрать по крайней мере один язык для каждого сценария."
-
-msgid ""
-"You must select at least one language.\n"
-"Use the \"Default\" language if nothing else fits."
-msgstr ""
-"Необходимо выбрать хотя бы один язык.\n"
-"Если ничего не подходит используйте язык «по умолчанию»."
 
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "Необходимо выбрать по крайней мере одну систему письменности, если предоставлен тег функции."

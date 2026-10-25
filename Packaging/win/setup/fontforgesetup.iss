@@ -45,7 +45,7 @@ AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 ArchitecturesInstallIn64BitMode={#ARCH}
-DefaultDirName={commonpf}\{#MyAppFolder}
+DefaultDirName={autopf}\{#MyAppFolder}
 DefaultGroupName={#MyAppName}
 AllowNoIcons=yes
 InfoBeforeFile={#BUILD_DIR}\ReleasePackage\VERSION.txt
@@ -58,7 +58,8 @@ WizardSmallImageFile=Graphics\fontforge-wizard.bmp
 Compression=lzma2/max
 SolidCompression=yes
 ChangesAssociations=yes
-PrivilegesRequired=poweruser
+PrivilegesRequired=lowest
+PrivilegesRequiredOverridesAllowed=dialog
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -83,6 +84,7 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "slovak"; MessagesFile: "compiler:Languages\Slovak.isl"
 Name: "slovenian"; MessagesFile: "compiler:Languages\Slovenian.isl"
 Name: "spanish"; MessagesFile: "compiler:Languages\Spanish.isl"
+Name: "swedish"; MessagesFile: "compiler:Languages\Swedish.isl"
 Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
 Name: "ukrainian"; MessagesFile: "compiler:Languages\Ukrainian.isl"
 
@@ -101,14 +103,14 @@ Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{group}\{#MyAppName} console"; Filename: "{app}\fontforge.bat"
 Name: "{group}\{#MyAppName} interactive console"; Filename: "{app}\fontforge-console.bat"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
-Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Registry]
 ;Root: HKLM; Subkey: "Software\FontForge"; Flags: uninsdeletekey
-Root: HKCR; Subkey: ".sfd"; ValueType: string; ValueName: ""; ValueData: "FontForgeProject"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: "FontForgeProject"; ValueType: string; ValueName: ""; ValueData: "FontForge Project"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "FontForgeProject\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\share\fontforge\sfd-icon.ico"
-Root: HKCR; Subkey: "FontForgeProject\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
+Root: HKA; Subkey: "Software\Classes\.sfd"; ValueType: string; ValueName: ""; ValueData: "FontForgeProject"; Flags: uninsdeletevalue
+Root: HKA; Subkey: "Software\Classes\FontForgeProject"; ValueType: string; ValueName: ""; ValueData: "FontForge Project"; Flags: uninsdeletekey
+Root: HKA; Subkey: "Software\Classes\FontForgeProject\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\share\fontforge\sfd-icon.ico"
+Root: HKA; Subkey: "Software\Classes\FontForgeProject\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\{#MyAppExeName}"" ""%1"""
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

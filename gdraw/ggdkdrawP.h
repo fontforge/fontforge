@@ -99,6 +99,7 @@ typedef struct ggdkbuttonstate {
     int16_t cur_click;
     int16_t double_time;		// max milliseconds between release & click
     int16_t double_wiggle;	// max pixel wiggle allowed between release&click
+    bool is_pressed;		// a real (non-synthetic) button is currently held down
 } GGDKButtonState;
 
 typedef struct ggdkkeystate {

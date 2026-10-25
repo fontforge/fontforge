@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-09-29 21:03+0300\n"
+"PO-Revision-Date: 2026-09-28 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Language: pl_PL\n"
@@ -9954,12 +9954,6 @@ msgstr "lambadi"
 msgid "Language"
 msgstr "Język"
 
-msgid "Language List"
-msgstr "Lista języków"
-
-msgid "Language Missing"
-msgstr "Nie znaleziono języka"
-
 msgid "Language Tag:"
 msgstr "Tag języka:"
 
@@ -14825,19 +14819,15 @@ msgstr "Odbij"
 msgid "Refresh File List"
 msgstr "Odśwież listę plików"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "Odwołania"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs neste_d deeper than:"
 msgstr "Odwołania zagnieżdżone głębiej niż:"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad ps transformation matrices"
 msgstr "Poprawność macierzy transformacji PS"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad tt transformation matrices"
 msgstr "Poprawność macierzy transformacji TTF"
 
@@ -16202,15 +16192,6 @@ msgstr "_Zaznacz wszystko"
 msgid "Select a ligature to view"
 msgstr "Wybierz ligaturę do obejrzenia"
 
-msgid ""
-"Select as many languages as needed\n"
-"Hold down the control key when clicking\n"
-"to make disjoint selections."
-msgstr ""
-"Zaznacz wszystkie wymagane języki.\n"
-"Użyj „ctrl” do wprowadzenia kilku\n"
-"zaznaczeń, jeśli potrzebne."
-
 msgid "Select by Color"
 msgstr "Zaznacz według koloru"
 
@@ -16785,10 +16766,6 @@ msgstr ""
 
 msgid "Settings"
 msgstr "Ustawienia"
-
-#, c-format
-msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
-msgstr "Kilka języków, w tym „%s”, nie figuruje na liście znanych języków i zostaną pominięte."
 
 msgid "Shades"
 msgstr "Odcienie"
@@ -19112,10 +19089,6 @@ msgstr "Podtablica kerningu z użyciem klas „%s” w „%s” nie pasuje do �
 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr "Wartości kerningu dla klasy 0 („wszystko inne”) powinny być zawsze zerowe."
-
-#, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "Język „%s” nie figuruje na liście znanych języków i zostanie pominięty."
 
 msgid "The layers do not match"
 msgstr "Warstwy nie pasują do siebie."
@@ -22970,13 +22943,6 @@ msgstr "Trzeba wybrać podtablicę w której będzie przechowana ta para kerning
 
 msgid "You must select at least one language for each script."
 msgstr "Dla każdego pisma trzeba wybrać przynajmniej jeden język"
-
-msgid ""
-"You must select at least one language.\n"
-"Use the \"Default\" language if nothing else fits."
-msgstr ""
-"Trzeba wybrać przynajmniej jeden język,\n"
-"lub użyć „domyślnego”, jeśli żaden nie pasuje."
 
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "Dla każdego tagu funkcji trzeba wybrać przynajmniej jedno pismo"

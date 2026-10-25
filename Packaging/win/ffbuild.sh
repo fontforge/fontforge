@@ -491,7 +491,7 @@ log_status "Stripping Python cache files (*.pyc,*.pyo,__pycache__)..."
 find "$RELEASE/lib/$PYVER" -regextype sed -regex ".*\.py[co]" | xargs rm -rfv
 find "$RELEASE/lib/$PYVER" -name "__pycache__" | xargs rm -rfv
 
-PY_DLLS_SRC_PATH=`/$MINGVER/bin/python.exe -c "import sysconfig as sc; print(sc.get_path('platlib', vars={'platbase': '.'}))"`
+PY_DLLS_SRC_PATH=`/$MINGVER/bin/python.exe "$BASE/../../pyhook/get_pyhook_install_dir.py" "${DESTDIR}${TARGET}"`
 
 log_status "Copying the Python extension dlls..."
 cp -f "$TARGET/$PY_DLLS_SRC_PATH/fontforge.pyd" "$RELEASE/lib/$PYVER/site-packages/" || bail "Couldn't copy pyhook dlls"

@@ -4249,8 +4249,10 @@ This type may not be pickled.
 
    The ``type`` should be one of the strings "glyph", "class", "coverage" or
    "reversecoverage". The ``rule`` should be a string specifying a string to
-   match and a set of lookups to apply once the match has been made. (See
-   below for more details).
+   match and a set of lookups to apply once the match has been made. For
+   "glyph" and "class" subtables, ``rule`` may also be a sequence of strings;
+   passing a sequence creates one subtable containing multiple contextual rules.
+   (See below for more details).
 
    The remaining arguments are optional, keyword arguments.
 
@@ -4624,6 +4626,12 @@ This type may not be pickled.
 
       Do not include Mac names used on Classic Mac OS. This option does not
       affect native macOS (formerly known as Mac OS X) applications.
+
+   .. object:: no-special-null-cr
+
+      Do not specially treat glyphs named '.null' and 'nonmarkingreturn'.
+      That is, those glyphs will be neither automatically added nor reordered.
+      Starting OpenType 1.8 they are no longer mandatory.
 
    .. object:: round
 

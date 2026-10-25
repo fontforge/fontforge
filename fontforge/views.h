@@ -1037,6 +1037,10 @@ extern void BVChar(BitmapView *cv, GEvent *event );
 extern void CVMouseDownPoint(CharView *cv,GEvent *event);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void CVMouseUpPointer(CharView *cv );
+extern bool CVScaleSelectionBounds(CharView *cv, DBounds *bounds);
+extern void CVScaleHandlePoint(const DBounds *bb, enum expandedge edge, BasePoint *pt);
+#define CVSCALE_HANDLE_FUDGE 7.5    // #pixels for fudging mouse hover proximity to handles
+extern bool CVScaleHandlePress(CharView *cv, real fudge);
 extern void CVCheckResizeCursors(CharView *cv);
 extern void CVMouseDownHand(CharView *cv);
 extern void CVMouseUpHand(CharView *cv);
@@ -1166,11 +1170,6 @@ extern void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer);
 extern void AnchorControlClass(SplineFont *_sf,AnchorClass *ac,int layer);
 
 extern void FVSelectByPST(FontView *fv);
-
-enum hist_type { hist_hstem, hist_vstem, hist_blues };
-struct psdict;
-extern void SFHistogram(SplineFont *sf,int layer, struct psdict *private_dict,uint8_t *selected,
-	EncMap *map, enum hist_type which);
 
 extern void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	struct gfi_data *gfi,unichar_t *newname,int layer);

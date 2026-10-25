@@ -30,26 +30,39 @@
 #include <glib/gprintf.h>
 #include <iostream>
 
+#include "application.hpp"
+
 namespace ff::ui_utils {
 
 static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
+    Pango::FontDescription font =
+        ff::app::ColorManager::instance().style_context()->get_font();
+
+    // Create the toy font face explicitly once and hold it in a static so its
+    // reference is released cleanly at program exit, preventing the
+    // FcPatternDuplicate leak that occurs inside cairo_toy_font_face_create().
+    // The destructor calls unreference() to balance the implicit reference.
+    struct ToyFontFace {
+        Cairo::RefPtr<Cairo::ToyFontFace> face;
+        explicit ToyFontFace(const std::string& family)
+            : face(Cairo::ToyFontFace::create(
+                  family, Cairo::FontSlant::FONT_SLANT_NORMAL,
+                  Cairo::FontWeight::FONT_WEIGHT_NORMAL)) {}
+        ~ToyFontFace() { face->unreference(); }
+    };
+    static ToyFontFace toy_face(font.get_family());
+
     Cairo::RefPtr<Cairo::ImageSurface> srf =
         Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
     Cairo::RefPtr<Cairo::Context> cairo_context = Cairo::Context::create(srf);
-    Glib::RefPtr<Gtk::StyleContext> style_context = Gtk::StyleContext::create();
 
-    Pango::FontDescription font = style_context->get_font();
-    Cairo::RefPtr<Cairo::ToyFontFace> toy_face = Cairo::ToyFontFace::create(
-        font.get_family(), Cairo::FontSlant::FONT_SLANT_NORMAL,
-        Cairo::FontWeight::FONT_WEIGHT_NORMAL);
-    cairo_context->set_font_face(toy_face);
+    cairo_context->set_font_face(toy_face.face);
     cairo_context->set_font_size(font.get_size() / PANGO_SCALE *
                                  Gdk::Screen::get_default()->get_resolution() /
                                  72);
 
     Cairo::TextExtents extents;
     cairo_context->get_text_extents(sample_text, extents);
-    toy_face->unreference();  // Prevent memory leak
     return extents;
 }
 
@@ -99,6 +112,32 @@ void post_error(const char* title, const char* statement, ...) {
     }
 
     va_end(ap);
+}
+
+Glib::RefPtr<Gdk::Cursor> set_cursor(Gtk::Widget* widget,
+                                     const Glib::ustring& name) {
+    if (widget == nullptr) return {};
+
+    Glib::RefPtr<Gdk::Window> gdk_window = widget->get_window();
+    if (!gdk_window) return {};
+
+    auto old_cursor = gdk_window->get_cursor();
+
+    Glib::RefPtr<Gdk::Cursor> new_cursor =
+        Gdk::Cursor::create(gdk_window->get_display(), name);
+    gdk_window->set_cursor(new_cursor);
+
+    return old_cursor;
+}
+
+void unset_cursor(Gtk::Widget* widget, Glib::RefPtr<Gdk::Cursor> old_cursor) {
+    if (widget == nullptr) return;
+
+    Glib::RefPtr<Gdk::Window> gdk_window = widget->get_window();
+    if (!gdk_window) return;
+
+    // old_cursor is allowed to be NULL
+    gdk_window->set_cursor(old_cursor);
 }
 
 }  // namespace ff::ui_utils

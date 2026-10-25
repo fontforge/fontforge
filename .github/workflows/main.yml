@@ -20,10 +20,6 @@ jobs:
       - uses: actions/checkout@v6
         with:
           path: repo
-      - uses: actions/setup-java@v5
-        with:
-          distribution: 'temurin'
-          java-version: '17'
       - name: Restore cached custom dependencies
         id: cache-dependencies
         uses: actions/cache@v5
@@ -58,7 +54,6 @@ jobs:
         run: |
           # There can be several Python versions installed. We must use the exact one discovered by CMake.
           PYTHON=`grep -m1 'Python3_EXECUTABLE.*=' build/CMakeCache.txt | cut -d= -f2`
-          PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', 'posix_prefix', vars={'platbase': '.'}))")
           $PYTHON tests/pyhook_smoketest.py
       - name: Build AppImage
         if: matrix.target == 'Release'
@@ -83,10 +78,17 @@ jobs:
         working-directory: repo
         env:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
-        run: java -jar $DEPSPREFIX/crowdin-cli.jar upload -c .crowdin.yml
+        run: $DEPSPREFIX/crowdin-linux-${{ runner.arch }} upload -c .crowdin.yml
 
   mac:
-    runs-on: macos-14
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: macos-14
+            arch: arm64
+          - runner: macos-15-intel
+            arch: intel
     steps:
       - uses: actions/checkout@v6
         with:
@@ -98,8 +100,6 @@ jobs:
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig" >> $GITHUB_ENV
           echo "PATH=/usr/local/opt/ruby/bin:/usr/local/opt/gettext/bin:$PATH" >> $GITHUB_ENV
-          # System Python libraries will be discovered by CMake
-          echo "PYTHONPATH=$PREFIX" >> $GITHUB_ENV
       - name: Build FontForge
         working-directory: repo
         run: |
@@ -114,15 +114,53 @@ jobs:
         run: |
           # There can be several Python versions installed. We must use the exact one discovered by CMake.
           PYTHON=`grep -m1 'Python3_EXECUTABLE.*=' build/CMakeCache.txt | cut -d= -f2`
-          PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', 'posix_prefix', vars={'platbase': '.'}))")
+          export PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON "$GITHUB_WORKSPACE/repo/pyhook/get_pyhook_install_dir.py" "" "APPLE")
           $PYTHON tests/pyhook_smoketest.py
+      # Import a Developer ID certificate if one is configured. Without the
+      # MACOS_CERT_P12 secret this step is skipped and CODESIGN_IDENTITY stays
+      # unset, so the bundle is ad-hoc signed (launchable on arm64 via the
+      # Gatekeeper bypass). Populate these secrets to enable real signing (#5112).
+      - name: Import signing certificate
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+          MACOS_SIGN_IDENTITY: ${{ secrets.MACOS_SIGN_IDENTITY }}
+        if: env.MACOS_CERT_P12 != ''
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          security create-keychain -p actions "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p actions "$KEYCHAIN"
+          echo "$MACOS_CERT_P12" | base64 --decode > "$RUNNER_TEMP/cert.p12"
+          security import "$RUNNER_TEMP/cert.p12" -k "$KEYCHAIN" -P "$MACOS_CERT_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k actions "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          echo "CODESIGN_IDENTITY=$MACOS_SIGN_IDENTITY" >> "$GITHUB_ENV"
       - name: Build App Bundle
         working-directory: repo/build
         run: ninja macbundle
+      # Notarize + staple the dmg when notarization credentials are configured.
+      # Skipped (no-op) otherwise. Uses an App Store Connect API key.
+      - name: Notarize and staple
+        working-directory: repo/build/osx
+        env:
+          NOTARY_API_KEY: ${{ secrets.NOTARY_API_KEY }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_KEY_ID }}
+          NOTARY_ISSUER: ${{ secrets.NOTARY_ISSUER }}
+        if: env.NOTARY_API_KEY != ''
+        run: |
+          echo "$NOTARY_API_KEY" | base64 --decode > "$RUNNER_TEMP/notary.p8"
+          DMG=$(ls FontForge-*.dmg)
+          xcrun notarytool submit "$DMG" \
+            --key "$RUNNER_TEMP/notary.p8" \
+            --key-id "$NOTARY_KEY_ID" \
+            --issuer "$NOTARY_ISSUER" \
+            --wait
+          xcrun stapler staple "$DMG"
       - name: App Bundle artifact
         uses: actions/upload-artifact@v7
         with:
-          name: macOS_appbundle
+          name: macOS_appbundle_${{ matrix.arch }}
           path: repo/build/osx/FontForge-*.dmg
 
   windows:

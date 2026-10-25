@@ -219,6 +219,15 @@ enum window_attr_mask { wam_events=0x2, wam_bordwidth=0x4,
 			wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
 			wam_nocairo=0x200000, wam_verytransient=0x400000, wam_palette=0x800000 };
 
+#ifdef __cplusplus
+extern "C++" {
+inline enum window_attr_mask operator|(enum window_attr_mask lhs, enum window_attr_mask rhs) {
+    return static_cast<enum window_attr_mask>(static_cast<int>(lhs) |
+                                              static_cast<int>(rhs));
+}
+}
+#endif
+
 typedef struct gwindow_attrs {
     enum window_attr_mask mask;
     uint32_t event_masks;			/* (1<<et_char) | (1<<et_mouseup) etc */

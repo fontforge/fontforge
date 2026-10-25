@@ -45,8 +45,9 @@
 | `Ctrl+Numpad +` : Bottom | `Ctrl+小键盘+` : 居下 |
 
 ### 5. Transformation Command / 变换指令
+
 | 🇺🇸 English | 🇨🇳 简体中文 |
 | :--- | :--- |
 | ✗ `Ctrl+Numpad Enter` : Unsupported | ✗ `Ctrl+Numpad Enter` : 暂不支持 |
 | ✓ `Numpad 0` : Interimistical | ✓ `小键盘 0` : 暂代按键 |
-| **Syntax:** Space-separated, supports expressions and %<br>`Local  : x, y     | Both: xy, yx`<br>`Global : z, t     | Both: zt, tz`<br>`Scale  : w, h     | Both: wh, hw`<br>`Rotate : l, r     | Flip: fh, fv`<br>**Example:** `xy-100 hw120% r30` | **语法说明:** 空格分隔，支持算式与 %<br>`横从: x, y     | 并行: xy, yx`<br>`纬经: z, t     | 并行: zt, tz`<br>`宽高: w, h     | 并行: wh, hw`<br>`顺逆: r, l     | 反倒: fh, fv`<br>**指令案例:** `xy-100 hw120% r30` |
+| **Syntax:** Space-separated, supports expressions and `%`<br><br>**Parameters:**<br>• `Local (X, Y)`: `x`, `y` \| Both: `xy`, `yx`<br>• `Global (Z, T)`: `z`, `t` \| Both: `zt`, `tz`<br>• `Scale (W, H)`: `w`, `h` \| Both: `wh`, `hw`<br>• `Rotate (L, R)`: `l`, `r` \| Flip: `fh`, `fv`<br><br>**Example:** `xy-100 hw120% r30` | **语法说明:** 空格分隔，支持算式与 `%`<br><br>**参数说明:**<br>• `本地相对 (横, 从)`: `x`, `y` \| 并行: `xy`, `yx`<br>• `全局绝对 (纬, 经)`: `z`, `t` \| 并行: `zt`, `tz`<br>• `等比例缩放 (宽, 高)`: `w`, `h` \| 并行: `wh`, `hw`<br>• `旋转方向 (逆, 顺)`: `l`, `r` \| 反倒: `fh`, `fv`<br><br>**指令案例:** `xy-100 hw120% r30` |

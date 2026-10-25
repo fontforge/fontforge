@@ -702,22 +702,8 @@ static void InitializeHints(SplineChar *sc, EdgeList *es) {
 
 /* After a bitmap has been compressed, it's sizes may not comply with the */
 /*  expectations for saving images */
-void BCRegularizeBitmap(BDFChar *bdfc) {
-    int bpl =(bdfc->xmax-bdfc->xmin)/8+1;
-    int i;
-
-    if ( bdfc->bytes_per_line!=bpl ) {
-	uint8_t *bitmap = malloc(bpl*(bdfc->ymax-bdfc->ymin+1));
-	for ( i=0; i<=(bdfc->ymax-bdfc->ymin); ++i )
-	    memcpy(bitmap+i*bpl,bdfc->bitmap+i*bdfc->bytes_per_line,bpl);
-	free(bdfc->bitmap);
-	bdfc->bitmap= bitmap;
-	bdfc->bytes_per_line = bpl;
-    }
-}
-
-void BCRegularizeGreymap(BDFChar *bdfc) {
-    int bpl = bdfc->xmax-bdfc->xmin+1;
+void BCRegularizeBitmap(BDFChar *bdfc, int bitsperpixel) {
+    int bpl =(bdfc->xmax-bdfc->xmin)*bitsperpixel/8+1;
     int i;
 
     if ( bdfc->bytes_per_line!=bpl ) {
@@ -806,7 +792,7 @@ void BCCompressBitmap(BDFChar *bdfc) {
 	if ( j!=bdfc->xmax+bdfc->xmin ) {
 	    bdfc->xmax -= bdfc->xmax-bdfc->xmin-j;
 	}
-	BCRegularizeBitmap(bdfc);
+	BCRegularizeBitmap(bdfc, 1);
     } else {
 	for ( j=0; j<bdfc->xmax-bdfc->xmin; ++j ) {
 	    any = 0;
@@ -839,7 +825,7 @@ void BCCompressBitmap(BDFChar *bdfc) {
 	if ( j!=bdfc->xmax+bdfc->xmin ) {
 	    bdfc->xmax -= bdfc->xmax-bdfc->xmin-j;
 	}
-	BCRegularizeGreymap(bdfc);
+	BCRegularizeBitmap(bdfc, 8);
     }
     if ( bdfc->xmax<bdfc->xmin || bdfc->ymax<bdfc->ymin ) {
 	bdfc->ymax = bdfc->ymin-1;
