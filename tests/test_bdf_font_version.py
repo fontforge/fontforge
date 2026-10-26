@@ -1,10 +1,21 @@
 """Preserve FONT_VERSION when opening a standalone BDF or PCF font."""
 
 from pathlib import Path
+import struct
 import sys
 import tempfile
 
 import fontforge
+
+
+def head_revision(path):
+    data = path.read_bytes()
+    count = struct.unpack_from(">H", data, 4)[0]
+    for index in range(count):
+        tag, _, offset, _ = struct.unpack_from(">4sIII", data, 12 + 16 * index)
+        if tag in (b"head", b"bhed"):
+            return struct.unpack_from(">i", data, offset + 4)[0]
+    raise AssertionError("Missing font revision table")
 
 
 source, pcf = (Path(arg) for arg in sys.argv[1:])
@@ -84,3 +95,35 @@ with tempfile.TemporaryDirectory() as directory:
     data = output.read_text(encoding="ascii")
     escaped = version.replace("(", "\\050").replace(")", "\\051")
     assert "/version (" + escaped + ") readonly def" in data
+
+    # The version label is preserved even when its number does not fit 16.16.
+    for label, value, revision in (
+        ("plain", "2.345", 0x00025851),
+        ("date", "20240101", 0x00010000),
+        ("overflow", "1e400", 0x00010000),
+        ("high", "32767.5", 0x7fff8000),
+        ("highest", "32767.99999999", 0x7fffffff),
+        ("limit", "32768", 0x00010000),
+        ("utf8", "\u00e9 2.5", 0x00028000),
+    ):
+        path = directory / ("revision-" + label + ".bdf")
+        path.write_bytes(text.encode("ascii").replace(b'"2.345"',
+            ('"' + value + '"').encode("utf-8")))
+        for suffix, bitmap_type in ((".otb", "otb"), (".ttf", "ttf")):
+            font = fontforge.open(str(path))
+            assert font.version == value, (label, font.version)
+            output = directory / ("revision-" + label + suffix)
+            font.generate(str(output), bitmap_type=bitmap_type)
+            assert font.version == value
+            font.close()
+            assert head_revision(output) == revision, (label, suffix, head_revision(output))
+
+    font = fontforge.open(str(directory / "revision-utf8.bdf"))
+    # Bitmap-only mode selects a raw SFNT even with a .woff suffix.
+    font.onlybitmaps = False
+    output = directory / "revision-utf8.woff"
+    font.generate(str(output), bitmap_type="ttf")
+    font.close()
+    data = output.read_bytes()
+    assert data[:4] == b"wOFF"
+    assert struct.unpack_from(">HH", data, 20) == (2, 5)

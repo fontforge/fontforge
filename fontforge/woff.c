@@ -430,7 +430,7 @@ int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
 	} else if ( sf->version!=NULL ) {
 	    char *pt=sf->version;
 	    char *end;
-	    while ( *pt && !isdigit(*pt) && *pt!='.' ) ++pt;
+	    while ( *pt && !isdigit((unsigned char) *pt) && *pt!='.' ) ++pt;
 	    if ( *pt ) {
 		major = strtol(pt,&end,10);
 		if ( *end=='.' )
