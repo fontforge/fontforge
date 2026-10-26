@@ -528,17 +528,18 @@ static int toolask_e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
-static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
-	int ispolystar, CharView *cv ) {
+static int Ask(char* rb1, char* rb2, int rb, char* lab, float* val, int* co,
+               int ispolystar, CharView* cv) {
     struct ask_info d;
     char buffer[20], buf[20];
     char cenx[20], ceny[20], radx[20], rady[20], angle[20];
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[19];
+    GGadgetCreateData gcd[19], boxes[7];
+    GGadgetCreateData *varray[7], *shapes[3], *options[5], *buttons[6];
+    GGadgetCreateData* positions[5][4];
     GTextInfo label[19];
-    int off = ((ispolystar&1)?15:0) + ((ispolystar&2)?84:0);
-    int haspos = (ispolystar&2)?1:0;
+    int haspos = (ispolystar & 2) ? 1 : 0;
 
     ispolystar &= 1;
 
@@ -551,229 +552,277 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
     d.lab = lab;
     d.cv = cv;
 
-	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
-	wattrs.event_masks = ~(1<<et_charup);
-	wattrs.restrict_input_to_me = 1;
-	wattrs.undercursor = 1;
-	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = _("Shape Type");
-	wattrs.is_dlg = true;
-	pos.x = pos.y = 0;
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
-	pos.height = GDrawPointsToPixels(NULL,120+off);
-	d.gw = GDrawCreateTopWindow(NULL,&pos,toolask_e_h,&d,&wattrs);
+    memset(&wattrs, 0, sizeof(wattrs));
+    wattrs.mask = wam_events | wam_cursor | wam_utf8_wtitle | wam_undercursor |
+                  wam_isdlg | wam_restrict;
+    wattrs.event_masks = ~(1 << et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Shape Type");
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    d.gw = GDrawCreateTopWindow(NULL, &pos, toolask_e_h, &d, &wattrs);
 
-	memset(&label,0,sizeof(label));
-	memset(&gcd,0,sizeof(gcd));
+    memset(&label, 0, sizeof(label));
+    memset(&gcd, 0, sizeof(gcd));
+    memset(boxes, 0, sizeof(boxes));
+    memset(varray, 0, sizeof(varray));
+    memset(shapes, 0, sizeof(shapes));
+    memset(options, 0, sizeof(options));
+    memset(buttons, 0, sizeof(buttons));
+    memset(positions, 0, sizeof(positions));
 
-	label[0].text = (unichar_t *) rb1;
-	label[0].text_is_1byte = true;
-	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
-	gcd[0].gd.flags = gg_enabled|gg_visible | (rb==0?gg_cb_on:0);
-	gcd[0].creator = GRadioCreate;
+    label[0].text = (unichar_t*)rb1;
+    label[0].text_is_1byte = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.flags =
+        gg_enabled | gg_visible | gg_rad_startnew | (rb == 0 ? gg_cb_on : 0);
+    gcd[0].creator = GRadioCreate;
 
-	label[1].text = (unichar_t *) rb2;
-	label[1].text_is_1byte = true;
-	gcd[1].gd.label = &label[1];
-	gcd[1].gd.pos.x = ispolystar?65:75; gcd[1].gd.pos.y = 5; 
-	gcd[1].gd.flags = gg_enabled|gg_visible | (rb==1?gg_cb_on:0);
-	gcd[1].creator = GRadioCreate;
+    label[1].text = (unichar_t*)rb2;
+    label[1].text_is_1byte = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.flags = gg_enabled | gg_visible | (rb == 1 ? gg_cb_on : 0);
+    gcd[1].creator = GRadioCreate;
 
-	label[2].text = (unichar_t *) lab;
-	label[2].text_is_1byte = true;
-	gcd[2].gd.label = &label[2];
-	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 25; 
-	gcd[2].gd.flags = gg_enabled|gg_visible ;
-	gcd[2].creator = GLabelCreate;
+    label[2].text = (unichar_t*)lab;
+    label[2].text_is_1byte = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].gd.flags = gg_enabled | gg_visible;
+    gcd[2].creator = GLabelCreate;
 
-	sprintf( buffer, "%g", *val );
-	label[3].text = (unichar_t *) buffer;
-	label[3].text_is_1byte = true;
-	gcd[3].gd.label = &label[3];
-	gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = 40; 
-	gcd[3].gd.flags = gg_enabled|gg_visible ;
-	gcd[3].gd.cid = CID_ValText;
-	gcd[3].creator = GTextFieldCreate;
+    sprintf(buffer, "%g", *val);
+    label[3].text = (unichar_t*)buffer;
+    label[3].text_is_1byte = true;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.flags = gg_enabled | gg_visible;
+    gcd[3].gd.cid = CID_ValText;
+    gcd[3].gd.pos.width = 60;
+    gcd[3].creator = GTextFieldCreate;
+    gcd[4].gd.pos.width = -1;
+    gcd[4].gd.pos.height = 0;
+    gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[4].text = (unichar_t*)_("_OK");
+    label[4].text_is_1byte = true;
+    label[4].text_in_resource = true;
+    gcd[4].gd.mnemonic = 'O';
+    gcd[4].gd.label = &label[4];
+    gcd[4].gd.handle_controlevent = TA_OK;
+    gcd[4].creator = GButtonCreate;
+    gcd[5].gd.pos.width = -1;
+    gcd[5].gd.pos.height = 0;
+    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[5].text = (unichar_t*)_("_Cancel");
+    label[5].text_is_1byte = true;
+    label[5].text_in_resource = true;
+    gcd[5].gd.label = &label[5];
+    gcd[5].gd.mnemonic = 'C';
+    gcd[5].gd.handle_controlevent = TA_Cancel;
+    gcd[5].creator = GButtonCreate;
 
-	gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 85+off;
-	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
-	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[4].text = (unichar_t *) _("_OK");
-	label[4].text_is_1byte = true;
-	label[4].text_in_resource = true;
-	gcd[4].gd.mnemonic = 'O';
-	gcd[4].gd.label = &label[4];
-	gcd[4].gd.handle_controlevent = TA_OK;
-	gcd[4].creator = GButtonCreate;
+    if (ispolystar) {
+        label[6].text = (unichar_t*)_("Regular");
+        label[6].text_is_1byte = true;
+        gcd[6].gd.label = &label[6];
+        gcd[6].gd.flags = gg_enabled | gg_visible | gg_rad_startnew |
+                          (rb == 0 ? gg_cb_on : 0);
+        gcd[6].creator = GRadioCreate;
 
-	gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = 85+3+off;
-	gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-	gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[5].text = (unichar_t *) _("_Cancel");
-	label[5].text_is_1byte = true;
-	label[5].text_in_resource = true;
-	gcd[5].gd.label = &label[5];
-	gcd[5].gd.mnemonic = 'C';
-	gcd[5].gd.handle_controlevent = TA_Cancel;
-	gcd[5].creator = GButtonCreate;
+        label[7].text = (unichar_t*)_("Points:");
+        label[7].text_is_1byte = true;
+        gcd[7].gd.label = &label[7];
+        gcd[7].gd.flags = gg_enabled | gg_visible | (rb == 1 ? gg_cb_on : 0);
+        gcd[7].creator = GRadioCreate;
 
-	if ( ispolystar ) {
-	    label[6].text = (unichar_t *) _("Regular");
-	    label[6].text_is_1byte = true;
-	    gcd[6].gd.label = &label[6];
-	    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 70; 
-	    gcd[6].gd.flags = gg_enabled|gg_visible | (rb==0?gg_cb_on:0);
-	    gcd[6].creator = GRadioCreate;
+        sprintf(buf, "%4g", star_percent * 100);
+        label[8].text = (unichar_t*)buf;
+        label[8].text_is_1byte = true;
+        gcd[8].gd.label = &label[8];
+        gcd[8].gd.pos.width = 50;
+        gcd[8].gd.flags = gg_enabled | gg_visible;
+        gcd[8].gd.cid = CID_PointPercent;
+        gcd[8].creator = GTextFieldCreate;
 
-	    label[7].text = (unichar_t *) _("Points:");
-	    label[7].text_is_1byte = true;
-	    gcd[7].gd.label = &label[7];
-	    gcd[7].gd.pos.x = 65; gcd[7].gd.pos.y = 70; 
-	    gcd[7].gd.flags = gg_enabled|gg_visible | (rb==1?gg_cb_on:0);
-	    gcd[7].creator = GRadioCreate;
+        label[9].text = (unichar_t*)"%";
+        label[9].text_is_1byte = true;
+        gcd[9].gd.label = &label[9];
+        gcd[9].gd.flags = gg_enabled | gg_visible;
+        gcd[9].creator = GLabelCreate;
+    } else {
+        label[6].text = (unichar_t*)_("Bounding Box");
+        label[6].text_is_1byte = true;
+        gcd[6].gd.label = &label[6];
+        gcd[6].gd.flags = gg_enabled | gg_visible | gg_rad_startnew |
+                          (co[rb] == 0 ? gg_cb_on : 0);
+        gcd[6].creator = GRadioCreate;
 
-	    sprintf( buf, "%4g", star_percent*100 );
-	    label[8].text = (unichar_t *) buf;
-	    label[8].text_is_1byte = true;
-	    gcd[8].gd.label = &label[8];
-	    gcd[8].gd.pos.x = 125; gcd[8].gd.pos.y = 70;  gcd[8].gd.pos.width=50;
-	    gcd[8].gd.flags = gg_enabled|gg_visible ;
-	    gcd[8].gd.cid = CID_PointPercent;
-	    gcd[8].creator = GTextFieldCreate;
+        label[7].text = (unichar_t*)_("Center Out");
+        label[7].text_is_1byte = true;
+        gcd[7].gd.label = &label[7];
+        gcd[7].gd.flags =
+            gg_enabled | gg_visible | (co[rb] == 1 ? gg_cb_on : 0);
+        gcd[7].creator = GRadioCreate;
 
-	    label[9].text = (unichar_t *) "%";
-	    label[9].text_is_1byte = true;
-	    gcd[9].gd.label = &label[9];
-	    gcd[9].gd.pos.x = 180; gcd[9].gd.pos.y = 70; 
-	    gcd[9].gd.flags = gg_enabled|gg_visible ;
-	    gcd[9].creator = GLabelCreate;
-	} else {
-	    label[6].text = (unichar_t *) _("Bounding Box");
-	    label[6].text_is_1byte = true;
-	    gcd[6].gd.label = &label[6];
-	    gcd[6].gd.pos.x = 5; gcd[6].gd.pos.y = 65; 
-	    gcd[6].gd.flags = gg_enabled|gg_visible | (co[rb]==0?gg_cb_on:0);
-	    gcd[6].creator = GRadioCreate;
+        if (rb) gcd[3].gd.flags = gg_visible;
+        gcd[0].gd.handle_controlevent = TA_RadChange;
+        gcd[1].gd.handle_controlevent = TA_RadChange;
 
-	    label[7].text = (unichar_t *) _("Center Out");
-	    label[7].text_is_1byte = true;
-	    gcd[7].gd.label = &label[7];
-	    gcd[7].gd.pos.x = 90; gcd[7].gd.pos.y = 65; 
-	    gcd[7].gd.flags = gg_enabled|gg_visible | (co[rb]==1?gg_cb_on:0);
-	    gcd[7].creator = GRadioCreate;
+        if (haspos) {
+            gcd[6].gd.handle_controlevent = TA_CenRadChange;
+            gcd[7].gd.handle_controlevent = TA_CenRadChange;
 
-	    if ( rb )
-		gcd[3].gd.flags = gg_visible;
-	    gcd[0].gd.handle_controlevent = TA_RadChange;
-	    gcd[1].gd.handle_controlevent = TA_RadChange;
+            label[8].text = (unichar_t*)_("_X");
+            label[8].text_is_1byte = true;
+            label[8].text_in_resource = true;
+            gcd[8].gd.label = &label[8];
+            gcd[8].gd.flags = gg_enabled | gg_visible;
+            gcd[8].creator = GLabelCreate;
 
-	    if ( haspos ) {
-		gcd[6].gd.handle_controlevent = TA_CenRadChange;
-		gcd[7].gd.handle_controlevent = TA_CenRadChange;
+            label[9].text = (unichar_t*)_("_Y");
+            label[9].text_is_1byte = true;
+            label[9].text_in_resource = true;
+            gcd[9].gd.label = &label[9];
+            gcd[9].gd.flags = gg_enabled | gg_visible;
+            gcd[9].creator = GLabelCreate;
 
-		label[8].text = (unichar_t *) _("_X");
-		label[8].text_is_1byte = true;
-		label[8].text_in_resource = true;
-		gcd[8].gd.label = &label[8];
-		gcd[8].gd.pos.x = 70; gcd[8].gd.pos.y = gcd[7].gd.pos.y+15;
-		gcd[8].gd.flags = gg_enabled|gg_visible;
-		gcd[8].creator = GLabelCreate;
+            label[10].text = (unichar_t*)(co[rb] ? _("C_enter") : _("C_orner"));
+            label[10].text_is_1byte = true;
+            label[10].text_in_resource = true;
+            gcd[10].gd.label = &label[10];
+            gcd[10].gd.flags = gg_enabled | gg_visible;
+            gcd[10].gd.cid = CID_CentCornLab;
+            gcd[10].creator = GLabelCreate;
 
-		label[9].text = (unichar_t *) _("_Y");
-		label[9].text_is_1byte = true;
-		label[9].text_in_resource = true;
-		gcd[9].gd.label = &label[9];
-		gcd[9].gd.pos.x = 120; gcd[9].gd.pos.y = gcd[8].gd.pos.y;
-		gcd[9].gd.flags = gg_enabled|gg_visible;
-		gcd[9].creator = GLabelCreate;
+            sprintf(cenx, "%g", (double)cv->info.x);
+            label[11].text = (unichar_t*)cenx;
+            label[11].text_is_1byte = true;
+            gcd[11].gd.label = &label[11];
+            gcd[11].gd.pos.width = 40;
+            gcd[11].gd.flags = gg_enabled | gg_visible;
+            gcd[11].gd.cid = CID_CentCornX;
+            gcd[11].creator = GTextFieldCreate;
 
-		label[10].text = (unichar_t *) (co[rb] ? _("C_enter") : _("C_orner") );
-		label[10].text_is_1byte = true;
-		label[10].text_in_resource = true;
-		gcd[10].gd.label = &label[10];
-		gcd[10].gd.pos.x = 5; gcd[10].gd.pos.y = gcd[8].gd.pos.y+17;
-		gcd[10].gd.flags = gg_enabled|gg_visible;
-		gcd[10].gd.cid = CID_CentCornLab;
-		gcd[10].creator = GLabelCreate;
+            sprintf(ceny, "%g", (double)cv->info.y);
+            label[12].text = (unichar_t*)ceny;
+            label[12].text_is_1byte = true;
+            gcd[12].gd.label = &label[12];
+            gcd[12].gd.pos.width = gcd[11].gd.pos.width;
+            gcd[12].gd.flags = gg_enabled | gg_visible;
+            gcd[12].gd.cid = CID_CentCornY;
+            gcd[12].creator = GTextFieldCreate;
 
-		sprintf( cenx, "%g", (double) cv->info.x );
-		label[11].text = (unichar_t *) cenx;
-		label[11].text_is_1byte = true;
-		gcd[11].gd.label = &label[11];
-		gcd[11].gd.pos.x = 60; gcd[11].gd.pos.y = gcd[10].gd.pos.y-4;
-		gcd[11].gd.pos.width = 40;
-		gcd[11].gd.flags = gg_enabled|gg_visible;
-		gcd[11].gd.cid = CID_CentCornX;
-		gcd[11].creator = GTextFieldCreate;
+            label[13].text =
+                (unichar_t*)(co[rb] ? _("Radius:   ") : _("Diameter:"));
+            label[13].text_is_1byte = true;
+            gcd[13].gd.label = &label[13];
+            gcd[13].gd.flags = gg_enabled | gg_visible;
+            gcd[13].gd.cid = CID_RadDiamLab;
+            gcd[13].creator = GLabelCreate;
 
-		sprintf( ceny, "%g", (double) cv->info.y );
-		label[12].text = (unichar_t *) ceny;
-		label[12].text_is_1byte = true;
-		gcd[12].gd.label = &label[12];
-		gcd[12].gd.pos.x = 110; gcd[12].gd.pos.y = gcd[11].gd.pos.y;
-		gcd[12].gd.pos.width = gcd[11].gd.pos.width;
-		gcd[12].gd.flags = gg_enabled|gg_visible;
-		gcd[12].gd.cid = CID_CentCornY;
-		gcd[12].creator = GTextFieldCreate;
+            sprintf(radx, "%g", (double)raddiam_x);
+            label[14].text = (unichar_t*)radx;
+            label[14].text_is_1byte = true;
+            gcd[14].gd.label = &label[14];
+            gcd[14].gd.pos.width = gcd[11].gd.pos.width;
+            gcd[14].gd.flags = gg_enabled | gg_visible;
+            gcd[14].gd.cid = CID_RadDiamX;
+            gcd[14].creator = GTextFieldCreate;
 
-		label[13].text = (unichar_t *) (co[rb] ? _("Radius:   ") : _("Diameter:") );
-		label[13].text_is_1byte = true;
-		gcd[13].gd.label = &label[13];
-		gcd[13].gd.pos.x = 5; gcd[13].gd.pos.y = gcd[10].gd.pos.y+24;
-		gcd[13].gd.flags = gg_enabled|gg_visible;
-		gcd[13].gd.cid = CID_RadDiamLab;
-		gcd[13].creator = GLabelCreate;
+            sprintf(rady, "%g", (double)raddiam_y);
+            label[15].text = (unichar_t*)rady;
+            label[15].text_is_1byte = true;
+            gcd[15].gd.label = &label[15];
+            gcd[15].gd.pos.width = gcd[11].gd.pos.width;
+            gcd[15].gd.flags = gg_enabled | gg_visible;
+            gcd[15].gd.cid = CID_RadDiamY;
+            gcd[15].creator = GTextFieldCreate;
 
-		sprintf( radx, "%g", (double) raddiam_x );
-		label[14].text = (unichar_t *) radx;
-		label[14].text_is_1byte = true;
-		gcd[14].gd.label = &label[14];
-		gcd[14].gd.pos.x = gcd[11].gd.pos.x; gcd[14].gd.pos.y = gcd[13].gd.pos.y-4;
-		gcd[14].gd.pos.width = gcd[11].gd.pos.width;
-		gcd[14].gd.flags = gg_enabled|gg_visible;
-		gcd[14].gd.cid = CID_RadDiamX;
-		gcd[14].creator = GTextFieldCreate;
+            label[16].text = (unichar_t*)_("Angle:");
+            label[16].text_is_1byte = true;
+            gcd[16].gd.label = &label[16];
+            gcd[16].gd.flags = gg_enabled | gg_visible;
+            gcd[16].creator = GLabelCreate;
 
-		sprintf( rady, "%g", (double) raddiam_y );
-		label[15].text = (unichar_t *) rady;
-		label[15].text_is_1byte = true;
-		gcd[15].gd.label = &label[15];
-		gcd[15].gd.pos.x = gcd[12].gd.pos.x; gcd[15].gd.pos.y = gcd[14].gd.pos.y;
-		gcd[15].gd.pos.width = gcd[11].gd.pos.width;
-		gcd[15].gd.flags = gg_enabled|gg_visible;
-		gcd[15].gd.cid = CID_RadDiamY;
-		gcd[15].creator = GTextFieldCreate;
+            sprintf(angle, "%g", (double)rotate_by);
+            label[17].text = (unichar_t*)angle;
+            label[17].text_is_1byte = true;
+            gcd[17].gd.label = &label[17];
+            gcd[17].gd.pos.width = gcd[11].gd.pos.width;
+            gcd[17].gd.flags = gg_enabled | gg_visible;
+            gcd[17].gd.cid = CID_Angle;
+            gcd[17].creator = GTextFieldCreate;
+        }
+    }
+    shapes[0] = &gcd[0];
+    shapes[1] = &gcd[1];
+    boxes[2].gd.flags = gg_enabled | gg_visible;
+    boxes[2].gd.u.boxelements = shapes;
+    boxes[2].creator = GHBoxCreate;
 
-		label[16].text = (unichar_t *) _("Angle:");
-		label[16].text_is_1byte = true;
-		gcd[16].gd.label = &label[16];
-		gcd[16].gd.pos.x = 5; gcd[16].gd.pos.y = gcd[13].gd.pos.y+24;
-		gcd[16].gd.flags = gg_enabled|gg_visible;
-		gcd[16].creator = GLabelCreate;
+    options[0] = &gcd[6];
+    options[1] = &gcd[7];
+    if (ispolystar) {
+        options[2] = &gcd[8];
+        options[3] = &gcd[9];
+    }
+    boxes[3].gd.flags = gg_enabled | gg_visible;
+    boxes[3].gd.u.boxelements = options;
+    boxes[3].creator = GHBoxCreate;
 
-		sprintf( angle, "%g", (double) rotate_by );
-		label[17].text = (unichar_t *) angle;
-		label[17].text_is_1byte = true;
-		gcd[17].gd.label = &label[17];
-		gcd[17].gd.pos.x = 60; gcd[17].gd.pos.y = gcd[16].gd.pos.y-4;
-		gcd[17].gd.pos.width = gcd[11].gd.pos.width;
-		gcd[17].gd.flags = gg_enabled|gg_visible;
-		gcd[17].gd.cid = CID_Angle;
-		gcd[17].creator = GTextFieldCreate;
-	    }
-	}
-	GGadgetsCreate(d.gw,gcd);
+    buttons[0] = GCD_Glue;
+    buttons[1] = &gcd[4];
+    buttons[2] = GCD_Glue;
+    buttons[3] = &gcd[5];
+    buttons[4] = GCD_Glue;
+    boxes[4].gd.flags = gg_enabled | gg_visible;
+    boxes[4].gd.u.boxelements = buttons;
+    boxes[4].creator = GHBoxCreate;
+
+    varray[0] = &boxes[2];
+    varray[1] = &gcd[2];
+    varray[2] = &gcd[3];
+    varray[3] = &boxes[3];
+    if (haspos) {
+        positions[0][0] = GCD_Glue;
+        positions[0][1] = &gcd[8];
+        positions[0][2] = &gcd[9];
+        positions[1][0] = &gcd[10];
+        positions[1][1] = &gcd[11];
+        positions[1][2] = &gcd[12];
+        positions[2][0] = &gcd[13];
+        positions[2][1] = &gcd[14];
+        positions[2][2] = &gcd[15];
+        positions[3][0] = &gcd[16];
+        positions[3][1] = &gcd[17];
+        positions[3][2] = GCD_Glue;
+        boxes[5].gd.flags = gg_enabled | gg_visible;
+        boxes[5].gd.u.boxelements = positions[0];
+        boxes[5].creator = GHVBoxCreate;
+        varray[4] = &boxes[5];
+        varray[5] = &boxes[4];
+    } else {
+        varray[4] = &boxes[4];
+    }
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled | gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GVBoxCreate;
+    GGadgetsCreate(d.gw, boxes);
+    GHVBoxSetExpandableCol(boxes[4].ret, gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
     d.rb1 = gcd[0].ret;
     d.reg = gcd[6].ret;
     d.pts = gcd[7].ret;
 
-    GDrawSetVisible(d.gw,true);
-    while ( !d.done )
-	GDrawProcessOneEvent(NULL);
+    GDrawSetVisible(d.gw, true);
+    while (!d.done) {
+        GDrawProcessOneEvent(NULL);
+    }
     GDrawDestroyWindow(d.gw);
-return( d.ret );
+    return (d.ret);
 }
 
 static void CVRectElipse(CharView *cv) {
@@ -1361,7 +1410,15 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 		    msg = _("Add a next constraint point (sometimes like a tangent)");
 	    }
 	    // We want to display the hotkey for the key in question if possible.
-	    char * mininame = HKTextInfoToUntranslatedTextFromTextInfo(&cvtoollist[pos].ti);
+	    /* cvtoollist has separators, so it can not be indexed by tool */
+	    GMenuItem2 *toolmi = cvtoollist;
+	    while ( toolmi->ti.text!=NULL || toolmi->ti.image!=NULL || toolmi->ti.line ) {
+		if ( !toolmi->ti.line && toolmi->mid==pos )
+		    break;
+		++toolmi;
+	    }
+	    char * mininame = toolmi->ti.text!=NULL || toolmi->ti.image!=NULL ?
+		    HKTextInfoToUntranslatedTextFromTextInfo(&toolmi->ti) : NULL;
 	    char * menuname = NULL;
 	    Hotkey* toolhotkey = NULL;
             if (mininame != NULL) {
