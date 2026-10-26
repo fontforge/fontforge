@@ -387,104 +387,6 @@ compareOffsets(const void * lhs, const void * rhs)
            0;
 }
 
-static int WoffVersionIsSpace(unsigned char ch) {
-    return ch==' ' || ch=='\t' || ch=='\n' || ch=='\r' || ch=='\v' || ch=='\f';
-}
-
-static const char *WoffVersionNumberStart(const char *version) {
-    const char *pt;
-
-    pt = version;
-    while ( WoffVersionIsSpace((unsigned char) *pt) ) ++pt;
-    if ( (*pt=='-' || *pt=='+') &&
-	    ((pt[1]>='0' && pt[1]<='9') ||
-	     pt[1]=='.') )
-	return pt;
-    for ( pt=version; *pt!='\0'; ++pt ) {
-	if ( (*pt>='0' && *pt<='9') ||
-		*pt=='.' )
-	    return pt;
-    }
-    return pt;
-}
-
-static int ParseWoffVersionComponents(const char *version,int *major,int *minor) {
-    const char *pt = version;
-    int parsed_major = 0, parsed_minor = 0;
-    /* Keep a valid major when the minor is negative or cannot fit in 16 bits. */
-    int minor_invalid = false;
-    int has_major_digits = false, has_minor_digits = false;
-
-    while ( WoffVersionIsSpace((unsigned char) *pt) ) ++pt;
-    if ( *pt=='-' )
-	return false;
-    if ( *pt=='+' ) ++pt;
-    if ( *pt=='.' ) {
-	++pt;
-	while ( WoffVersionIsSpace((unsigned char) *pt) ) ++pt;
-	if ( *pt=='+' ) ++pt;
-	while ( *pt>='0' && *pt<='9' ) {
-	    int digit = *pt-'0';
-	    if ( !minor_invalid ) {
-		if ( parsed_minor>(0xffff-digit)/10 )
-		    minor_invalid = true;
-		else
-		    parsed_minor = parsed_minor*10+digit;
-	    }
-	    has_minor_digits = true;
-	    ++pt;
-	}
-	*major = 0;
-	*minor = minor_invalid ? 0 : parsed_minor;
-	return true;
-    }
-    while ( *pt>='0' && *pt<='9' ) {
-	int digit = *pt-'0';
-	if ( parsed_major>(0xffff-digit)/10 )
-	    return false;
-	parsed_major = parsed_major*10+digit;
-	has_major_digits = true;
-	++pt;
-    }
-    if ( *pt=='.' ) {
-	++pt;
-	while ( WoffVersionIsSpace((unsigned char) *pt) ) ++pt;
-	if ( *pt=='-' ) {
-	    minor_invalid = true;
-	    ++pt;
-	}
-	if ( *pt=='+' ) ++pt;
-	while ( *pt>='0' && *pt<='9' ) {
-	    int digit = *pt-'0';
-	    if ( !minor_invalid ) {
-		if ( parsed_minor>(0xffff-digit)/10 )
-		    minor_invalid = true;
-		else
-		    parsed_minor = parsed_minor*10+digit;
-	    }
-	    has_minor_digits = true;
-	    ++pt;
-	}
-    }
-    if ( !has_major_digits && !has_minor_digits )
-	return false;
-    *major = parsed_major;
-    *minor = minor_invalid ? 0 : parsed_minor;
-    return true;
-}
-
-static int ParseWoffNamedVersion(const char *version,int *major,int *minor) {
-    const char *pt;
-
-    if ( version==NULL || strncmp(version,"Version",7)!=0 )
-	return false;
-    pt = version+7;
-    while ( WoffVersionIsSpace((unsigned char) *pt) ) ++pt;
-    if ( *pt=='.' || (*pt=='+' && pt[1]=='.') )
-	return false;
-    return ParseWoffVersionComponents(pt,major,minor);
-}
-
 static FILE* WriteSfnt(SplineFont *sf, enum fontformat format,
 	int32_t *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
     FILE *sfnt = GFileTmpfile();
@@ -520,27 +422,22 @@ int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
 	    if ( useng->lang==0x409 )
 	break;
 	if ( useng!=NULL && useng->names[ttf_version]!=NULL &&
-		ParseWoffNamedVersion(useng->names[ttf_version],&major,&minor) ) {
+		sscanf(useng->names[ttf_version], "Version %d.%d", &major, &minor)>=1 ) {
 	    /* All done */
 	} else if ( sf->subfontcnt!=0 ) {
-	    if ( isfinite(sf->cidversion) && sf->cidversion>=0.0 &&
-		    sf->cidversion<65536.0 ) {
-		double cid_major = floor(sf->cidversion);
-		double cid_minor = floor(1000.0*(sf->cidversion-cid_major));
-		if ( cid_minor>=0.0 && cid_minor<=0xFFFF ) {
-		    major = cid_major;
-		    minor = cid_minor;
-		}
-	    }
+	    major = floor(sf->cidversion);
+	    minor = floor(1000.*(sf->cidversion-major));
 	} else if ( sf->version!=NULL ) {
-	    const char *pt=WoffVersionNumberStart(sf->version);
-	    if ( *pt!='\0' )
-		ParseWoffVersionComponents(pt,&major,&minor);
+	    char *pt=sf->version;
+	    char *end;
+	    while ( *pt && !isdigit(*pt) && *pt!='.' ) ++pt;
+	    if ( *pt ) {
+		major = strtol(pt,&end,10);
+		if ( *end=='.' )
+		    minor = strtol(end+1,NULL,10);
+	    }
 	}
     }
-
-    if ( major<0 || major>0xFFFF ) major = 1;
-    if ( minor<0 || minor>0xFFFF ) minor = 0;
 
     sfnt = WriteSfnt(sf,format,bsizes,bf,flags,enc,layer);
     if ( !sfnt ) {
