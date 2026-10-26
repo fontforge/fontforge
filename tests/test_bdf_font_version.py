@@ -28,6 +28,38 @@ with tempfile.TemporaryDirectory() as directory:
         font.close()
 
     text = source.read_text(encoding="ascii")
+    path = directory / "crlf.bdf"
+    path.write_bytes(text.replace("\n", "\r\n").encode("ascii"))
+    font = fontforge.open(str(path))
+    assert font.version == "2.345"
+    font.close()
+
+    for label, value, expected in (
+        ("atom", b"release", "release"),
+        ("latin1", b'"rev \xe9"', "rev \u00e9"),
+        ("date", b'"20240101"', "20240101"),
+    ):
+        path = directory / (label + ".bdf")
+        path.write_bytes(text.encode("ascii").replace(b'"2.345"', value))
+        font = fontforge.open(str(path))
+        assert font.version == expected, (label, font.version)
+        font.close()
+
+    # PCF string tables can contain line breaks, unlike BDF properties.
+    pcf_data = pcf.read_bytes()
+    assert pcf_data.count(b"2.345\0") == 1
+    for label, value in (("cr", b"2\r345\0"), ("lf", b"2\n345\0")):
+        path = directory / (label + ".pcf")
+        path.write_bytes(pcf_data.replace(b"2.345\0", value))
+        font = fontforge.open(str(path))
+        assert font.version == "001.000", (label, font.version)
+        output = directory / (label + ".pfa")
+        font.generate(str(output))
+        font.close()
+        data = output.read_bytes().split(b"currentfile eexec", 1)[0]
+        assert b"%Version: 001.000\n" in data
+        assert b"\n345" not in data and b"\r345" not in data
+
     for label, modified in (
         ("missing", text.replace("STARTPROPERTIES 3", "STARTPROPERTIES 2")
             .replace('FONT_VERSION "2.345"\n', "")),

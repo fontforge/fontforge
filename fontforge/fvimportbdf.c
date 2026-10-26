@@ -2423,7 +2423,7 @@ SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
     sf->map = map;
     if ( bdf!=NULL && bdf!=(BDFFont *) -1 &&
 	    (version = BdfPropHasString(bdf,"FONT_VERSION",NULL))!=NULL &&
-	    *version!='\0' ) {
+	    *version!='\0' && strpbrk(version,"\r\n")==NULL ) {
 	free(sf->version);
 	sf->version = utf8_valid(version) ? copy(version) : latin1_2_utf8_copy(version);
     }
