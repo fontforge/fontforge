@@ -2426,6 +2426,27 @@ SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
 	    *version!='\0' && strpbrk(version,"\r\n")==NULL ) {
 	free(sf->version);
 	sf->version = utf8_valid(version) ? copy(version) : latin1_2_utf8_copy(version);
+	/* Preserve the default SFNT revision for imported labels that cannot
+	 * be represented by sethead's signed 16.16 conversion. */
+	const char *pt = sf->version;
+	while ( *pt && !isdigit(*pt) && *pt!='.' ) ++pt;
+	if ( *pt ) {
+	    double dval;
+#ifdef BAD_LOCALE_HACK
+	    char *oldlocale = copy(setlocale(LC_NUMERIC,NULL));
+	    setlocale(LC_NUMERIC,"C");
+	    dval = strtod(pt,NULL);
+	    setlocale(LC_NUMERIC,oldlocale);
+	    free(oldlocale);
+#else
+	    locale_t tmplocale = NULL, oldlocale = NULL;
+	    switch_to_c_locale(&tmplocale,&oldlocale);
+	    dval = strtod(pt,NULL);
+	    switch_to_old_locale(&tmplocale,&oldlocale);
+#endif
+	    if ( !(dval<32768) )
+		sf->sfntRevision = 0x00010000;
+	}
     }
     if ( bdf==(BDFFont *) -1 )
 	/* Do Nothing: User cancelled a load of a duplicate pixelsize */;

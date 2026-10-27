@@ -2773,15 +2773,12 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
 	    char *pt=sf->version;
 	    double dval;
 	    int val, mant;
-	    while ( *pt && !isdigit((unsigned char) *pt) && *pt!='.' ) ++pt;
+	    while ( *pt && !isdigit(*pt) && *pt!='.' ) ++pt;
 	    if ( *pt ) {
 		dval = strtod(pt,NULL);
-		/* Keep the default if the version does not fit a signed 16.16 value. */
-		if ( dval>=0 && dval<32768 ) {
-		    val = floor(dval);
-		    mant = floor(65536.*(dval-val));
-		    head->revision = (val<<16) | mant;
-		}
+		val = floor(dval);
+		mant = floor(65536.*(dval-val));
+		head->revision = (val<<16) | mant;
 	    }
 	}
     }

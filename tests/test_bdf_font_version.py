@@ -104,6 +104,10 @@ with tempfile.TemporaryDirectory() as directory:
         ("high", "32767.5", 0x7fff8000),
         ("highest", "32767.99999999", 0x7fffffff),
         ("limit", "32768", 0x00010000),
+        ("hex-limit", "0x1.0p+15", 0x00010000),
+        ("negative", "-1.5", 0x00018000),
+        ("negative-limit", "-32768", 0x00010000),
+        ("negative-overflow", "-1e400", 0x00010000),
         ("utf8", "\u00e9 2.5", 0x00028000),
     ):
         path = directory / ("revision-" + label + ".bdf")
@@ -112,11 +116,49 @@ with tempfile.TemporaryDirectory() as directory:
         for suffix, bitmap_type in ((".otb", "otb"), (".ttf", "ttf")):
             font = fontforge.open(str(path))
             assert font.version == value, (label, font.version)
+            pinned = label in ("date", "overflow", "limit", "hex-limit",
+                "negative-limit", "negative-overflow")
+            assert font.sfntRevision == (1.0 if pinned else None), label
+            saved = directory / ("revision-" + label + ".sfd")
+            font.save(str(saved))
+            font.close()
+            font = fontforge.open(str(saved))
+            assert font.version == value
+            assert font.sfntRevision == (1.0 if pinned else None), label
             output = directory / ("revision-" + label + suffix)
             font.generate(str(output), bitmap_type=bitmap_type)
             assert font.version == value
             font.close()
             assert head_revision(output) == revision, (label, suffix, head_revision(output))
+
+    # The existing explicit revision can be cleared after editing the label.
+    font = fontforge.open(str(directory / "revision-date.bdf"))
+    assert font.sfntRevision == 1.0
+    font.version = "3.5"
+    font.sfntRevision = None
+    output = directory / "edited-revision.otb"
+    font.generate(str(output), bitmap_type="otb")
+    font.close()
+    assert head_revision(output) == 0x00038000
+
+    # WOFF retains its existing numeric-label conversion, including the
+    # 16-bit header representation; importing a label adds no WOFF override.
+    for label in ("date", "highest", "hex-limit", "negative"):
+        imported = fontforge.open(str(directory / ("revision-" + label + ".bdf")))
+        manual = fontforge.open(str(source))
+        manual.version = imported.version
+        manual.sfntRevision = imported.sfntRevision
+        headers = []
+        for index, font in enumerate((imported, manual)):
+            assert font.woffMajor is None
+            font.onlybitmaps = False
+            output = directory / ("woff-" + label + "-" + str(index) + ".woff")
+            font.generate(str(output), bitmap_type="ttf")
+            font.close()
+            data = output.read_bytes()
+            assert data[:4] == b"wOFF"
+            headers.append(struct.unpack_from(">HH", data, 20))
+        assert headers[0] == headers[1], (label, headers)
 
     font = fontforge.open(str(directory / "revision-utf8.bdf"))
     # Bitmap-only mode selects a raw SFNT even with a .woff suffix.
