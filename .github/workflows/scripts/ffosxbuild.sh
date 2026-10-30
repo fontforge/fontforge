@@ -4,7 +4,11 @@ set -e -o pipefail
 SCRIPT_BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 INVOKE_BASE="$(pwd)"
 
-APPDIR=$(realpath $1)
+APPDIR=$(realpath "$1") || exit 1
+if [[ ! -d "$APPDIR" ]]; then
+    echo "App bundle not found: $APPDIR" >&2
+    exit 1
+fi
 HASH=${2:0:7}
 PYTHON="$3"
 
@@ -101,8 +105,15 @@ done
 # 2. Sign the embedded Python framework version.
 codesign "${LIB_SIGN[@]}" "$APPDIR/Contents/Frameworks/Python.framework/Versions/$PYVER"
 
-# 3. Sign the app bundle itself last (main executable receives entitlements).
+set -x
+printf 'APPDIR=<%s>\n' "$APPDIR"
+ls -ld "$APPDIR" "$APPDIR/Contents" || true
+
 codesign "${APP_SIGN[@]}" "$APPDIR"
+rc=$?
+printf 'sign exit=%s\n' "$rc"
+ls -ld "$APPDIR" "$APPDIR/Contents" || true
+(( rc == 0 )) || exit "$rc"
 
 # Verify integrity. Do NOT use spctl here: it rejects ad-hoc signatures by
 # design and would fail CI spuriously. notarytool (when enabled) is the real
