@@ -48,9 +48,9 @@
 
 #include <math.h>
 
-int accent_offset = 6;
-int GraveAcuteCenterBottom = 1;
-int CharCenterHighest = 1;
+extern "C" int accent_offset = 6;
+extern "C" int GraveAcuteCenterBottom = 1;
+extern "C" int CharCenterHighest = 1;
 
 #define BottomAccent	0x300
 #define TopAccent	0x345
