@@ -115,10 +115,15 @@ printf 'sign exit=%s\n' "$rc"
 ls -ld "$APPDIR" "$APPDIR/Contents" || true
 (( rc == 0 )) || exit "$rc"
 
+ls -la "$APPDIR/Contents/Frameworks/Python.framework/Versions"
+ls -la "$APPDIR/Contents/Frameworks/Python.framework/Versions/3.15"
+
 # Verify integrity. Do NOT use spctl here: it rejects ad-hoc signatures by
 # design and would fail CI spuriously. notarytool (when enabled) is the real
 # Gatekeeper-level check.
-codesign --verify --strict --verbose=2 "$APPDIR"
+codesign --verify --strict --verbose=4 "$APPDIR" 2>&1 || true
+find -L "$APPDIR" -type l -print
+find "$APPDIR" -name CodeResources -print
 # ---------------------------------------------------------------------------
 
 # Package it up
