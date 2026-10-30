@@ -133,7 +133,7 @@ static const unichar_t accents[][4] = {
 
 static int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, BDFFont *bdf, int disp_only, int doit);
 
-int CanonicalCombiner(int uni) {
+extern "C" int CanonicalCombiner(int uni) {
     /* Translate spacing accents to combiners */
     int j,k;
 
@@ -979,7 +979,7 @@ static real SplineCharQuickTop(SplineChar *sc,int layer) {
 return( max );
 }
 
-int isaccent(int uni) {
+extern "C" int isaccent(int uni) {
 
     if ( iscombining(uni) )
 return( true );
@@ -1117,7 +1117,7 @@ return( arabicfixup(sf,space,ini,final));
 return( space );
 }
 
-int compoundCodepointsToUniString(unichar_t *buf, const char *name, int n) {
+extern "C" int compoundCodepointsToUniString(unichar_t *buf, const char *name, int n) {
     /* If `name` is in 'uniXXXXYYYY' form, parses it into `buf`.
        The result will be buf[0] = XXXX, buf[1] = YYYY, buf[2] = 0.
        Similarly 3-character (uniXXXXYYYYZZZZ) and
@@ -1146,7 +1146,7 @@ int compoundCodepointsToUniString(unichar_t *buf, const char *name, int n) {
     return 0;
 }
 
-int compoundNamesToUniString(unichar_t *buf, const char *name, int n, enum uni_interp interp, Encoding *enc) {
+extern "C" int compoundNamesToUniString(unichar_t *buf, const char *name, int n, enum uni_interp interp, Encoding *enc) {
     /* If `name` consists of name of glyph's component concatenated with
        an underscore, that is, is in 'foo_bar' form, parses it into `buf`.
        The result will be buf[0] = UniFromName("foo", interp, enc),
@@ -1190,7 +1190,7 @@ int compoundNamesToUniString(unichar_t *buf, const char *name, int n, enum uni_i
     return 0;
 }
 
-const unichar_t *SFGetComponentsFromLigatureName(SplineFont *sf, SplineChar *sc, int usebasename) {
+extern "C" const unichar_t *SFGetComponentsFromLigatureName(SplineFont *sf, SplineChar *sc, int usebasename) {
     static unichar_t characterComponents[5];
     char *dot = usebasename ? strchr(sc->name,'.') : NULL;
 
@@ -1203,7 +1203,7 @@ const unichar_t *SFGetComponentsFromLigatureName(SplineFont *sf, SplineChar *sc,
     return NULL;
 }
 
-const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck) {
+extern "C" const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck) {
     static unichar_t greekalts[5];
     const unichar_t *upt, *pt; unichar_t *gpt;
     char *dot = NULL;
@@ -1329,7 +1329,7 @@ const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int noch
 static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	int *invert,double ia, char *dot, SplineChar *destination);
 
-int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc,int layer) {
+extern "C" int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc,int layer) {
     const unichar_t *pt, *all; unichar_t ch, basech;
     SplineChar *one, *two;
     char *dot = NULL;
@@ -1370,7 +1370,7 @@ return( false );
 return( true );
 }
 
-int SFIsRotatable(SplineFont *sf,SplineChar *sc) {
+extern "C" int SFIsRotatable(SplineFont *sf,SplineChar *sc) {
     char *end;
     int cid;
 
@@ -1406,7 +1406,7 @@ return( ret );
 return( false );
 }
 
-int hascomposing(SplineFont *sf,int u,SplineChar *sc) {
+extern "C" int hascomposing(SplineFont *sf,int u,SplineChar *sc) {
     const unichar_t *upt = SFGetAlternate(sf,u,sc,false);
 
     if ( upt!=NULL ) {
@@ -1439,7 +1439,7 @@ return( true );
 return( false );
 }
 
-int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer, int onlyaccents) {
+extern "C" int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer, int onlyaccents) {
     int unicodeenc = sc->unicodeenc;
 
     if (sc->user_decomp) return true;
@@ -1710,7 +1710,7 @@ return(( lbx + rbx )/2 - ( rbb->maxx - rbb->minx )/2 - rbb->minx );
 return( 0x70000000 );
 }
 
-void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer,real transform[6],
+extern "C" void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer,real transform[6],
         int selected) {
     RefChar *ref = RefCharCreate();
 
@@ -1750,7 +1750,7 @@ static void BCClearAndCopyBelow(BDFFont *bdf,int togid,int fromgid, int ymax) {
 	bc->ymax = ymax;
 	bc->bytes_per_line = rbc->bytes_per_line;
 	bc->width = rbc->width;
-	bc->bitmap = malloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+	bc->bitmap = (uint8_t *)malloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
 	memcpy(bc->bitmap,rbc->bitmap+(rbc->ymax-ymax)*rbc->bytes_per_line,
 		bc->bytes_per_line*(bc->ymax-bc->ymin+1));
     }
@@ -1759,7 +1759,7 @@ static void BCClearAndCopyBelow(BDFFont *bdf,int togid,int fromgid, int ymax) {
 static void BCAddReference( BDFChar *bc,BDFChar *rbc,int gid,int xoff,int yoff ) {
     BDFRefChar *bcref;
 
-    bcref = calloc( 1,sizeof( BDFRefChar ));
+    bcref = (BDFRefChar *)calloc( 1,sizeof( BDFRefChar ));
     bcref->bdfc = rbc; bcref->gid = gid;
     bcref->xoff = xoff; bcref->yoff = yoff;
     bcref->next = bc->refs; bc->refs = bcref;
@@ -1915,11 +1915,11 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	char *uc_accent;
 	SplineChar *test = NULL;
 	char buffer[80];
-	char *suffixes[4];
+	const char *suffixes[4];
 	int scnt=0, i;
 
 	if ( rsc!=NULL ) {
-	    uc_accent = malloc(strlen(rsc->name)+11);
+	    uc_accent = (char *)malloc(strlen(rsc->name)+11);
 	    strcpy(uc_accent,rsc->name);
 	} else
 	    uc_accent = NULL;
@@ -1999,7 +1999,7 @@ static void TurnOffUseMyMetrics(SplineChar *sc) {
 	    refs->use_my_metrics = false;
 }
 
-AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,AnchorClass *restrict_,
+extern "C" AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,AnchorClass *restrict_,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
     AnchorPoint *ap1, *ap2;
 
@@ -2451,7 +2451,7 @@ static void BCMakeSpace(BDFFont *bdf, int gid, int width, int em) {
 	bc->ymax = 1;
 	bc->bytes_per_line = 1;
 	bc->width = rint(width*bdf->pixelsize/(real) em);
-	bc->bitmap = calloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),sizeof(uint8_t));
+	bc->bitmap = (uint8_t *)calloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),sizeof(uint8_t));
     }
 }
 
@@ -2523,11 +2523,11 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int layer,BDFFont *bdf,int di
 }
 
 static SplinePoint *MakeSP(real x, real y, SplinePoint *last,int order2) {
-    SplinePoint *new = SplinePointCreate(x, y);
-    new->pointtype = pt_corner;
+    SplinePoint *new_sp = SplinePointCreate(x, y);
+    new_sp->pointtype = pt_corner;
     if ( last!=NULL )
-	SplineMake(last,new,order2);
-return( new );
+	SplineMake(last,new_sp,order2);
+return( new_sp );
 }
 
 static void BCMakeRule(BDFFont *bdf, int gid, int layer) {
@@ -2609,7 +2609,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int layer,BDFFont *bdf,int dis
 	sp = MakeSP(width-rbearing,ypos+height,sp,sc->layers[layer].order2);
 	sp = MakeSP(width-rbearing,ypos,sp,sc->layers[layer].order2);
 	SplineMake(sp,first,sc->layers[layer].order2);
-	sc->layers[layer].splines = chunkalloc(sizeof(SplinePointList));
+	sc->layers[layer].splines = (SplinePointList *)chunkalloc(sizeof(SplinePointList));
 	sc->layers[layer].splines->first = sc->layers[layer].splines->last = first;
 	sc->layers[layer].splines->start_offset = 0;
 	sc->width = width;
@@ -2898,7 +2898,7 @@ int SCUserDecompAccent(SplineChar *sc, unichar_t accent, int accent_hint) {
             accent_hint);
 }
 
-void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, int disp_only, int accent_hint) {
+extern "C" void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, int disp_only, int accent_hint) {
     const unichar_t *pt, *apt; unichar_t ch;
     real ia;
     char *dot;
@@ -2996,7 +2996,7 @@ return;
 return;
 }
 
-int SCAppendAccent(SplineChar *sc,int layer,
+extern "C" int SCAppendAccent(SplineChar *sc,int layer,
 	char *glyph_name,	/* unicode char name */
 	int uni,		/* unicode char value */
 	uint32_t pos		/* pose info from unicode canonical combining class and manual overrides, see utype.h */ ) {
