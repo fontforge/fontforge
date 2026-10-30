@@ -3480,7 +3480,7 @@ return( mf_tfm );
 return( mf_ofm );
 
     if ( len>= 6 && buffer[0]==0 && buffer[1]==1 &&
-	    ((uint32_t)buffer[2]|((uint32_t)buffer[3]<<8)|((uint32_t)buffer[4]<<16)|((uint32_t)buffer[5]<<24))== filesize )
+	 CHR(buffer[5], buffer[4], buffer[3], buffer[2])== filesize )
 return( mf_pfm );
 
     /* I don't see any distinguishing marks for a feature file */
