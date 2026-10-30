@@ -509,11 +509,7 @@ static void ParseMacMapping(char *pt,struct macsettingname *ms) {
     if ( *end==',' ) ++end;
     ms->mac_feature_setting = strtol(end,&end,10);
     if ( *end==' ' ) ++end;
-    ms->otf_tag =
-	((end[0]&0xff)<<24) |
-	((end[1]&0xff)<<16) |
-	((end[2]&0xff)<<8) |
-	(end[3]&0xff);
+    ms->otf_tag = CHR(end[0], end[1], end[2], end[3]);
 }
 
 static void ParseNewMacFeature(FILE *p,char *line) {

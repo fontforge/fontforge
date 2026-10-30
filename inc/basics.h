@@ -156,4 +156,17 @@ static inline int imax(int a, int b)
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
+/* Assemble a big-endian 32-bit value from four bytes.  The bytes are promoted
+ * to uint32_t before shifting: a byte >= 0x80 (which is negative when it comes
+ * from a plain signed char) would otherwise shift into the sign bit, which is
+ * undefined for a signed type.  The result keeps the signed 32-bit type the
+ * callers already use for tags such as 'GSUB'. */
+#ifndef CHR
+#define CHR(ch1,ch2,ch3,ch4) \
+    ((int32_t)((((uint32_t)(ch1) & 0xff) << 24) | \
+               (((uint32_t)(ch2) & 0xff) << 16) | \
+               (((uint32_t)(ch3) & 0xff) << 8) | \
+               ((uint32_t)(ch4) & 0xff)))
+#endif
+
 #endif /* FONTFORGE_BASICS_H */

@@ -1333,7 +1333,7 @@ static int getint32(FILE *file) {
     int val = getc(file);
     val |= (getc(file)<<8);
     val |= (getc(file)<<16);
-    val |= (getc(file)<<24);
+    val |= (int)((uint32_t)getc(file)<<24);
 return( val );
 }
 
@@ -1348,7 +1348,7 @@ static int getformint32(FILE *file,int format) {
 	val = getc(file);
 	val |= (getc(file)<<8);
 	val |= (getc(file)<<16);
-	val |= (getc(file)<<24);
+	val |= (int)((uint32_t)getc(file)<<24);
     }
 return( val );
 }
