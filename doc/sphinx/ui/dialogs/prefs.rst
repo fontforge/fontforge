@@ -345,11 +345,6 @@ The Preferences Window...
    Whether accents should be positioned over letters based on the center of of
    the letter, or on the center of the top of the letter.
 
-.. object:: PreferSpacingAccents
-
-   Whether to prefer spacing accents (Unicode 02C0-02FF) or combining accents
-   (0300-036F) when building accented glyphs.
-
 .. figure:: /images/prefs-apps.png
 
 .. _prefs.PreferPotrace:

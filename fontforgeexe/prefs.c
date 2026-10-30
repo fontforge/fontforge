@@ -72,7 +72,6 @@ extern int OpenCharsInNewWindow;
 extern int ItalicConstrained;
 extern int accent_offset;
 extern int GraveAcuteCenterBottom;
-extern int PreferSpacingAccents;
 extern int CharCenterHighest;
 extern int ask_user_for_resolution;
 #ifndef _NO_LIBPNG
@@ -380,7 +379,6 @@ static struct prefs_list {
 	{ N_("AccentOffsetPercent"), pr_int, &accent_offset, NULL, NULL, '\0', NULL, 0, N_("The percentage of an em by which an accent is offset from its base glyph in Build Accent") },
 	{ N_("AccentCenterLowest"), pr_bool, &GraveAcuteCenterBottom, NULL, NULL, '\0', NULL, 0, N_("When placing grave and acute accents above letters, should\nFontForge center them based on their full width, or\nshould it just center based on the lowest point\nof the accent.") },
 	{ N_("CharCenterHighest"), pr_bool, &CharCenterHighest, NULL, NULL, '\0', NULL, 0, N_("When centering an accent over a glyph, should the accent\nbe centered on the highest point(s) of the glyph,\nor the middle of the glyph?") },
-	{ N_("PreferSpacingAccents"), pr_bool, &PreferSpacingAccents, NULL, NULL, '\0', NULL, 0, N_("Use spacing accents (Unicode: 02C0-02FF) rather than\ncombining accents (Unicode: 0300-036F) when\nbuilding accented glyphs.") },
 	PREFS_LIST_EMPTY
 },
  args_list[] = {

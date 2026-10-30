@@ -47,7 +47,6 @@
 
 int accent_offset = 6;
 int GraveAcuteCenterBottom = 1;
-int PreferSpacingAccents = false;
 int CharCenterHighest = 1;
 
 #define BottomAccent	0x300
@@ -1861,36 +1860,29 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( uni==0x327 && basech=='g' && haschar(sf,0x312, dot))
 	uni = 0x312;
-    if ( !PreferSpacingAccents && ((haschar(sf,uni, dot) &&
+    if ( ((haschar(sf,uni, dot) &&
 		!SCDependsOnSC(GetChar(sf,uni,dot),destination)) ||
 	    (dot!=NULL && haschar(sf,uni, NULL) &&
 		!SCDependsOnSC(GetChar(sf,uni,NULL),destination))) )
 	ach = uni;
-    else if ( uni>=BottomAccent && uni<=TopAccent && (PreferSpacingAccents || !haschar(sf,uni,NULL)) ) {
+    else if ( uni>=BottomAccent && uni<=TopAccent && (!haschar(sf,uni,NULL)) ) {
 	apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 	while ( *apt && apt<end &&
 		(             GetChar(sf,*apt,dot) ==NULL || SCDependsOnSC(GetChar(sf,*apt,dot),destination)) &&
 		(dot==NULL || GetChar(sf,*apt,NULL)==NULL || SCDependsOnSC(GetChar(sf,*apt,NULL),destination)) )
 	    ++apt;
-	/* Use spacing accent if found. We enter this branch when either
-	 * PreferSpacingAccents is true OR the combining accent doesn't exist,
-	 * so using the spacing accent is correct in both cases. */
+	/* Use spacing accent if found. We enter this branch only 
+	   when combining accent doesn't exist. */
 	if ( *apt!='\0' && apt<end )
 	    ach = *apt;
 	else if ( haschar(sf,uni,dot) && !SCDependsOnSC(GetChar(sf,uni,dot),destination))
 	    ach = uni;
 	else if ( uni==0x31b && haschar(sf,',',NULL))
 	    ach = ',';
-	else if (( uni == 0x32f || uni == 0x311 ) && haschar(sf,0x2d8,NULL) && ia==0 && PreferSpacingAccents) {
-	    /* In italic fonts invert is not enough, you must do more */
-	    ach = 0x2d8;
-	    *invert = true;
-	} else if ( (uni == 0x30c || uni == 0x32c ) &&
+	else if ( (uni == 0x30c || uni == 0x32c ) &&
 		(haschar(sf,0x302,dot) || haschar(sf,0x2c6,NULL) || haschar(sf,'^',NULL)) ) {
 	    *invert = true;
-	    if (PreferSpacingAccents && haschar(sf,0x2c6,NULL))
-		ach = 0x2c6;
-	    else if ( haschar(sf,'^',NULL) )
+	    if ( haschar(sf,'^',NULL) )
 		ach = '^';
 	    else
 		ach = 0x302;
@@ -1934,9 +1926,8 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 
 	for ( i=0; test==NULL && i<scnt; ++i ) {
 	    /* Always look for suffixed variants (.cap, .cyr, etc.) for uppercase
-	     * letters, regardless of PreferSpacingAccents setting. Having the
-	     * base combining accent (e.g. gravecomb) shouldn't prevent us from
-	     * finding the uppercase variant (e.g. gravecomb.cap). */
+	     * letters. Having the base combining accent (e.g. gravecomb) shouldn't
+	     * prevent us from finding the uppercase variant (e.g. gravecomb.cap). */
 	    if ( uni>=BottomAccent && uni<=TopAccent ) {
 		apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 		while ( test==NULL && apt<end ) {
