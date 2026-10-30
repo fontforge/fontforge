@@ -1002,38 +1002,38 @@ return( true );
 return( false );
 }
 
-static int haschar(SplineFont *sf,unichar_t ch,char *dot,bool strict=false) {
+static SplineChar* GetChar(SplineFont* sf, unichar_t ch, char* dot,
+                           bool strict = false) {
     char buffer[200], namebuf[200];
+    SplineChar* sc;
 
-    if ( dot==NULL || ch==-1 )
-return( SCWorthOutputting(SFGetChar(sf,ch,NULL)) );
-    snprintf(buffer,sizeof(buffer),"%s%s",
-	    (char *) StdGlyphName(namebuf,ch,sf->uni_interp,sf->for_new_glyphs),
-	    dot);
-    if ( SCWorthOutputting(SFGetChar(sf,-1,buffer)) )
-return( true );
-    else if ( !strict && isaccent(ch))
-return( SCWorthOutputting(SFGetChar(sf,ch,NULL)) );
+    if (dot == NULL || ch == -1) return SFGetChar(sf, ch, NULL);
+
+    if (dot) {
+        // Query glyph with canonic name (usually from AGLFN) and dot suffix.
+        snprintf(buffer, sizeof(buffer), "%s%s",
+                 (char*)StdGlyphName(namebuf, ch, sf->uni_interp,
+                                     sf->for_new_glyphs),
+                 dot);
+        if (sc = SFGetChar(sf, -1, buffer)) return sc;
+
+        // Query glyph with its actual name and dot suffix.
+        sc = SFGetChar(sf, ch, NULL);
+        if (sc && sc->name) {
+            snprintf(buffer, sizeof(buffer), "%s%s", sc->name, dot);
+            if (sc = SFGetChar(sf, -1, buffer)) return sc;
+        }
+    }
+
+    if (!strict && isaccent(ch))
+        return SFGetChar(sf, ch, NULL);
     else
-return( false );
+        return NULL;
 }
 
-static SplineChar *GetChar(SplineFont *sf,unichar_t ch,char *dot) {
-    char buffer[200], namebuf[200];
-    SplineChar *sc;
-    /* Basically the same as above */
-
-    if ( dot==NULL || ch==-1 )
-return( SFGetChar(sf,ch,NULL) );
-    snprintf(buffer,sizeof(buffer),"%s%s",
-	    (char *) StdGlyphName(namebuf,ch,sf->uni_interp,sf->for_new_glyphs),
-	    dot);
-    if ( (sc = SFGetChar(sf,-1,buffer)) )
-return( sc );
-    else if ( isaccent(ch))
-return( SFGetChar(sf,ch,NULL) );
-    else
-return( NULL );
+static int haschar(SplineFont* sf, unichar_t ch, char* dot,
+                   bool strict = false) {
+    return (SCWorthOutputting(GetChar(sf, ch, dot, strict)));
 }
 
 static const unichar_t *arabicfixup(SplineFont *sf, const unichar_t *upt, int ini, int final) {
@@ -1906,17 +1906,7 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	}
     }
 
-    rsc = NULL;
-    if ( dot!=NULL ) {
-	snprintf(buffer,sizeof(buffer),"%s%s",
-		(char *) StdGlyphName(namebuf,ach,sf->uni_interp,sf->for_new_glyphs),
-		dot);
-	rsc = SFGetChar(sf,-1,buffer);
-    }
-    if ( rsc==NULL ) {
-	rsc = SFGetChar(sf,ach,NULL);
-	dot = NULL;
-    }
+    rsc = GetChar(sf, ach, dot);
 
     /* Look to see if there are upper case variants of the accents available */
     if ( dot==NULL && ( isupper(basech) || (basech>=0x400 && basech<=0x52f) )) {
@@ -1940,28 +1930,20 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	if ( isupper(basech))
 	    suffixes[scnt++] = "cap";
 
+	/* Always look for suffixed variants (.cap, .cyr, etc.) for uppercase
+	 * letters. Having the base combining accent (e.g. gravecomb) shouldn't
+	 * prevent us from finding the uppercase variant (e.g. gravecomb.cap). */
 	for ( i=0; test==NULL && i<scnt; ++i ) {
-	    /* Always look for suffixed variants (.cap, .cyr, etc.) for uppercase
-	     * letters. Having the base combining accent (e.g. gravecomb) shouldn't
-	     * prevent us from finding the uppercase variant (e.g. gravecomb.cap). */
-	    if ( uni>=BottomAccent && uni<=TopAccent ) {
-		apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
-		while ( test==NULL && apt<end ) {
-		    int acc = *apt ? *apt : uni;
-		    sprintf( buffer,"%.70s.%s", StdGlyphName(buffer,acc,ui_none,(NameList *) -1), suffixes[i]);
-		    if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
-			rsc = test;
-		    if ( test==NULL ) {
-			sprintf( buffer,"uni%04X.%s", acc, suffixes[i]);
-			if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
-			    rsc = test;
-		    }
-		    if ( *apt=='\0' )
-		break;
-		    ++apt;
-		}
+	    sprintf( buffer,"%s.%s", rsc->name, suffixes[i]);
+	    if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
+		rsc = test;
+	    if ( test==NULL ) {
+		sprintf( buffer,"uni%04X.%s", ach, suffixes[i]);
+		if ( (test = SFGetChar(sf,-1,buffer))!=NULL )
+		    rsc = test;
 	    }
 	}
+
 	/* Also look for capitalized accent names (e.g., Grave instead of grave) */
 	if ( test==NULL && uni>=BottomAccent && uni<=TopAccent && isupper(basech) ) {
 	    apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
