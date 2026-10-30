@@ -87,7 +87,7 @@ static const unichar_t accents[][4] = {
     { 0 },			/* left tack */
     { 0 },			/* right tack */
     { 0 },			/* left angle */
-    { 0 },			/* horn, sometimes comma but only if nothing better */
+    { 0x31b, ',' },		/* horn, sometimes comma but only if nothing better */
     { 0 },			/* half ring */
     { 0x2d4 },			/* up tack */
     { 0x2d5 },			/* down tack */
@@ -998,7 +998,7 @@ return( true );
 return( false );
 }
 
-static int haschar(SplineFont *sf,unichar_t ch,char *dot) {
+static int haschar(SplineFont *sf,unichar_t ch,char *dot,bool strict=false) {
     char buffer[200], namebuf[200];
 
     if ( dot==NULL || ch==-1 )
@@ -1008,7 +1008,7 @@ return( SCWorthOutputting(SFGetChar(sf,ch,NULL)) );
 	    dot);
     if ( SCWorthOutputting(SFGetChar(sf,-1,buffer)) )
 return( true );
-    else if ( isaccent(ch))
+    else if ( !strict && isaccent(ch))
 return( SCWorthOutputting(SFGetChar(sf,ch,NULL)) );
     else
 return( false );
@@ -1863,26 +1863,25 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
     /* cedilla on lower "g" becomes a turned comma above it */
     if ( uni==0x327 && basech=='g' && haschar(sf,0x312, dot))
 	uni = 0x312;
-    if ( ((haschar(sf,uni, dot) &&
-		!SCDependsOnSC(GetChar(sf,uni,dot),destination)) ||
-	    (dot!=NULL && haschar(sf,uni, NULL) &&
-		!SCDependsOnSC(GetChar(sf,uni,NULL),destination))) )
+    if (haschar(sf,uni, dot, true) &&
+		!SCDependsOnSC(GetChar(sf,uni,dot),destination))
+	// In the trivial case we get exactly what we want.
 	ach = uni;
     else if ( uni>=BottomAccent && uni<=TopAccent && (!haschar(sf,uni,NULL)) ) {
 	apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
-	while ( *apt && apt<end &&
-		(             GetChar(sf,*apt,dot) ==NULL || SCDependsOnSC(GetChar(sf,*apt,dot),destination)) &&
-		(dot==NULL || GetChar(sf,*apt,NULL)==NULL || SCDependsOnSC(GetChar(sf,*apt,NULL),destination)) )
-	    ++apt;
-	/* Use spacing accent if found. We enter this branch only 
-	   when combining accent doesn't exist. */
-	if ( *apt!='\0' && apt<end )
-	    ach = *apt;
-	else if ( haschar(sf,uni,dot) && !SCDependsOnSC(GetChar(sf,uni,dot),destination))
+	// First try to find an accent with the proper extension (strict=true).
+	for (bool strict : {true, false}) {
+	    for (const unichar_t* it = apt; ach == -1 && it != end; ++it)
+		if (haschar(sf,*it, dot, strict) && !SCDependsOnSC(GetChar(sf,*it,dot),destination))
+		    ach = *it;
+	}
+    } else
+	ach = uni;
+
+    if ( ach == -1 ) {
+	if ( haschar(sf,uni,dot) && !SCDependsOnSC(GetChar(sf,uni,dot),destination))
+	    /* We tried to fit with strict extension, to no avail. Now relax it. */
 	    ach = uni;
-	else if ( uni==0x31b && haschar(sf,',',NULL))
-	    /* Combining horn accent */
-	    ach = ',';
 	else {
 	    /* Attempt inverse accents as a fallback of last resort */
 	    static const std::map<int, std::vector<int>> inverse_accents = {
@@ -1901,8 +1900,7 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 		}
 	    }
 	}
-    } else
-	ach = uni;
+    }
 
     rsc = NULL;
     if ( dot!=NULL ) {
