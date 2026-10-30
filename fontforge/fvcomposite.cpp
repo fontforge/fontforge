@@ -26,6 +26,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <map>
+#include <vector>
+
 #include <fontforge-config.h>
 
 #include "autohint.h"
@@ -1878,14 +1881,25 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	else if ( haschar(sf,uni,dot) && !SCDependsOnSC(GetChar(sf,uni,dot),destination))
 	    ach = uni;
 	else if ( uni==0x31b && haschar(sf,',',NULL))
+	    /* Combining horn accent */
 	    ach = ',';
-	else if ( (uni == 0x30c || uni == 0x32c ) &&
-		(haschar(sf,0x302,dot) || haschar(sf,0x2c6,NULL) || haschar(sf,'^',NULL)) ) {
-	    *invert = true;
-	    if ( haschar(sf,'^',NULL) )
-		ach = '^';
-	    else
-		ach = 0x302;
+	else {
+	    /* Attempt inverse accents as a fallback of last resort */
+	    static const std::map<int, std::vector<int>> inverse_accents = {
+		{0x30c, {0x302, 0x2c6, '^'}}, // caron <- circumflex or tilde
+		{0x32c, {0x302, 0x2c6, '^'}}, // caron below
+		{0x311, {0x306, 0x2d8}}, // inverted breve <- breve
+		{0x32f, {0x306, 0x2d8}}, // inverted breve below
+	    };
+	    if (inverse_accents.count(uni)) {
+		for (int inv_acc : inverse_accents.at(uni)) {
+		    if (haschar(sf, inv_acc, dot) || haschar(sf, inv_acc, NULL)) {
+			*invert = true;
+			ach = inv_acc;
+			break;
+		    }
+		}
+	    }
 	}
     } else
 	ach = uni;
@@ -2200,8 +2214,9 @@ return;
 	}
 
 	if ( invert ) {
-	    /* yes, this transform does a vertical flip from the vertical midpoint of the breve */
-	    transform[3] = -1;
+	    /* yes, this transform rotates the breve around its center */
+	    transform[0] = transform[3] = -1;
+	    transform[4] = rbb.maxx+rbb.minx;
 	    transform[5] = rbb.maxy+rbb.miny;
 	}
 	if ( pos==FF_UNICODE_NOPOSDATAGIVEN ) {
@@ -2325,8 +2340,8 @@ return;
 	if ( ia!=0 )
 	    xoff += (italicoff = tan(-ia)*(rbb.miny+yoff-ybase));
     }	/* Anchor points */
-    transform[4] = xoff;
-    /*if ( invert ) transform[5] -= yoff; else */transform[5] += yoff;
+    transform[4] += xoff;
+    transform[5] += yoff;
 
     if ( bdf == NULL || !disp_only ) {
 	_SCAddRef(sc,rsc,layer,transform,false);
