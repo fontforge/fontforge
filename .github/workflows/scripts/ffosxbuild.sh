@@ -118,7 +118,7 @@ ls -ld "$APPDIR" "$APPDIR/Contents" || true
 ls -la "$APPDIR/Contents/Frameworks/Python.framework/Versions"
 ls -la "$APPDIR/Contents/Frameworks/Python.framework/Versions/3.15" || true
 ls -l "$APPDIR/Contents/Frameworks/Python.framework/Versions/3.15/lib/python3.15/site-packages/pip/_vendor/certifi/cacert.pem" || true
-ls -l /etc/ca-certificates/cert.pem
+ls -l /etc/ca-certificates/cert.pem || true
 
 # Verify integrity. Do NOT use spctl here: it rejects ad-hoc signatures by
 # design and would fail CI spuriously. notarytool (when enabled) is the real
