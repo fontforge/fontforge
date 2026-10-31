@@ -467,7 +467,8 @@ return !((b2 > o1) || (o2 < b1));
 /* To be used with qsort() - sorts BlueZone array by base in ascending order.
  */
 static int SortBlues(const void *a, const void *b) {
-    return ((BlueZone *)a)->base > ((BlueZone *)b)->base;
+    real ba = ((BlueZone *)a)->base, bb = ((BlueZone *)b)->base;
+    return (ba > bb) - (ba < bb);
 }
 
 /* Import blue data into global instructing context. Include family blues too.
@@ -617,7 +618,8 @@ static void GICImportBlues(GlobalInstrCt *gic) {
 /* To be used with qsort() - sorts StdStem array by width in ascending order.
  */
 static int SortStems(const void *a, const void *b) {
-    return ((StdStem *)a)->width > ((StdStem *)b)->width;
+    real wa = ((StdStem *)a)->width, wb = ((StdStem *)b)->width;
+    return (wa > wb) - (wa < wb);
 }
 
 /* Import stem data into global instructing context. We deal only with
@@ -2593,7 +2595,8 @@ static void init_edge(InstrCt *ct, real base, int contour_direction) {
 
 /* To be used with qsort() - sorts integer array in ascending order. */
 static int sortbynum(const void *a, const void *b) {
-    return *(int *)a > *(int *)b;
+    int ia = *(const int *)a, ib = *(const int *)b;
+    return (ia > ib) - (ia < ib);
 }
 
 /* Find element's index within an array - return -1 if element not found. */
@@ -4913,7 +4916,7 @@ struct stemedge {
 /* To be used with qsort() - sorts edge array in ascending order. */
 static int sortedges(const void *_e1, const void *_e2) {
     const struct stemedge *e1 = _e1, *e2 = _e2;
-    return ( e1->pos > e2->pos );
+    return ( e1->pos > e2->pos ) - ( e1->pos < e2->pos );
 }
 
 static int AddEdge(InstrCt *ct, StemData *stem, int is_l, struct stemedge *edgelist, int cnt) {

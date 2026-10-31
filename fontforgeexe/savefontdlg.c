@@ -98,6 +98,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_NativeKern		1118
 #define CID_TTF_OldKernMappedOnly 1119
 #define CID_TTF_FFTMTable	1120
+#define CID_TTF_LegacyRecommendedGlyphs	1121
 
 struct gfc_data {
     int done;
@@ -368,6 +369,8 @@ return( false );
 		    d->sfnt_flags |= ttf_flag_oldkernmappedonly;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_NoMacNames)) )
 		    d->sfnt_flags |= ttf_flag_nomacnames;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_LegacyRecommendedGlyphs)) )
+		    d->sfnt_flags |= ttf_flag_nospecialnullcr;
 	    } else {				/* PS + OpenType Bitmap */
 		d->ps_flags = d->psotb_flags = 0;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
@@ -405,6 +408,8 @@ return( false );
 		    d->psotb_flags |= ttf_flag_ofm;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_NoMacNames)) )
 		    d->psotb_flags |= ttf_flag_nomacnames;
+		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_LegacyRecommendedGlyphs)) )
+		    d->psotb_flags |= ttf_flag_nospecialnullcr;
 	    }
 	    d->sod_invoked = true;
 	}
@@ -467,6 +472,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetChecked(GWidgetGetControl(gw,CID_NativeKern),flags&ttf_native_kern);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKernMappedOnly),flags&ttf_flag_oldkernmappedonly);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_NoMacNames),flags&ttf_flag_nomacnames);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_LegacyRecommendedGlyphs),!(flags&ttf_flag_nospecialnullcr));
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),which!=1);
@@ -502,6 +508,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OldKernMappedOnly),which!=0 );
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_NoMacNames),which!=0 );
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_LegacyRecommendedGlyphs),which!=0);
 
     d->optset[which] = true;
 }
@@ -513,10 +520,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[36];
-    GTextInfo label[36];
+    GGadgetCreateData gcd[37];
+    GTextInfo label[37];
     GRect pos;
-    GGadgetCreateData *hvarray1[21], *hvarray2[44], *hvarray3[8], *harray[7], *varray[11];
+    GGadgetCreateData *hvarray1[21], *hvarray2[44], *hvarray3[10], *harray[7], *varray[11];
     GGadgetCreateData boxes[6];
 
     d->sod_done = false;
@@ -889,9 +896,19 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_NoMacNames;
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray3[5] = &gcd[k-1];
+    hvarray3[5] = &gcd[k-1]; hvarray3[6] = NULL;
 
-    hvarray3[6] = NULL; hvarray3[7] = NULL;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) _("Legacy recommended glyphs");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = _("Make sure legacy (pre-OT 1.8) recommended glyphs, namely '.notdef', '.null' and 'nonmarkingreturn', exist at the beginning of the glyph order. Starting OpenType 1.8, only '.notdef' is mandatory.");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_LegacyRecommendedGlyphs;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray3[7] = &gcd[k-1];
+
+    hvarray3[8] = NULL; hvarray3[9] = NULL;
 
     boxes[4].gd.flags = gg_enabled|gg_visible;
     boxes[4].gd.u.boxelements = hvarray3;

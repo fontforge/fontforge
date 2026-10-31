@@ -2416,10 +2416,30 @@ SplineFont *SFFromBDF(char *filename,int ispk,int toback) {
     SplineFont *sf = SplineFontBlank(256);
     EncMap *map = EncMapNew(256,256,&custom);
     BDFFont *bdf;
+    const char *version;
 
     sf->onlybitmaps = true;
     bdf = SFImportBDF(sf,filename,ispk,toback, map);
     sf->map = map;
+    if ( bdf!=NULL && bdf!=(BDFFont *) -1 &&
+	    (version = BdfPropHasString(bdf,"FONT_VERSION",NULL))!=NULL &&
+	    *version!='\0' && strpbrk(version,"\r\n")==NULL ) {
+	free(sf->version);
+	sf->version = utf8_valid(version) ? copy(version) : latin1_2_utf8_copy(version);
+	/* Preserve the default SFNT revision for imported labels that cannot
+	 * be represented by sethead's signed 16.16 conversion. */
+	const char *pt = sf->version;
+	while ( *pt && !isdigit((unsigned char) *pt) && *pt!='.' ) ++pt;
+	if ( *pt ) {
+	    double dval;
+	    locale_t tmplocale = NULL, oldlocale = NULL;
+	    switch_to_c_locale(&tmplocale,&oldlocale);
+	    dval = strtod(pt,NULL);
+	    switch_to_old_locale(&tmplocale,&oldlocale);
+	    if ( !(dval<32768) )
+		sf->sfntRevision = 0x00010000;
+	}
+    }
     if ( bdf==(BDFFont *) -1 )
 	/* Do Nothing: User cancelled a load of a duplicate pixelsize */;
     else if ( toback && bdf!=NULL )

@@ -4627,6 +4627,12 @@ This type may not be pickled.
       Do not include Mac names used on Classic Mac OS. This option does not
       affect native macOS (formerly known as Mac OS X) applications.
 
+   .. object:: no-special-null-cr
+
+      Do not specially treat glyphs named '.null' and 'nonmarkingreturn'.
+      That is, those glyphs will be neither automatically added nor reordered.
+      Starting OpenType 1.8 they are no longer mandatory.
+
    .. object:: round
 
       Round PS coordinates to integers

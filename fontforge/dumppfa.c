@@ -1690,8 +1690,11 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	cnt += 3;
 
     dumpf(dumpchar,data,"/FontInfo %d dict dup begin\n", cnt );
-    if ( sf->subfontcnt==0 && sf->version )
-	dumpf(dumpchar,data," /version (%s) readonly def\n", sf->version );
+    if ( sf->subfontcnt==0 && sf->version ) {
+	dumpstr(dumpchar,data," /version (");
+	dumpcarefully(dumpchar,data,sf->version);
+	dumpstr(dumpchar,data,") readonly def\n");
+    }
     if ( sf->copyright ) {
 	dumpf(dumpchar,data," /Notice (");
 	dumpcarefully(dumpchar,data,sf->copyright);
@@ -1779,7 +1782,9 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 	/* CID keyed fonts are language level 3 */
     } else {
 	dumpf(dumpchar,data,"%%%%Title: %s\n", sf->fontname);
-	dumpf(dumpchar,data,"%%Version: %s\n", sf->version);
+	dumpstr(dumpchar,data,"%Version: ");
+	if ( sf->version!=NULL ) dumpstr(dumpchar,data,sf->version);
+	dumpchar('\n',data);
     }
     dumpf(dumpchar,data,"%%%%CreationDate: %s", ctime(&now));
     if ( author!=NULL )
@@ -1847,7 +1852,9 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     int uniqueid;
     char buffer[50];
 
-    dumpf(dumpchar,data,"%%!PS-AdobeFont-1.0: %s %s\n", sf->fontname, sf->version?sf->version:"" );
+    dumpf(dumpchar,data,"%%!PS-AdobeFont-1.0: %s ", sf->fontname);
+    if ( sf->version!=NULL ) dumpstr(dumpchar,data,sf->version);
+    dumpchar('\n',data);
     if ( format==ff_ptype0 && (map->enc->is_unicodebmp || map->enc->is_unicodefull))
 	dumpf(dumpchar,data,"%%%%DocumentNeededResources: font ZapfDingbats\n" );
 /*  dumpf(dumpchar,data, "%%%%DocumentSuppliedResources: font %s\n", sf->fontname );*/
