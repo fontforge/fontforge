@@ -48,6 +48,7 @@ struct statemachinedlg;
 
 /* Dummy incomplete type which can be casted to C++ type ff::shapers::IShaper */
 typedef struct cpp_IShaper cpp_IShaper;
+typedef struct layout_context LayoutContext;
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -749,9 +750,6 @@ extern void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8_t *w);
 extern uint8_t *DebuggerGetWatchCvts(struct debugger_context *dc, int *n);
 extern int DebuggingFpgm(struct debugger_context *dc);
 
-
-extern void PrintFFDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
-extern void PrintWindowClose(void);
 extern void InsertTextDlg(CharView *cv);
 
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
@@ -1317,6 +1315,7 @@ extern void Prefs_LoadDefaultPreferences( void );
 
 extern void SPSelectNextPoint( SplinePoint *sp, int state );
 extern void SPSelectPrevPoint( SplinePoint *sp, int state );
+extern LayoutContext* MakeLayoutContext(SplineFont* sf, FontViewBase* fv);
 
 #ifndef _NO_PYTHON
 extern void CVSetToolsSubmenu(GMenuItem2 *py_menu);

@@ -31,6 +31,7 @@ extern void SFDefaultOS2Info(struct pfminfo *pfminfo, SplineFont *sf, char *font
 extern void SFDefaultOS2Simple(struct pfminfo *pfminfo, SplineFont *sf);
 extern void SFDefaultOS2SubSuper(struct pfminfo *pfminfo, int emsize, double italic_angle);
 extern void SFDummyUpCIDs(struct glyphinfo *gi, SplineFont *sf);
+extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont *sf);
 
 extern void putfixed(FILE *file, real dval);
 extern void putlong(FILE *file, int val);
