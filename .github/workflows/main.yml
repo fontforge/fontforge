@@ -85,7 +85,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: macos-14
+          - runner: macos-15
             arch: arm64
           - runner: macos-15-intel
             arch: intel
