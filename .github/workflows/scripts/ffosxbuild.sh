@@ -123,7 +123,7 @@ ls -l /etc/ca-certificates/cert.pem
 # Verify integrity. Do NOT use spctl here: it rejects ad-hoc signatures by
 # design and would fail CI spuriously. notarytool (when enabled) is the real
 # Gatekeeper-level check.
-codesign --verify --strict --verbose=4 "$APPDIR" 2>&1 || true
+codesign --verify --strict --verbose=4 "$APPDIR" 2>&1
 find -L "$APPDIR" -type l -print
 find "$APPDIR" -name CodeResources -print
 # ---------------------------------------------------------------------------
