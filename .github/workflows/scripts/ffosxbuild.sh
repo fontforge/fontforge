@@ -41,15 +41,16 @@ PYTHON=python$PYVER
 pycruft=$(realpath $(dirname $PYLIB)/../../..)
 
 echo "pycruft: $pycruft"
-mkdir -p $APPDIR/Contents/Frameworks
-cp -a $pycruft/Python.framework $APPDIR/Contents/Frameworks
+mkdir -p "$APPDIR/Contents/Frameworks/Python.framework"
+rsync -a --copy-unsafe-links "$pycruft/Python.framework/" "$APPDIR/Contents/Frameworks/Python.framework/"
 pushd $APPDIR/Contents/Frameworks/Python.framework/Versions/$PYVER/lib/$PYTHON/
 rm site-packages || rm -rf site-packages
 ln -s ../../../../../../Resources/opt/local/$PY_DLLS_PATH
 popd
 
 pushd $APPDIR/Contents/Resources/opt/local/$PY_DLLS_PATH
-cp -Rn "$pycruft/Python.framework/Versions/$PYVER/lib/$PYTHON/site-packages/" .
+rsync -a --copy-unsafe-links --ignore-existing \
+    "$pycruft/Python.framework/Versions/$PYVER/lib/$PYTHON/site-packages/" .
 popd
 
 find "$APPDIR/Contents/Frameworks/Python.framework" -type f -name '*.pyc' | xargs rm -rf

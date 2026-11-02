@@ -52,7 +52,9 @@ export DEPLOY_GTK_VERSION=3
 # linuxdeploy automatically detectes and uses custom AppRun
 install -m 755 $SCRIPT_BASE/../../../Packaging/AppDir/AppRun $APPDIR/AppRun
 
-./linuxdeploy.AppImage --appdir $APPDIR --plugin gtk --output appimage -i ../desktop/tango/scalable/org.fontforge.FontForge.svg -d ../desktop/org.fontforge.FontForge.desktop
+# appimagetool requires a PNG icon in the AppDir root.
+install -m 644 ../desktop/tango/256x256/org.fontforge.FontForge.png "$APPDIR/org.fontforge.FontForge.png"
+./linuxdeploy.AppImage --appdir $APPDIR --plugin gtk --output appimage -d ../desktop/org.fontforge.FontForge.desktop
 
 # List remaining external dependencies for debug purposes
 ./linuxdeploy.AppImage --appimage-extract
