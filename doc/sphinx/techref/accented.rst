@@ -47,6 +47,17 @@ What can be built?
   components named with the same extension. So "agrave.sc" would be built out of
   "a.sc" and "grave.sc". If the accent variant does not exist then FontForge will
   also try the bare accent "grave".
+* There are a few predefined extensions that FontForge knows about and locates 
+  automatically:
+
+  * ``.cap`` extension is used for upper case letters, so "Agrave"
+    will be built out of "A" and "grave.cap" (or "grave" if "grave.cap" does not
+    exist).
+  * ``.cyr`` extension is used for cyrillic letters, so "adieresiscyrillic"
+    will be built out of "acyrillic" and "dieresis.cyr" (or "dieresis" if
+    "dieresis.cyr" does not exist).
+  * ``.cyrcap`` extension is used for upper case cyrillic letters.
+
 * FontForge knows a few other things. It knows that Greek "Alpha" and Cyrillic A
   both look like the Latin "A" and will replace either if you ask. (as well as all
   the other similar glyphs in latin, greek, cyrillic, cherokee, etc.)

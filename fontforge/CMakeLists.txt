@@ -145,7 +145,7 @@ add_library(fontforge
   fontviewbase.c
   freetype.c
   ftdelta.c
-  fvcomposite.c
+  fvcomposite.cpp
   fvfonts.c
   fvimportbdf.c
   fvmetrics.c
