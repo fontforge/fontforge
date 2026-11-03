@@ -1324,7 +1324,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     int32_t *sizes=NULL;
     int iscid, i;
     struct sflist *sfs=NULL, *cur, *last=NULL;
-    static int psscalewarned=0, ttfscalewarned=0, psfnlenwarned=0;
+    static int psfnlenwarned=0;
     int flags;
     struct sflist *sfl;
     char **former;
@@ -1408,11 +1408,12 @@ return;
     if ( likecff || oldformatstate<=ff_cffcid ||
 	     (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont) ||
         oldformatstate==ff_woff_otf || oldformatstate==ff_woff2_otf) {
-	if ( d->sf->ascent+d->sf->descent!=1000 && !psscalewarned ) {
-	    if ( gwwv_ask(_("Non-standard Em-Size"),(const char **) buts,0,1,_("The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\nDo you wish to continue to generate your font in spite of this?"),
-		    d->sf->ascent+d->sf->descent)==1 )
-return;
-	    psscalewarned = true;
+	if ( d->sf->ascent+d->sf->descent!=1000 ) {
+	    LogError(_("The convention is that PostScript fonts should have an Em-Size of "
+		"1000. But this font has a size of %d. This is not an error, but "
+		"you might consider altering the Em-Size with the Element->Font "
+		"Info->General dialog."),
+		d->sf->ascent + d->sf->descent);
 	}
 	if ( (strlen(d->sf->fontname)>31 || (d->sf->familyname!=NULL && strlen(d->sf->familyname)>31)) && !psfnlenwarned ) {
 	    if ( gwwv_ask(_("Bad Font Name"),(const char **) buts,0,1,_("Some versions of Windows will refuse to install postscript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"))==1 )
@@ -1426,10 +1427,12 @@ return;
 	for ( bit=0x800000; bit!=0; bit>>=1 )
 	    if ( bit==val )
 	break;
-	if ( bit==0 && !ttfscalewarned ) {
-	    if ( gwwv_ask(_("Non-standard Em-Size"),(const char **) buts,0,1,_("The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\nDo you wish to continue to generate your font in spite of this?"),val)==1 )
-return;
-	    ttfscalewarned = true;
+	if ( bit==0 ) {
+	    LogError(_("The convention is that TrueType fonts should have an Em-Size which "
+		"is a power of 2. But this font has a size of %d. This is not an "
+		"error, but you might consider altering the Em-Size with the "
+		"Element->Font Info->General dialog."),
+		val);
 	}
     }
 
