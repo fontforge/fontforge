@@ -29,6 +29,7 @@
 #define FONTFORGE_INTL_H
 
 #include <fontforge-config.h>
+#include <stdbool.h>
 
 #if !defined( HAVE_LIBINTL_H )
 
@@ -76,6 +77,7 @@ extern "C" {
 
 char *sgettext(const char *msgid);
 void gettext_locale(char *buffer, int size);
+bool gettext_locale_is_rtl();
 
 #ifdef __cplusplus
 }

@@ -768,6 +768,9 @@ int fontforge_main( int argc, char **argv ) {
     }
     gdk_set_allowed_backends("win32,quartz,x11");
     gtk_init(&argc, &argv);
+    if ( gettext_locale_is_rtl() )
+	gtk_widget_set_default_direction(GTK_TEXT_DIR_RTL);
+
     ensureDotFontForgeIsSetup();
 #if defined(__MINGW32__)
     //Load any custom fonts for the user interface
