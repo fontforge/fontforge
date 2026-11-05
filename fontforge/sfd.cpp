@@ -3605,6 +3605,8 @@ static ImageList *SFDGetImage(FILE *sfd) {
     }
     gethex(sfd,&trans);
     image = GImageCreate((enum image_type)image_type,width,height);
+    if ( image==NULL )
+	return( NULL );
     base = image->list_len==0?image->u.image:image->u.images[0];
     img = (ImageList *)calloc(1,sizeof(ImageList));
     img->image = image;
