@@ -44,6 +44,13 @@ class L10nText {
         return l10n_text_;
     }
 
+    operator const char*() const {
+        if (!text_.empty() && l10n_text_.empty()) {
+            l10n_text_ = gettext(text_.c_str());
+        }
+        return l10n_text_.c_str();
+    }
+
  private:
     Glib::ustring text_;
     mutable Glib::ustring l10n_text_;

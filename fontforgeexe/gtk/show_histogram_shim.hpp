@@ -78,8 +78,8 @@ struct HistogramData {
 
 struct UiStrings {
     L10nText title;
-    std::string primary_label;
-    std::string secondary_label;
+    L10nText primary_label;
+    L10nText secondary_label;
 };
 
 const std::map<hist_type, UiStrings> kHistogramUiStrings = {
