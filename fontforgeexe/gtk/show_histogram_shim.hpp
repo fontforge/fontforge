@@ -83,9 +83,9 @@ struct UiStrings {
 };
 
 const std::map<hist_type, UiStrings> kHistogramUiStrings = {
-    {hist_hstem, {_("Horizontal Stem Hints"), "StdHW", "StemSnapH"}},
-    {hist_vstem, {_("Vertical Stem Hints"), "StdVW", "StemSnapV"}},
-    {hist_blues, {_("Blues"), "BlueValues", "OtherBlues"}},
+    {hist_hstem, {_("Horizontal Stem Hints"), _("StdHW:"), _("StemSnapH:")}},
+    {hist_vstem, {_("Vertical Stem Hints"), _("StdVW:"), _("StemSnapV:")}},
+    {hist_blues, {_("Blues"), _("BlueValues:"), _("OtherBlues:")}},
 };
 
 std::optional<PrivateDictValues> show_histogram_dialog(
