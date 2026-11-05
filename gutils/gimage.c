@@ -38,6 +38,9 @@ GImage *GImageCreate(enum image_type type, int32_t width, int32_t height) {
     if ( type<it_mono || type>it_rgba )
 	return( NULL );
 
+    if ( width<=0 || height<=0 || width>0xffffff || height>0xffffff )
+	return( NULL );
+
     gi = (GImage *) calloc(1,sizeof(GImage));
     base = (struct _GImage *) malloc(sizeof(struct _GImage));
     if ( gi==NULL || base==NULL )
@@ -51,7 +54,7 @@ GImage *GImageCreate(enum image_type type, int32_t width, int32_t height) {
     base->data = NULL;
     base->clut = NULL;
     base->trans = COLOR_UNKNOWN;
-    if ( (base->data = (uint8_t *) malloc(height*base->bytes_per_line))==NULL )
+    if ( (base->data = (uint8_t *) malloc((size_t)height*(size_t)base->bytes_per_line))==NULL )
 	goto errorGImageCreate;
     if ( type==it_index ) {
 	if ( (base->clut = (GClut *) calloc(1,sizeof(GClut)))==NULL ) {
