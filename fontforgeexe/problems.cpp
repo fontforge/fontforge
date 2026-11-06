@@ -2975,7 +2975,7 @@ static std::vector<ProblemRecord> pr_hints = {
         "hint masks should have no overlapping hints within a hint mask."),
      false}};
 
-static std::vector<ProblemRecord> pr_att = {
+static std::vector<ProblemRecord> pr_lookups = {
     {CID_MissingGlyph, N_("Check for missing _glyph names"),
      N_("Check whether a substitution, kerning class, etc. uses a glyph name "
         "which does not match any glyph in the font"),
@@ -3047,7 +3047,7 @@ static std::vector<ProblemRecord> pr_random = {
 static std::vector<ProblemTab> pr_tabs = {
     {N_("Points"), pr_points},   {N_("Paths"), pr_paths},
     {N_("References"), pr_refs}, {N_("Hints"), pr_hints},
-    {N_("ATT"), pr_att},         {N_("CID"), pr_cid},
+    {N_("Lookups"), pr_lookups}, {N_("CID"), pr_cid},
     {N_("Bounding Box"), pr_bb}, {N_("Random"), pr_random}};
 
 static void adjust_problem_records(FontView* fv,
