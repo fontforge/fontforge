@@ -1,0 +1,8 @@
+#Needs: fonts/Ambrosia.sfd fonts/pdf_repeated_kids.pdf
+# Import a PDF whose /Pages node lists the same /Page 500 times,
+# more entries than the file has objects. The page list must not
+# be written past its end.
+Open($1);
+Select("A");
+Import($2);
+Close();
