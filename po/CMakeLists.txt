@@ -6,7 +6,15 @@
 # * Run the 'fullpo' command to generate the .po files, merged
 #   with the master .pot file and with context
 
-# TODO: Probably should add a FindXGettext or something
+file(GLOB_RECURSE _fontforgeexe_sources
+  RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+  "../fontforgeexe/*.c"
+  "../fontforgeexe/*.cpp"
+  "../fontforgeexe/*.h"
+  "../fontforgeexe/*.hpp"
+)
+list(SORT _fontforgeexe_sources)
+
 add_custom_target(potfiles
   COMMAND xgettext
     --from-code=utf-8
@@ -16,9 +24,7 @@ add_custom_target(potfiles
     "-o${CMAKE_CURRENT_BINARY_DIR}/FontForge.pot"
     ../fontforge/*.c
     ../fontforge/*.cpp
-    ../fontforgeexe/*.c
-    ../fontforgeexe/*.cpp
-    ../fontforgeexe/gtk/*.cpp
+    ${_fontforgeexe_sources}
     ../gdraw/*.c
     ../gutils/*.c
     ../inc/*.h
