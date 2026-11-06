@@ -145,7 +145,7 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
 
     if (mode != bitmaps_dlg_avail) {
         glyphs_combo_ = build_glyphs_combo(has_current_char);
-        get_content_area()->pack_start(glyphs_combo_);
+        get_content_area()->pack_start(*glyphs_combo_);
     }
 
     pixels_entry_.set_text(SizeString(sizes));
@@ -217,7 +217,8 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
     show_all();
 }
 
-Gtk::ComboBoxText BitmapsDlg::build_glyphs_combo(bool has_current_char) const {
+widgets::ComboText* BitmapsDlg::build_glyphs_combo(
+    bool has_current_char) const {
     static const std::vector<std::pair<Glib::ustring, Glib::ustring>>
         glyphs_combo_items = {
             {"all", _("All Glyphs")},
@@ -225,9 +226,9 @@ Gtk::ComboBoxText BitmapsDlg::build_glyphs_combo(bool has_current_char) const {
             {"current", _("Current Glyph")},
         };
 
-    Gtk::ComboBoxText glyphs_combo;
+    auto glyphs_combo = Gtk::make_managed<widgets::ComboText>();
     for (const auto& [item_id, item_label] : glyphs_combo_items) {
-        glyphs_combo.append(item_id, item_label);
+        glyphs_combo->append(item_id, item_label);
     }
 
     // In Font View the current character is not applicable, and we need to
@@ -235,23 +236,12 @@ Gtk::ComboBoxText BitmapsDlg::build_glyphs_combo(bool has_current_char) const {
     // Views the current character is applicable, but the selection belongs to
     // an obscured Font View, and acting on it would be counterintuitive.
     Glib::ustring disabled_item = has_current_char ? "selection" : "current";
+    glyphs_combo->set_item_sensitive(disabled_item, false);
 
     Glib::ustring active_item = (last_scope_ == "all") ? last_scope_
                                 : has_current_char     ? "current"
                                                        : "selection";
-    glyphs_combo.set_active_id(active_item);
-
-    Gtk::CellRenderer* renderer = glyphs_combo.get_first_cell();
-    glyphs_combo.set_cell_data_func(
-        *renderer,
-        [renderer, disabled_item](const Gtk::TreeModel::const_iterator& it) {
-            // In the Gtk::ComboBoxText, the second column of the TreeModel
-            // contains the item id as a string. It's a sacred knowledge, we
-            // must not question it.
-            Glib::ustring item_id;
-            it->get_value(1, item_id);
-            renderer->set_sensitive(item_id != disabled_item);
-        });
+    glyphs_combo->set_active_id(active_item);
 
     return glyphs_combo;
 }
@@ -284,7 +274,7 @@ BitmapSizes BitmapsDlg::get_sizes() const {
 bool BitmapsDlg::get_rasterize() const { return rasterize_check_.get_active(); }
 
 Glib::ustring BitmapsDlg::get_active_scope() const {
-    return glyphs_combo_.get_active_id();
+    return glyphs_combo_->get_active_id();
 }
 
 }  // namespace ff::dlg

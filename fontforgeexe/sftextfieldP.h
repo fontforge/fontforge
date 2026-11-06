@@ -72,7 +72,6 @@ typedef struct sftextarea {
 	    uint32_t script, uint32_t lang, uint32_t *features);
 } SFTextArea;
 
-extern void SFTFRefreshFonts(GGadget *g);
 extern void SFTextAreaShow(GGadget *g,int pos);
 extern void SFTextAreaSelect(GGadget *g,int start, int end);
 extern void SFTextAreaReplace(GGadget *g,const unichar_t *txt);

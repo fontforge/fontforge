@@ -26,7 +26,7 @@
  */
 #pragma once
 
-#include <libintl.h>
+#include "intl.h"
 #include <ffglib.h>
 
 // Seamlessly localize a string using implicit constructor and conversion.
@@ -39,7 +39,7 @@ class L10nText {
 
     operator Glib::ustring() const {
         if (!text_.empty() && l10n_text_.empty()) {
-            l10n_text_ = gettext(text_.c_str());
+            l10n_text_ = sgettext(text_.c_str());
         }
         return l10n_text_;
     }

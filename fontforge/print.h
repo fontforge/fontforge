@@ -111,14 +111,6 @@ typedef struct printinfo {
     int lastx, lasty;
 } PI, DI;
 
-extern struct printdefaults {
-    Encoding *last_cs;
-    enum printtype pt;
-    int pointsize;
-    unichar_t *text;
-} pdefs[];
-/* defaults for print from fontview, charview, metricsview */
-
 extern void PI_Init(PI *pi,FontViewBase *fv,SplineChar *sc);
 extern void DoPrinting(PI *pi,char *filename);
 extern int PdfDumpGlyphResources(PI *pi,SplineChar *sc);

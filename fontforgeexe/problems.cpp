@@ -30,6 +30,7 @@
 
 #include <vector>
 #include <assert.h>
+#include <map>
 #include <math.h>
 
 extern "C" {
@@ -52,10 +53,44 @@ extern "C" {
 #include "tottfgpos.h"
 #include "ttf.h"
 #include "ustring.h"
+
+#include "l10n_text.hpp"
+#include "tag.hpp"
 #include "gtk/find_problems_shim.hpp"
 
 using ff::dlg::ProblemRecord;
 using ff::dlg::ProblemTab;
+
+extern "C" {
+extern GTextInfo scripts[];
+extern GTextInfo languages[];
+}
+
+namespace {
+
+static std::map<ff::Tag, L10nText> TagLabelsMapFromArray(GTextInfo* array) {
+    std::map<ff::Tag, L10nText> labels;
+
+    for (int i = 0; array[i].text != NULL; ++i) {
+        ff::Tag tag((uint32_t)(intptr_t)array[i].userdata);
+        const char* label = array[i].text != NULL ? (const char*)array[i].text
+                                                  : (const char*)tag;
+        labels.emplace(tag, label);
+    }
+
+    return labels;
+}
+
+}  // namespace
+
+// TODO(iorsh): Find a better place for these functions.
+std::map<ff::Tag, L10nText> ScriptLabelsMap(void) {
+    return TagLabelsMapFromArray(scripts);
+}
+
+std::map<ff::Tag, L10nText> LanguageLabelsMap(void) {
+    return TagLabelsMapFromArray(languages);
+}
 
 /* ************************************************************************** */
 /* ***************************** Problems Dialog **************************** */

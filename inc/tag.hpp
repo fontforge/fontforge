@@ -58,6 +58,8 @@ class Tag {
         return operator==(rhs.c_str());
     }
 
+    bool operator<(const Tag& rhs) const { return arr < rhs.arr; }
+
  private:
     // OpenType tags normally have four characters, the fifth is the trailing
     // zero.

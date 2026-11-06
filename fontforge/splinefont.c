@@ -58,6 +58,7 @@
 #include "utype.h"
 #include "winfonts.h"
 #include "woff.h"
+#include "layout/layout_shim.hpp"
 
 #include <locale.h>
 #include <math.h>
@@ -390,6 +391,19 @@ void SplineFontSetUnChanged(SplineFont *sf) {
     if ( sf->mm!=NULL )
 	for ( i=0; i<sf->mm->instance_count; ++i )
 	    _SplineFontSetUnChanged(sf->mm->instances[i]);
+}
+
+cpp_SplineFontProperties* SFGetProperties(SplineFont* sf) {
+    return make_SplineFontProperties(
+        sf->ascent, sf->descent,
+        (sf->italicangle != 0.0) ||
+            ((sf->pfminfo.pfmset && sf->pfminfo.stylemap != -1)
+                 ? sf->pfminfo.stylemap & 0x01
+                 : false),
+        sf->pfminfo.pfmset ? sf->pfminfo.weight : 400,
+        sf->pfminfo.pfmset ? sf->pfminfo.width : 5,
+        sf->familyname ? sf->familyname : "", SFGetModifiers(sf),
+        sf->fullname ? sf->fullname : sf->fontname);
 }
 
 static char *scaleString(char *string, double scale) {

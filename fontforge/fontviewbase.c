@@ -42,6 +42,7 @@
 #include "fvfonts.h"
 #include "gfile.h"
 #include "groups.h"
+#include "lookups.h"
 #include "namelist.h"
 #include "psfont.h"
 #include "pua.h"
@@ -52,8 +53,13 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottf.h"
+#include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
+#include "wordlistparser.h"
+#include "shapers/shaper_shim.hpp"
+#include "layout/layout_shim.hpp"
 
 #include <math.h>
 #include "ffunistd.h"
@@ -2184,3 +2190,91 @@ void FF_SetMVInterface(struct mv_interface *mvi) {
     mv_interface = mvi;
 }
 
+/* Collect all open fonts, not just the same family as sf_in. */
+SplineFont** FVCollectFonts(SplineFont* sf_in) {
+    int cnt;
+    FontViewBase* fv;
+    SplineFont *sf = NULL, **family = NULL;
+
+    for (fv = FontViewFirst(), cnt = 0; fv != NULL; fv = fv->next)
+        if (fv->nextsame == NULL) ++cnt;
+    family = calloc(cnt + 1, sizeof(SplineFont*));
+
+    for (fv = FontViewFirst(), cnt = 0; fv != NULL; fv = fv->next) {
+        if (fv->nextsame == NULL) {
+            sf = fv->sf;
+            if (sf->cidmaster != NULL) sf = sf->cidmaster;
+
+            /* Skip the incoming argument */
+            if (sf == sf_in)
+                continue;
+
+            family[cnt] = sf;
+            ++cnt;
+        }
+    }
+
+    return family;
+}
+
+SplineChar** FVGetSelection(FontViewBase* fv) {
+    int i, gid, cnt = 0;
+
+    for (i = 0; i < fv->map->enccount; ++i) {
+        if (fv->selected[i] && (gid = fv->map->map[i]) != -1 &&
+            fv->sf->glyphs[gid] != NULL)
+            ++cnt;
+    }
+
+    SplineChar** result = malloc((cnt + 1) * sizeof(SplineChar*));
+
+    cnt = 0;
+    for (i = 0; i < fv->map->enccount; ++i) {
+        if (fv->selected[i] && (gid = fv->map->map[i]) != -1 &&
+            fv->sf->glyphs[gid] != NULL)
+            result[cnt++] = fv->sf->glyphs[gid];
+    }
+    result[cnt] = NULL;
+
+    return result;
+}
+
+static void char_metrics(MetricsView* UNUSED(mv), SplineChar* sc,
+                         int16_t* width, int16_t* vwidth) {
+    SCCharMetrics(sc, width, vwidth);
+}
+
+static int dummy_get_kern_offset(struct opentype_str* UNUSED(ots)) { return 0; }
+
+static ShaperContext* MakeEmptyShaperContext() {
+    ShaperContext* context = calloc(1, sizeof(ShaperContext));
+    context->sf = NULL;
+    context->mv = NULL;
+    context->apply_ticked_features = ApplyTickedFeatures;
+    context->get_char_metrics = char_metrics;
+    context->get_kern_offset = dummy_get_kern_offset;
+    context->script_is_rtl = ScriptIsRightToLeft;
+    context->get_or_make_char = SFGetOrMakeChar;
+    context->write_font_into_memory = WriteTTFFontForShaper;
+    context->get_name = SCGetName;
+    context->get_encoding = SCGetEncoding;
+
+    return context;
+}
+
+LayoutContext* MakeLayoutContext(SplineFont* sf, FontViewBase* fv) {
+    LayoutContext* context = calloc(1, sizeof(LayoutContext));
+    context->sf = sf;
+    context->fv = fv;
+    context->make_shaper_context = MakeEmptyShaperContext;
+    context->char_is_rtl = SCRightToLeft;
+    context->get_name = SCGetName;
+    context->get_encoding = SCGetEncoding;
+    context->get_char = SFGetChar;
+    context->collect_fonts = FVCollectFonts;
+    context->make_glyph_ttf_map = MakeGlyphTTFMap;
+    context->get_selection = FVGetSelection;
+    context->escaped_input_string_to_utf8 = WordlistEscapedInputStringToUTF8;
+
+    return context;
+}
