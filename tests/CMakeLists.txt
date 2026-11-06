@@ -100,6 +100,7 @@ if(ENABLE_NATIVE_SCRIPTING AND NOT BUILDING_WHEEL)
   add_ff_test(test137.pe "Ambrosia.sfd"                                            "file:// protocol")
   add_ff_test(test138.pe                                                           "Array sanity checking")
   add_ff_test(test139.pe "StrokeTests.sfd"                                            "ExpandStroke parameters")
+  add_ff_test(test140.pe "Ambrosia.sfd" "pdf_repeated_kids.pdf"                   "Import PDF with more page references than objects")
 endif()
 
 if(ENABLE_PYTHON_SCRIPTING_RESULT)

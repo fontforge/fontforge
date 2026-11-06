@@ -686,7 +686,8 @@ static void pdf_addpages(struct pdfcontext *pc, int obj) {
     if ( pdf_findobject(pc,obj) && pdf_readdict(pc) ) {
 	if ( (pt=PSDictHasEntry(&pc->pdfdict,"Type"))!=NULL ) {
 	    if ( strcmp(pt,"/Page")==0 ) {
-		pc->pages[pc->pcnt++] = obj;
+		if ( pc->pcnt < pc->ocnt )
+		    pc->pages[pc->pcnt++] = obj;
 	    } else if ( strcmp(pt,"/Pages")==0 ) {
 		if ( (pt=PSDictHasEntry(&pc->pdfdict,"Kids"))!=NULL ) {
 		    char *kids = copy(pt);
