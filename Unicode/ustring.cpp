@@ -569,8 +569,21 @@ char *u2utf8_strncpy(char *utf8buf,const unichar_t *ubuf,int len) {
     assert(utf8buf != NULL);
 
     if ( ubuf!=NULL ) {
-        while ( *ubuf && (--len != 0) ) {
-            pt=utf8_idpb(pt,*ubuf++,0);
+        if (len > 0) {
+            char *end = utf8buf + len - 1; /* Reserve 1 byte for the NUL */
+            while ( *ubuf && pt < end ) {
+                uint32_t ch = *ubuf;
+                int seqlen = (ch < 0x80) ? 1 : (ch < 0x800) ? 2 :
+                             (ch < 0x10000) ? 3 : 4;
+                if (pt + seqlen > end)
+                    break;
+                pt = utf8_idpb(pt, *ubuf++, 0);
+            }
+        } else {
+            /* len < 0: no bound (u2utf8_strcpy; caller must ensure capacity) */
+            while ( *ubuf ) {
+                pt = utf8_idpb(pt, *ubuf++, 0);
+            }
         }
         *pt = '\0';
         return( utf8buf );
