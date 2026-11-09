@@ -78,14 +78,14 @@ struct HistogramData {
 
 struct UiStrings {
     L10nText title;
-    L10nText primary_label;
-    L10nText secondary_label;
+    std::string primary_label;
+    std::string secondary_label;
 };
 
 const std::map<hist_type, UiStrings> kHistogramUiStrings = {
-    {hist_hstem, {_("Horizontal Stem Hints"), _("StdHW:"), _("StemSnapH:")}},
-    {hist_vstem, {_("Vertical Stem Hints"), _("StdVW:"), _("StemSnapV:")}},
-    {hist_blues, {_("Blues"), _("BlueValues:"), _("OtherBlues:")}},
+    {hist_hstem, {_("Horizontal Stem Hints"), "StdHW", "StemSnapH"}},
+    {hist_vstem, {_("Vertical Stem Hints"), "StdVW", "StemSnapV"}},
+    {hist_blues, {_("Blues"), "BlueValues", "OtherBlues"}},
 };
 
 std::optional<PrivateDictValues> show_histogram_dialog(

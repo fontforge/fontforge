@@ -125,9 +125,9 @@ static void HistSet(SplineFont* sf, struct psdict* private_dict,
         private_dict->keys = (char**)calloc(10, sizeof(char*));
         private_dict->values = (char**)calloc(10, sizeof(char*));
     }
-    PSDictChangeEntry(private_dict, ui_strings.primary_label,
+    PSDictChangeEntry(private_dict, ui_strings.primary_label.c_str(),
                       result.primary.c_str());
-    PSDictChangeEntry(private_dict, ui_strings.secondary_label,
+    PSDictChangeEntry(private_dict, ui_strings.secondary_label.c_str(),
                       result.secondary.c_str());
 }
 
@@ -194,9 +194,11 @@ void SFHistogram(GWindow parent, SplineFont* sf, int layer,
     const ff::dlg::UiStrings& ui_strings =
         ff::dlg::kHistogramUiStrings.at(dlg_data.type);
 
-    if ((j = PSDictFindEntry(private_dict, ui_strings.primary_label)) != -1)
+    if ((j = PSDictFindEntry(private_dict, ui_strings.primary_label.c_str())) !=
+        -1)
         dlg_data.initial_values.primary = private_dict->values[j];
-    if ((j = PSDictFindEntry(private_dict, ui_strings.secondary_label)) != -1)
+    if ((j = PSDictFindEntry(private_dict,
+                             ui_strings.secondary_label.c_str())) != -1)
         dlg_data.initial_values.secondary = private_dict->values[j];
 
     std::optional<ff::dlg::PrivateDictValues> result =

@@ -249,7 +249,7 @@ Gtk::Box* ShowHistogramDlg::build_entry_box(
     widgets::VerifiedEntry& entry, Glib::RefPtr<Gtk::SizeGroup> label_group) {
     auto entry_box = Gtk::make_managed<Gtk::Box>(
         Gtk::ORIENTATION_HORIZONTAL, 0.5 * ff::ui_utils::ui_font_em_size());
-    auto label_widget = Gtk::make_managed<Gtk::Label>(label);
+    auto label_widget = Gtk::make_managed<Gtk::Label>(label + ":");
     label_widget->set_xalign(0.0);
     label_widget->set_valign(Gtk::ALIGN_CENTER);
     label_group->add_widget(*label_widget);
