@@ -6,7 +6,7 @@
 # * Run the 'fullpo' command to generate the .po files, merged
 #   with the master .pot file and with context
 
-file(GLOB_RECURSE CONFIGURE_DEPENDS _fontforgeexe_sources
+file(GLOB_RECURSE _fontforgeexe_sources CONFIGURE_DEPENDS
   RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
   "../fontforgeexe/*.c"
   "../fontforgeexe/*.cpp"
