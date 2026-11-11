@@ -58,3 +58,10 @@ void gettext_locale(char* buffer, int size) {
 	buffer[i] = loc[i];
     buffer[i] = 0;
 }
+
+bool gettext_locale_is_rtl() {
+    char loc[100];
+    gettext_locale(loc, sizeof(loc));
+    return (strncmp(loc, "ar", 2) == 0 || strncmp(loc, "he", 2) == 0 ||
+	    strncmp(loc, "fa", 2) == 0 || strncmp(loc, "ur", 2) == 0);
+}

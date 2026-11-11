@@ -61,14 +61,22 @@ FindProblemsDlg::FindProblemsDlg(GWindow parent,
     get_content_area()->pack_start(*Gtk::make_managed<Gtk::HSeparator>(),
                                    Gtk::PACK_SHRINK, 5);
 
+    std::string near_label = U_("¹ \"Near\" means within %f em-units");
+    std::string first_part = near_label, second_part = "";
+    // Use "%f" marker to split the label into two parts, so that the numerical
+    // entry can be placed in between.
+    size_t pos = near_label.find("%f");
+    if (pos != std::string::npos) {
+        first_part = near_label.substr(0, pos);
+        second_part = near_label.substr(pos + 2);
+    }
     auto near_value_box = Gtk::make_managed<Gtk::HBox>();
     near_value_entry_.set_width_chars(6);
     near_value_entry_.set_value(near);
-    near_value_box->pack_start(
-        *Gtk::make_managed<Gtk::Label>(U_("¹ \"Near\" means within")),
-        Gtk::PACK_SHRINK);
+    near_value_box->pack_start(*Gtk::make_managed<Gtk::Label>(first_part),
+                               Gtk::PACK_SHRINK);
     near_value_box->pack_start(near_value_entry_, Gtk::PACK_SHRINK);
-    near_value_box->pack_start(*Gtk::make_managed<Gtk::Label>(_("em-units")),
+    near_value_box->pack_start(*Gtk::make_managed<Gtk::Label>(second_part),
                                Gtk::PACK_SHRINK);
     get_content_area()->pack_start(*near_value_box);
 

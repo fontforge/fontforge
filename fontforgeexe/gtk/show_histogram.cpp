@@ -249,7 +249,14 @@ Gtk::Box* ShowHistogramDlg::build_entry_box(
     widgets::VerifiedEntry& entry, Glib::RefPtr<Gtk::SizeGroup> label_group) {
     auto entry_box = Gtk::make_managed<Gtk::Box>(
         Gtk::ORIENTATION_HORIZONTAL, 0.5 * ff::ui_utils::ui_font_em_size());
-    auto label_widget = Gtk::make_managed<Gtk::Label>(label + ":");
+
+    // GT: The %s string is a non-translatable PrivateDict key name, like
+    // "StemSnapH". This label marks a text entry field with multiple numerical
+    // values in it.
+    char* p_label = smprintf(S_("Histogram|%s:"), label.c_str());
+    auto label_widget = Gtk::make_managed<Gtk::Label>(p_label);
+    free(p_label);
+
     label_widget->set_xalign(0.0);
     label_widget->set_valign(Gtk::ALIGN_CENTER);
     label_group->add_widget(*label_widget);
