@@ -3050,8 +3050,8 @@ static void PSTKD_AddKP(void *data,SplineChar *left, SplineChar *right, int off)
 	/* If the user has already got this combination in the lookup */
 	/*  then don't add a new guess, and don't override the old */
 	if ( psts[i*cols+0].u.md_str!=NULL && psts[i*cols+1].u.md_str!=NULL &&
-	    strcmp(psts[i*cols+0].u.md_str,first->name)==0 &&
-	    strcmp(psts[i*cols+1].u.md_str,second->name)==0 )
+	    strcmp(psts[i*cols+0].u.md_str,SCNameUniStr(first))==0 &&
+	    strcmp(psts[i*cols+1].u.md_str,SCNameUniStr(second))==0 )
 return;
     }
 
@@ -3059,8 +3059,8 @@ return;
     if ( i >= pstkd->rows )
 	pstkd->psts = psts = realloc(psts,(pstkd->rows += 100)*cols*sizeof(struct matrix_data));
     memset(psts+i*cols,0,cols*sizeof(struct matrix_data));
-    psts[i*cols+0].u.md_str = copy(first->name);
-    psts[i*cols+1].u.md_str = copy(second->name);
+    psts[i*cols+0].u.md_str = SCNameUniStr(first);
+    psts[i*cols+1].u.md_str = SCNameUniStr(second);
     if ( pstkd->sub->lookup->lookup_flags & pst_r2l )
 	psts[i*cols+PAIR_DX_ADV1].u.md_ival = psts[i*cols+PAIR_DX1].u.md_ival = off;
     /* else if ( pstkd->sub->vertical_kerning ) */	/* We don't do vertical stuff */
