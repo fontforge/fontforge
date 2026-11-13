@@ -7,12 +7,1815 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-04 22:43+0200\n"
-"PO-Revision-Date: 2026-01-01 08:00+UTC\n"
-"Last-Translator: Maxim Iorsh <iorsh@users.sourceforge.net>\n"
-"Language-Team: \n"
-"Language: he\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
+"Last-Translator: \n"
+"Language-Team: Hebrew\n"
+"Language: he_IL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n>1);\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n==2 ? 1 : 2);\n"
+"X-Crowdin-Project: fontforge\n"
+"X-Crowdin-Project-ID: 368599\n"
+"X-Crowdin-Language: he\n"
+"X-Crowdin-File: FontForge.pot\n"
+"X-Crowdin-File-ID: 2\n"
+
+msgid " Adding a size will create it by scaling."
+msgstr "הוספת גודל תיצור גופן סיביות ע״י סילום"
+
+msgid " Adding a size will create it."
+msgstr "הוספת גודל תיצור גופן סיביות"
+
+msgid " Removing a size will delete it."
+msgstr "מחיקת גודל תמחק את גופן הסיביות המתאים"
+
+#, c-format
+msgid "%d x %d pixels"
+msgstr "%d × %d פיקסלים"
+
+msgid "'attrs' (if any):"
+msgstr "שדה 'attrs' (אם קיים)"
+
+msgid "Abkhazian"
+msgstr "אבחזית"
+
+msgid "Adlam"
+msgstr "אדלם"
+
+msgid "Adyghe"
+msgstr "אדיגית"
+
+msgid "Afar"
+msgstr "אפארית"
+
+msgid "Afrikaans"
+msgstr "אפריקאנס"
+
+msgid "Ahom"
+msgstr "אהום"
+
+msgid "Akan"
+msgstr "אקאן"
+
+msgid "Albanian"
+msgstr "אלבנית"
+
+msgid "All Glyphs"
+msgstr "כל הגליפים"
+
+msgid "All paths should be closed loops, there should be no exposed endpoints"
+msgstr "כל הנתיבים אמורים להיות לולאות סגורות, אין להשאיר קצוות חופשיים"
+
+msgid "Allows you to check that horizontal stems in several characters start at the same location."
+msgstr "הבדיקה מוודאת שקווים אופקיים בגליפים הנבחרים מתחילים באותו מיקום"
+
+msgid "Allows you to check that stems have consistent widths.."
+msgstr "הבדיקה מוודאת שלקווי הגליפים יש רוחב עקבי"
+
+msgid "Allows you to check that vertical stems in several characters start at the same location."
+msgstr "הבדיקה מוודאת שקווים אנכיים בגליפים הנבחרים מתחילים באותו מיקום"
+
+msgid "Allows you to find control points which are almost, but not quite horizontal or vertical from their base point (or at the italic angle)."
+msgstr "הבדיקה מוצאת נקודות בקרה שנמצאות כמעט, אבל לא בדיוק בקו אופקי או בקו אנכי מנקודת הבסיס שלהן (או בזווית הטיה)"
+
+msgid "Allows you to find control points which when projected onto the line segment between the two end points lie outside of those end points"
+msgstr "הבדיקה מוצאת נקודות בקרה אשר היטל שלהן על קטע ישר בין נקודות הקצה חורג הקצוות האלה"
+
+msgid "Allows you to find lines which are almost, but not quite horizontal or vertical (or at the italic angle)."
+msgstr "הבדיקה מאתרת קווים שהם כמעט, אבל לא בדיוק אופקיים או אנכיים (או בזווית ההטיה של הגופן)"
+
+msgid "Allows you to find points which are slightly off from the baseline, xheight, cap height, ascender, descender heights."
+msgstr "הבדיקה מוצאת נקודות הסוטות במעט מקו הבסיס, גובה אות, גובה אות ראשית וכד׳"
+
+#. GT: The _3 is used to mark an accelerator
+msgid "Almost stem_3 hint"
+msgstr "רמזים כמעט בתבנית stem3"
+
+msgid "Anatolian Hieroglyphs"
+msgstr "הירוגליפים האנטוליים"
+
+msgid "Aragonese"
+msgstr "אראגונית"
+
+msgid "Are there any bitmap glyphs whose advance width is not is expected from scaling and rounding the outline's advance width?"
+msgstr "האם ישנם גליפי סיביות שרוחב הקידום שלהם שונה מהצפוי בהתחשב ברוחב קידום של גליפי מתאר תואמים לאחר סילום ועיגול?"
+
+msgid "Are there any glyph's whose bounding boxes extend above this number?"
+msgstr "האם ישנם גליפים עם תיבה תוחמת חורגת מעל הערך המוצג"
+
+msgid "Are there any glyph's whose bounding boxes extend below this number?"
+msgstr "האם ישנם גליפים עם תיבה תוחמת חורגת מתחת לערך המוצג"
+
+msgid "Are there any glyph's whose bounding boxes extend to the left of this number?"
+msgstr "האם ישנם גליפים עם תיבה תוחמת חורגת שמאלה מהערך המוצג"
+
+msgid "Are there any glyphs whose bounding boxes extend to the right of this number?"
+msgstr "האם ישנם גליפים עם תיבה תוחמת חורגת ימינה מהערך המוצג"
+
+msgid "Are there any outline characters which don't have a bitmap version in one of the bitmap fonts? Conversely are there any bitmap characters without a corresponding outline character?"
+msgstr "האם ישנם גליפי מתאר עם גליפי סיביות תואמים חסרים באחד מגופני סיביות? לחילופין, האם ישנם גליפי סיביות ללא גליף מתאר תואם?"
+
+msgid "Aromanian"
+msgstr "ארומנית"
+
+msgid "Assamese"
+msgstr "אסאמית"
+
+msgid "Asturian"
+msgstr "אסטורית"
+
+msgid "Awadhi"
+msgstr "אוואדית"
+
+msgid "Aymara"
+msgstr "איימארית"
+
+msgid "Azerbaijani"
+msgstr "אזרית"
+
+msgid "Baluchi"
+msgstr "באלוצ׳י"
+
+msgid "Bambara"
+msgstr "במבארה"
+
+msgid "Bamum"
+msgstr "במום"
+
+msgid "Bar width:"
+msgstr "רוחב עמודה:"
+
+msgid "Bashkir"
+msgstr "בשקירית"
+
+msgid "Basque"
+msgstr "בסקית"
+
+msgid "Bassa Vah"
+msgstr "באסה ואה"
+
+msgid "Bavarian"
+msgstr "בווארית"
+
+msgid "Bemba"
+msgstr "במבה"
+
+msgid "Bhaiksuki"
+msgstr "בהיקסוקי"
+
+msgid "Bhojpuri"
+msgstr "בוג׳פורי"
+
+msgid "Bikol"
+msgstr "ביקול"
+
+msgid "Bislama"
+msgstr "ביסלמה"
+
+msgid "Bitmap Strikes Available"
+msgstr "גדלים זמינים של גופני סיביות"
+
+msgid "Bitmap/outline _advance mismatch"
+msgstr "אי התאמת קידום בין גליף מתאר לסיביות"
+
+msgid "BlueValues come in pairs. Select another."
+msgstr "ערכי BlueValues באים בזוגות. יש לבחור ערך נוסף."
+
+msgid "Blues"
+msgstr "ערכי Blues"
+
+msgid "Bodo"
+msgstr "בודו"
+
+msgid "Bopomofo"
+msgstr "בופומופו"
+
+msgid "Bosnian"
+msgstr "בוסנית"
+
+msgid "Bounding Box"
+msgstr "תיבה תוחמת"
+
+msgid "Braille"
+msgstr "ברייל"
+
+msgid "Breton"
+msgstr "ברטונית"
+
+msgid "Bulgarian"
+msgstr "בולגרית"
+
+msgid "Burmese"
+msgstr "בורמזית"
+
+msgid "CID"
+msgstr "מזה״ת"
+
+msgid "Cajun French"
+msgstr "צרפתית קייג׳ונית"
+
+msgid "Carian"
+msgstr "קריאן"
+
+msgid "Catalan"
+msgstr "קטלאנית"
+
+msgid "Caucasian Albanian"
+msgstr "אלבני קווקזי"
+
+msgid "Cayuga"
+msgstr "קאיוגה"
+
+msgid "Cebuano"
+msgstr "סבואנו"
+
+msgid "Chakma"
+msgstr "צ׳אקמה"
+
+msgid "Chamorro"
+msgstr "צ׳מורו"
+
+msgid "Chechen"
+msgstr "צ׳צ׳נית"
+
+msgid "Check Unicode/name mismatch"
+msgstr "בדיקת אי תאימות שם ליוניקוד"
+
+msgid "Check _flipped references"
+msgstr "גליפים מופנים הפוכים"
+
+msgid "Check _missing extrema"
+msgstr "נקודות קיצון חסרות"
+
+msgid "Check _outermost paths clockwise"
+msgstr "נתיבים חיצוניים בכיוון השעון"
+
+msgid "Check advance:"
+msgstr "בדיקת קידום"
+
+msgid "Check for CIDs defined _twice"
+msgstr "מזהי תווים כפולים"
+
+msgid "Check for _irrelevant control points with factor (%)"
+msgstr "חפש נקודות בקרה מיותרות עם שיעור (%)"
+
+msgid "Check for _undefined CIDs"
+msgstr "מזהי תווים לא מוגדרים"
+
+msgid "Check for characters which contain 'GSUB' entries which refer to empty characters"
+msgstr "הבדיקה מאתרת גליפים שאחת הרשומות שלהם בטבלת GSUB מפנה לגליף ריק"
+
+msgid "Check for characters whose advance width is not the displayed value."
+msgstr "איתור גליפים עם רוחב קידום שונה מהערך המוצג"
+
+msgid "Check for characters whose name maps to a unicode code point which does not map the character's assigned code point."
+msgstr "הבדיקה מאתרת גליפים עם שם שתואם לקוד יוניקוד שונה מהקוד שנקבע עבור אותו גליף"
+
+msgid "Check for characters whose vertical advance width is not the displayed value."
+msgstr "איתור גליפים עם גובה קידום שונה מהערך המוצג"
+
+msgid "Check for incomplete mark to base subtables"
+msgstr "תת־טבלאות סימן־לבסיס לא שלמות"
+
+msgid "Check for missing _glyph names"
+msgstr "שמות גליפים חסרים"
+
+msgid "Check for missing _scripts in features"
+msgstr "סוגי כתב חסרים בתכונות"
+
+msgid "Check for multiple characters with the same Unicode code point"
+msgstr "הבדיקה מאתרת גליפים כפולים עם אותו קוד יוניקוד"
+
+msgid "Check for multiple characters with the same name"
+msgstr "הבדיקה מאתרת גליפים כפולים עם אותו שם"
+
+msgid "Check missing _bitmaps"
+msgstr "בדיקת גליפי סיביות חסרים"
+
+msgid "Check multiple Unicode"
+msgstr "בדיקת כפל יוניקוד"
+
+msgid "Check multiple names"
+msgstr "בדיקת כפל שמות"
+
+msgid "Check substitutions for empty chars"
+msgstr "תחליפים ריקים"
+
+msgid "Check vertical advance:"
+msgstr "בדיקת קידום אנכי"
+
+msgid "Check whether a CID is defined in more than one sub-font"
+msgstr "הבדיקה מאתרת מזהי תווים שהוגדרו ביותר מתת־גופן אחד"
+
+msgid "Check whether a CID is undefined in all sub-fonts"
+msgstr "הבדיקה מאתרת מזהי תווים שלא הוגדרו באף תת־גופן"
+
+msgid "Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font"
+msgstr "הבדיקה מאתרת שמות גליפים בטבלאות תחליפים, ציפוף וכד׳ שאינם תואמים לאף גליף בגופן"
+
+msgid "Cheyenne"
+msgstr "שאיין"
+
+msgid "Chiga"
+msgstr "צ׳יגה"
+
+msgid "Chipewyan"
+msgstr "צ׳יפוויאן"
+
+msgid "Choctaw"
+msgstr "צ׳וקטאו"
+
+msgid "Chuukese"
+msgstr "צ׳וקסה"
+
+msgid "Chuvash"
+msgstr "צ׳ובאש"
+
+msgid "Clear All"
+msgstr "לנקות הכל"
+
+msgid "Comorian"
+msgstr "קומורית"
+
+msgid "Control points _beyond spline"
+msgstr "נקודות בקרה חורגות מעקומת האיפוץ"
+
+msgid "Control points are irrelevant if they are too close to the main point to make a significant difference in the shape of the curve. The minimum relevant distance is computed as a factor of distance between the main points."
+msgstr "נקודת בקרה נחשבת מיותרת אם היא צמודה מדי לנקודת קצה ולא משפיעה על צורת העקום. מרחק משמעותי מינימלי מחושב כחלק יחסי של מרחק בין נקודות הקצה."
+
+msgid "Cornish"
+msgstr "קורנית"
+
+msgid "Corsican"
+msgstr "קורסיקנית"
+
+#, c-format
+msgid "Count: %u"
+msgstr "סך הכל: %u"
+
+#, c-format
+msgid "Count: %u (average: %.2f)"
+msgstr "סך הכל: %u (ממוצע: %.2f)"
+
+msgid "Create Rasterized Strikes (Not empty ones)"
+msgstr "ליצור גדלים ברסטריזציה (לא ריקים)"
+
+msgid "Cree"
+msgstr "קרי"
+
+msgid "Crimean Tatar"
+msgstr "טטרית של קרים"
+
+msgid "Croatian"
+msgstr "קרואטית"
+
+msgid "Current Glyph"
+msgstr "גליף נוכחי"
+
+msgid "Cypro-Minoan"
+msgstr "ציפרו-מינואן"
+
+msgid "Cyrillic"
+msgstr "קירילי"
+
+msgid "Czech"
+msgstr "צ׳כית"
+
+msgid "Danish"
+msgstr "דנית"
+
+msgid "Dargwa"
+msgstr "דרגווה"
+
+msgid "Dari"
+msgstr "דארי"
+
+msgid "Devanagari"
+msgstr "דוואנגרי"
+
+msgid "Dinka"
+msgstr "דינקה"
+
+msgid "Divehi"
+msgstr "דיבהי"
+
+msgid "Dives Akuru"
+msgstr "אותיות אי"
+
+msgid "Dogra"
+msgstr "דוגרה"
+
+msgid "Dutch"
+msgstr "הולנדית"
+
+msgid "Dzongkha"
+msgstr "דזונקה"
+
+msgid "Efik"
+msgstr "אפיק"
+
+msgid "Either a glyph should have no overlapping hints, or a glyph with hint masks should have no overlapping hints within a hint mask."
+msgstr "אין להגדיר רמזים חופפים בגליף, וגם אין להגדיר רמזים חופפים במסכה המשוייכת לנקודה מסויימת"
+
+msgid "Elbasan"
+msgstr "אלבסאן"
+
+msgid "Elymaic"
+msgstr "אלימי"
+
+msgid "English"
+msgstr "אנגלית"
+
+msgid "Erzya"
+msgstr "ארזיה"
+
+msgid "Esperanto"
+msgstr "אספרנטו"
+
+msgid "Estonian"
+msgstr "אסטונית"
+
+msgid "Ewe"
+msgstr "אווה"
+
+msgid "Fang"
+msgstr "פנג"
+
+msgid "Fanti"
+msgstr "פאנטי"
+
+msgid "Faroese"
+msgstr "פארואזית"
+
+msgid "Fijian"
+msgstr "פיג׳ית"
+
+msgid "Filipino"
+msgstr "פיליפינית"
+
+msgid "Find Problems"
+msgstr "איתור בעיות"
+
+msgid "Finnish"
+msgstr "פינית"
+
+msgid "Flemish"
+msgstr "הולנדית (פלמית)"
+
+msgid "Fon"
+msgstr "פון"
+
+msgid "FontForge internally uses paths drawn in a clockwise direction. This lets you check that they are. Before doing this test insure that no paths self-intersect."
+msgstr "הייצוג הפנימי של הנתיבים ב־FontForge נעשה בכיוון השעון. בדיקה זו מוודאת שזה אכן המצב. יש לוודא שאף נתיב אינו חוצה את עצמו לפני ביצוע בדיקה זו."
+
+msgid "French"
+msgstr "צרפתית"
+
+msgid "Friulian"
+msgstr "פריולית"
+
+msgid "Ga"
+msgstr "גא"
+
+msgid "Gagauz"
+msgstr "גגאוזית"
+
+msgid "Galician"
+msgstr "גליציאנית"
+
+msgid "Ganda"
+msgstr "גאנדה"
+
+msgid "German"
+msgstr "גרמנית"
+
+msgid "Ghostview (perhaps other interpreters) has a problem when a hint exists without any points that lie on it."
+msgstr "תוכנת Ghostview (ואולי עוד מפענחים) נכשלת כקיים רמז ללא נקודות ששוכנות בו"
+
+msgid "Glagolitic"
+msgstr "גלגוליטי"
+
+msgid "Glyph bounding box above"
+msgstr "תיבה תוחמת של גליף גבוהה מ־"
+
+msgid "Glyph bounding box below"
+msgstr "תיבה תוחמת של גליף נמוכה מ־"
+
+msgid "Glyph bounding box left of"
+msgstr "תיבה תוחמת של גליף משמאל ל־"
+
+msgid "Glyph bounding box right of"
+msgstr "תיבה תוחמת של גליף מימין ל־"
+
+msgid "Gondi"
+msgstr "גונדי"
+
+msgid "Gothic"
+msgstr "גותי"
+
+msgid "Grantha"
+msgstr "גרנתה"
+
+msgid "Guarani"
+msgstr "גוארני"
+
+msgid "Gunjala Gondi"
+msgstr "ג’ונג’לה מבולבל"
+
+msgid "Gurmukhi"
+msgstr "גורמוקי"
+
+msgid "Gusii"
+msgstr "גוסי"
+
+msgid "Haida"
+msgstr "האידה"
+
+msgid "Halkomelem"
+msgstr "הלקומלם"
+
+msgid "Hangul"
+msgstr "האנגול"
+
+msgid "Haryanvi"
+msgstr "הריאנבי"
+
+msgid "Hatran"
+msgstr "חטרן"
+
+msgid "Hausa"
+msgstr "האוסה"
+
+msgid "Hawaiian"
+msgstr "הוואית"
+
+msgid "Herero"
+msgstr "הררו"
+
+msgid "Hiligaynon"
+msgstr "היליגאינון"
+
+msgid "Hindi"
+msgstr "הינדי"
+
+msgid "Hint _width near¹"
+msgstr "רוחב רמז קרוב¹ ל־"
+
+msgid "Hints"
+msgstr "רמזים"
+
+msgid "Hiri Motu"
+msgstr "הירי מוטו"
+
+#. GT: The %s string is a non-translatable PrivateDict key name, like
+#. "StemSnapH". This label marks a text entry field with multiple numerical
+#. values in it.
+#, c-format
+msgid "Histogram|%s:"
+msgstr "ערכי %s:"
+
+msgid "Hmong"
+msgstr "המונג"
+
+msgid "Horizontal Stem Hints"
+msgstr "רמזים לקווים אופקיים"
+
+msgid "Hungarian"
+msgstr "הונגרית"
+
+msgid "Iban"
+msgstr "איבאן"
+
+msgid "Ibibio"
+msgstr "איביביו"
+
+msgid "Icelandic"
+msgstr "איסלנדית"
+
+msgid "Ido"
+msgstr "אידו"
+
+msgid "If a glyph has been edited so that it has a different number of points now, then any references which use point matching and depended on that glyph's point count will be incorrect."
+msgstr "אם הגליף המופנה נערך כך שמספר הנקודות בו השתנה, ההפניות שמסתמכות על התאמת נקודות ותלויות במספר נקודות מוגדר, עשויות להיות לא תקינות"
+
+msgid "If two adjacent points on the same path are less than a few emunits apart they will cause problems for some of FontForge's commands. PostScript shouldn't care though."
+msgstr "נקודות עוקבות על אותו נתיב שהמרחק ביניהן קטן מיחידות em בודדות, עלולות לגרום לבעיות בפקודות מסיימות של FontForge. עם זאת, תצוגת הגופן אינה מושפעת."
+
+msgid "Igbo"
+msgstr "איגבו"
+
+msgid "Image Info"
+msgstr "מאפייני תמונה"
+
+msgid "Image Size:"
+msgstr "גודל תמונה (רוחב × גובה):"
+
+msgid "Image at:"
+msgstr "מיקום תמונה (y, x):"
+
+msgid "Imperial Aramaic"
+msgstr "ארמית רשמית"
+
+msgid "In every lookup that uses a glyph, check that at least one feature is active for the glyph's script."
+msgstr "לכל מתווה שמשתמש בגליף בודקים שיש לפחות תכונה פעילה אחת עבור סוג הכתב של אותו גליף"
+
+msgid "Inari Sami"
+msgstr "אינארי סאמי"
+
+msgid "Indonesian"
+msgstr "אינדונזית"
+
+msgid "Ingush"
+msgstr "אינגושית"
+
+msgid "Inscriptional Pahlavi"
+msgstr "פהלווי כתובתי"
+
+msgid "Inscriptional Parthian"
+msgstr "פרטית כתובה"
+
+msgid "Interlingua"
+msgstr "‏אינטרלינגואה"
+
+msgid "Interlingue"
+msgstr "אינטרלינגה"
+
+msgid "Intersecting paths"
+msgstr "נתיבים מצטלבים"
+
+msgid "Inuktitut"
+msgstr "אינוקטיטוט"
+
+msgid "Irish"
+msgstr "אירית"
+
+msgid "Italian"
+msgstr "איטלקית"
+
+msgid "Japanese"
+msgstr "יפנית"
+
+msgid "Kabardian"
+msgstr "קברדית"
+
+msgid "Kabuverdianu"
+msgstr "קאבוורדיאנו"
+
+msgid "Kabyle"
+msgstr "קבילה"
+
+msgid "Kaithi"
+msgstr "קאיתי"
+
+msgid "Kalenjin"
+msgstr "קלנג׳ין"
+
+msgid "Kalmyk"
+msgstr "קלמיקית"
+
+msgid "Kamba"
+msgstr "קמבה"
+
+msgid "Kanuri"
+msgstr "קאנורי"
+
+msgid "Karelian"
+msgstr "קארלית"
+
+msgid "Kashmiri"
+msgstr "קשמירית"
+
+msgid "Kashubian"
+msgstr "קשובית"
+
+msgid "Kawi"
+msgstr "קאווי"
+
+msgid "Kayah Li"
+msgstr "קאי לי"
+
+msgid "Kazakh"
+msgstr "קזחית"
+
+msgid "Khasi"
+msgstr "קהאסי"
+
+msgid "Khojki"
+msgstr "חוג׳קי"
+
+msgid "Khudawadi"
+msgstr "חודוואדי"
+
+msgid "Kikuyu"
+msgstr "קיקויו"
+
+msgid "Kinyarwanda"
+msgstr "קנירואנדית"
+
+msgid "Komi"
+msgstr "קומי"
+
+msgid "Komi-Permyak"
+msgstr "קומי-פרמיאקית"
+
+msgid "Kongo"
+msgstr "קונגו"
+
+msgid "Konkani"
+msgstr "קונקאני"
+
+msgid "Korean"
+msgstr "קוריאנית"
+
+msgid "Kosraean"
+msgstr "קוסראיאן"
+
+msgid "Kpelle"
+msgstr "קפלה"
+
+msgid "Kuanyama"
+msgstr "קואניאמה"
+
+msgid "Kumyk"
+msgstr "קומיקית"
+
+msgid "Kurdish"
+msgstr "כורדית סוראנית"
+
+msgid "Kurukh"
+msgstr "קורוק"
+
+msgid "Ladino"
+msgstr "לדינו"
+
+msgid "Language List"
+msgstr "רשימת שפות"
+
+msgid "Language Missing"
+msgstr "לא נבחרה שפה"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Malayalam", ignore "Lang|"
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Amharic", ignore "Lang|"
+msgid "Lang|Amharic"
+msgstr "אמהרית"
+
+msgid "Lang|Arabic"
+msgstr "ערבית"
+
+msgid "Lang|Armenian"
+msgstr "ארמנית"
+
+msgid "Lang|Balinese"
+msgstr "באלינזית"
+
+msgid "Lang|Cherokee"
+msgstr "צ׳רוקי"
+
+msgid "Lang|Coptic"
+msgstr "קופטית"
+
+msgid "Lang|Georgian"
+msgstr "גאורגית"
+
+msgid "Lang|Greek"
+msgstr "יוונית"
+
+msgid "Lang|Gujarati"
+msgstr "גוג׳ארטי"
+
+msgid "Lang|Hebrew"
+msgstr "עברית"
+
+msgid "Lang|Javanese"
+msgstr "יאוואית"
+
+msgid "Lang|Kannada"
+msgstr "קנאדה"
+
+msgid "Lang|Khmer"
+msgstr "חמרית"
+
+msgid "Lang|Lao"
+msgstr "לאו"
+
+msgid "Lang|Latin"
+msgstr "לטינית"
+
+msgid "Lang|Makasar"
+msgstr "מקסאר"
+
+msgid "Lang|Manchu"
+msgstr "מנצ׳ו"
+
+msgid "Lang|Mongolian"
+msgstr "מונגולית"
+
+msgid "Lang|Odia"
+msgstr "אורייה"
+
+msgid "Lang|Persian"
+msgstr "פרסית"
+
+msgid "Lang|Sinhala"
+msgstr "סינהלה"
+
+msgid "Lang|Sundanese"
+msgstr "סונדנזית"
+
+msgid "Lang|Syriac"
+msgstr "סורית"
+
+msgid "Lang|Tagalog"
+msgstr "טאגאלוג"
+
+msgid "Lang|Tamil"
+msgstr "טמילית"
+
+msgid "Lang|Telugu"
+msgstr "טלוגו"
+
+msgid "Lang|Thai"
+msgstr "תאית"
+
+msgid "Lang|Tibetan"
+msgstr "טיבטית"
+
+msgid "Latvian"
+msgstr "לטבית"
+
+msgid "Ligurian"
+msgstr "ליגורית"
+
+msgid "Limburgish"
+msgstr "לימבורגית"
+
+msgid "Linear A"
+msgstr "ליניארי א"
+
+msgid "Linear B"
+msgstr "ליניארי ב"
+
+msgid "Lingala"
+msgstr "לינגלה"
+
+msgid "Lithuanian"
+msgstr "ליטאית"
+
+msgid "Lojban"
+msgstr "לוז׳באן"
+
+msgid "Lombard"
+msgstr "לומברדית"
+
+msgid "Lookups"
+msgstr "מתווים"
+
+msgid "Low Saxon"
+msgstr "סקסונית תחתית"
+
+msgid "Lower Sorbian"
+msgstr "סורבית תחתית"
+
+msgid "Luba-Katanga"
+msgstr "לובה-קטנגה"
+
+msgid "Luba-Lulua"
+msgstr "לובה-לולואה"
+
+msgid "Lule Sami"
+msgstr "לולה סאמי"
+
+msgid "Luo"
+msgstr "לואו"
+
+msgid "Luxembourgish"
+msgstr "לוקסמבורגית"
+
+msgid "Luyia"
+msgstr "לויה"
+
+msgid "Lycian"
+msgstr "ליקי"
+
+msgid "Lydian"
+msgstr "לידי"
+
+msgid "Macedonian"
+msgstr "מקדונית"
+
+msgid "Magahi"
+msgstr "מאגאהית"
+
+msgid "Mahajani"
+msgstr "מהג׳אני"
+
+msgid "Maithili"
+msgstr "מאיטילית"
+
+msgid "Makasar"
+msgstr "מקאסאר"
+
+msgid "Makhuwa"
+msgstr "מאקואה"
+
+msgid "Makonde"
+msgstr "מקונדה"
+
+msgid "Malagasy"
+msgstr "מלגשית"
+
+msgid "Malay"
+msgstr "מלאית"
+
+msgid "Maltese"
+msgstr "מלטית"
+
+msgid "Mandar"
+msgstr "מנדאר"
+
+msgid "Manichaean"
+msgstr "מניצ׳י"
+
+msgid "Manipuri"
+msgstr "מניפורית"
+
+msgid "Manx"
+msgstr "מאנית"
+
+msgid "Marathi"
+msgstr "מראטהית"
+
+msgid "Marchen"
+msgstr "מרצ׳ן"
+
+msgid "Marshallese"
+msgstr "מרשלית"
+
+msgid "Marwari"
+msgstr "מרווארי"
+
+msgid "Masaram Gondi"
+msgstr "מסארם גונדי"
+
+msgid "Mazanderani"
+msgstr "מאזאנדראני"
+
+msgid "Medefaidrin"
+msgstr "מדפיידרין"
+
+msgid "Medumba"
+msgstr "מדומבה"
+
+msgid "Mende"
+msgstr "מנדה"
+
+msgid "Meroitic Cursive"
+msgstr "קורסית מרואיטית"
+
+msgid "Meru"
+msgstr "מרו"
+
+msgid "Minangkabau"
+msgstr "מיננגקבאו"
+
+msgid "Mirandese"
+msgstr "מירנדזית"
+
+msgid "Mixed contours and references"
+msgstr "עירבוב של נתיבים והפניות"
+
+msgid "Mizo"
+msgstr "מיזו"
+
+msgid "Modi"
+msgstr "מודי"
+
+msgid "Module Name:"
+msgstr "שם המודול:"
+
+msgid "Mohawk"
+msgstr "מוהוק"
+
+msgid "Moksha"
+msgstr "מוקשה"
+
+msgid "Moldavian"
+msgstr "מולדבית"
+
+msgid "Moose Cree"
+msgstr "מוס קרי"
+
+msgid "Morisyen"
+msgstr "קריאולית מאוריציאנית"
+
+msgid "Mossi"
+msgstr "מוסי"
+
+msgid "Most font formats cannot specify adjacent points (or control points) which are more than 32767 em-units apart in either the x or y direction"
+msgstr "רוב סוגי גופנים אינם תומכים בנקודות בסיס עוקבות או נקודות בקרה שהמרחק ביניהן עולה על 32767 יחידות em בציר x או y"
+
+msgid "Mro"
+msgstr "מרו"
+
+msgid "Multani"
+msgstr "מולטיני"
+
+msgid "Multiple references with use-my-metrics"
+msgstr "הפניות מרובות עם סיבית .\"מידות־שלי\""
+
+msgid "Muscogee"
+msgstr "קריק"
+
+msgid "Nabataean"
+msgstr "נבטי"
+
+msgid "Name:"
+msgstr "שם:"
+
+msgid "Nandinagari"
+msgstr "ננדינאגרי"
+
+msgid "Navajo"
+msgstr "נאוואחו"
+
+msgid "Ndonga"
+msgstr "נדונגה"
+
+msgid "Neapolitan"
+msgstr "נפוליטנית"
+
+msgid "Nepali"
+msgstr "נפאלית"
+
+msgid "New Tai Lue"
+msgstr "טאי ליו חדש"
+
+msgid "Newa"
+msgstr "נווארית"
+
+msgid "Newari"
+msgstr "נווארי"
+
+msgid "Niuean"
+msgstr "ניואן"
+
+msgid "No paths with within a glyph should intersect"
+msgstr "נתיבים המרכיבים את הגליף לא אמורים לחצות זה את זה"
+
+msgid "Nogai"
+msgstr "נוגאי"
+
+msgid "Non-_integral coordinates"
+msgstr "קואורדינטות לא שלמות"
+
+msgid "Northern Sami"
+msgstr "סמי צפונית"
+
+msgid "Northern Sotho"
+msgstr "סותו צפונית"
+
+msgid "Norwegian"
+msgstr "נורווגית"
+
+msgid "Norwegian Nynorsk"
+msgstr "נורווגית חדשה"
+
+msgid "Nyamwezi"
+msgstr "ניאמווזי"
+
+msgid "Nyankole"
+msgstr "ניאנקולה"
+
+msgid "Nyiakeng Puachue Hmong"
+msgstr "ניאקנג פואצ׳ה המונג"
+
+msgid "O_pen paths"
+msgstr "נתיבים פתוחים"
+
+msgid "Occitan"
+msgstr "אוקסיטנית"
+
+msgid "Often if a point is slightly off from a hint it is because a stem is made up of several segments, and one of them has the wrong width."
+msgstr "לפעמים כשנקודה נמצאת צמוד לרמז אך מחוץ לטווח שלו, זה קורה בגלל קו שעשוי ממספר מקטעים כשחלקם ברוחב שגוי"
+
+msgid "Ogham"
+msgstr "אוהם"
+
+msgid "Oji-Cree"
+msgstr "אוג׳י-קרי"
+
+msgid "Ol Chiki"
+msgstr "אול צ׳יקי"
+
+msgid "Old Hungarian"
+msgstr "הונגרי עתיק"
+
+msgid "Old Irish"
+msgstr "אירית עתיקה"
+
+msgid "Old North Arabian"
+msgstr "ערב צפון עתיק"
+
+msgid "Old Sogdian"
+msgstr "סוגדית עתיקה"
+
+msgid "Old South Arabian"
+msgstr "דרום ערבית"
+
+msgid "Old Uyghur"
+msgstr "אוגורית ישנה"
+
+msgid "Oromo"
+msgstr "אורומו"
+
+msgid "Osage"
+msgstr "אוסייג׳"
+
+msgid "Osmanya"
+msgstr "אוסמניה"
+
+msgid "Package Name:"
+msgstr "שם החבילה:"
+
+msgid "Package URL:"
+msgstr "אתר החבילה:"
+
+msgid "Pahawh Hmong"
+msgstr "פאהח המונג"
+
+msgid "Palauan"
+msgstr "פלוואן"
+
+msgid "Pali"
+msgstr "פאלי"
+
+msgid "Palmyrene"
+msgstr "פלמירן"
+
+msgid "Pangasinan"
+msgstr "פנגסינאן"
+
+msgid "Pashto"
+msgstr "פאשטו"
+
+msgid "Paths"
+msgstr "נתיבים"
+
+msgid "Pau Cin Hau"
+msgstr "פאו צ׳ין האו"
+
+#, c-format
+msgid "Percentage of Max: %d%%"
+msgstr "אחוז מהמקסימום: %d%%"
+
+msgid "Pixel Sizes:"
+msgstr "גדלים בפיקסלים"
+
+msgid "Plugin Information"
+msgstr "מידע אודות התוסף"
+
+msgid "Pohnpeian"
+msgstr "פונפיאן"
+
+msgid "Poin_ts too close"
+msgstr "נקודות קרובות מדי"
+
+msgid "Point sizes on a 96 PPI monitor"
+msgstr "גדלים בנקודות על צג 96 פיקסלים לאינטש"
+
+#, c-format
+msgid "Point sizes on this monitor (%d PPI)"
+msgstr "גדלים בנקודות על צג זה (%d פיקסלים לאינטש)"
+
+msgid "Points"
+msgstr "נקודות"
+
+msgid "Polish"
+msgstr "פולנית"
+
+msgid "Portuguese"
+msgstr "פורטוגזית"
+
+#, c-format
+msgid "Position: %d"
+msgstr "מיקום: %d"
+
+msgid "PostScript and TrueType require that paths be drawn in a clockwise direction. If you have a reference that has been flipped then the paths in that reference will probably be counter-clockwise. You should unlink it and do Element->Correct direction on it."
+msgstr "בגופני PostScript ו־TrueType הנתיבים חייבים להיות בכיוון השעון. אם הגליף כולל הפניה לגליף אחר שהפכו אותה מצד לצד, הנתיבים מתוך אותה הפניה כנראה יהיו נגד כיוון השעון. יש לנתק את ההפניה ולהפעיל על הגליף פעולת \"אלמנט->תיקון כיוון\"."
+
+msgid "PostScript and TrueType require that when a path reaches its maximum or minimum position there must be a point at that location."
+msgstr "גופנים מסוג PostScript ו־TrueType דורשים נקודות בסיס בכל נקודות הקיצון של כל נתיב."
+
+msgid "Psalter Pahlavi"
+msgstr "מזמור פהלווי"
+
+msgid "Punjabi"
+msgstr "פנג׳אבי"
+
+msgid "Quechua"
+msgstr "קצ׳ואה"
+
+msgid "Rajasthani"
+msgstr "ראג׳סטאני"
+
+msgid "Random"
+msgstr "שונות"
+
+msgid "Rarotongan"
+msgstr "ררוטונגאן"
+
+msgid "References"
+msgstr "הפניות"
+
+msgid "References neste_d deeper than:"
+msgstr "עומק הפניות מעל:"
+
+msgid "References with bad PostScript transformation matrices"
+msgstr "הפניות עם מטריצת התמרת PostScript לא תקינה"
+
+msgid "References with bad TrueType transformation matrices"
+msgstr "הפניות עם מטריצת התמרת TrueType לא תקינה"
+
+msgid "References with out of date point matching"
+msgstr "הפניות עם התאמת נקודות לא מעודכנת"
+
+msgid "Regenerate Bitmap Glyphs"
+msgstr "ייצור מחדש של גליפי סיביות"
+
+msgid "Rejang"
+msgstr "רג׳אנג"
+
+msgid "Remove Bitmap Glyphs"
+msgstr "מחיקת גליפי סיביות"
+
+msgid "Rohingya"
+msgstr "רוהינגיה"
+
+msgid "Romanian"
+msgstr "רומנית"
+
+msgid "Romansh"
+msgstr "רומאנש"
+
+msgid "Romany"
+msgstr "רומאני"
+
+msgid "Rundi"
+msgstr "קירונדי"
+
+msgid "Runic"
+msgstr "רוני"
+
+msgid "Russian"
+msgstr "רוסית"
+
+msgid "Samoan"
+msgstr "סמואית"
+
+msgid "Sango"
+msgstr "סנגו"
+
+msgid "Sanskrit"
+msgstr "סנסקריט"
+
+msgid "Santali"
+msgstr "סאנטאלי"
+
+msgid "Sardinian"
+msgstr "סרדינית"
+
+msgid "Sasak"
+msgstr "סאסק"
+
+msgid "Scaled by:"
+msgstr "שיעור הגדלה (רוחב, גובה):"
+
+msgid "Scots"
+msgstr "סקוטית"
+
+msgid "Scottish Gaelic"
+msgstr "גאלית סקוטית"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Arabic", ignore "Script|"
+msgid "Script|Arabic"
+msgstr "ערבי"
+
+msgid "Script|Armenian"
+msgstr "ארמני"
+
+msgid "Script|Avestan"
+msgstr "אווסטן"
+
+msgid "Script|Balinese"
+msgstr "באלינזי"
+
+msgid "Script|Batak"
+msgstr "בטק"
+
+msgid "Script|Buginese"
+msgstr "בוגינזי"
+
+msgid "Script|Buhid"
+msgstr "בוהיד"
+
+msgid "Script|Cham"
+msgstr "צ׳אם"
+
+msgid "Script|Cherokee"
+msgstr "צ׳רוקי"
+
+msgid "Script|Chorasmian"
+msgstr "כורזמיאן"
+
+msgid "Script|Coptic"
+msgstr "קופטי"
+
+msgid "Script|Ethiopic"
+msgstr "אתיופי"
+
+msgid "Script|Georgian"
+msgstr "גאורגי"
+
+msgid "Script|Greek"
+msgstr "יווני"
+
+msgid "Script|Gujarati"
+msgstr "גוג׳רטי"
+
+msgid "Script|Hebrew"
+msgstr "עברי"
+
+msgid "Script|Javanese"
+msgstr "ג׳אוונזי"
+
+msgid "Script|Kannada"
+msgstr "קאנאדה"
+
+msgid "Script|Khmer"
+msgstr "חמרי"
+
+msgid "Script|Lao"
+msgstr "לאי"
+
+msgid "Script|Latin"
+msgstr "לטיני"
+
+msgid "Script|Limbu"
+msgstr "לימבו"
+
+msgid "Script|Mandaean"
+msgstr "מנדאית"
+
+msgid "Script|Mongolian"
+msgstr "מונגולי"
+
+msgid "Script|Myanmar"
+msgstr "מיאנמר"
+
+msgid "Script|Old Permic"
+msgstr "פרמית ישנה"
+
+msgid "Script|Phags-pa"
+msgstr "פאגס"
+
+msgid "Script|Phoenician"
+msgstr "פיניקי"
+
+msgid "Script|Sinhala"
+msgstr "סינהלה"
+
+msgid "Script|Sumero-Akkadian Cuneiform"
+msgstr "כתב היתדות השומרי-אכדי"
+
+msgid "Script|Sundanese"
+msgstr "סונדאני"
+
+msgid "Script|Syloti Nagri"
+msgstr "סילוטי נגרי"
+
+msgid "Script|Syriac"
+msgstr "סורי"
+
+msgid "Script|Tagalog"
+msgstr "טגלוג"
+
+msgid "Script|Tagbanwa"
+msgstr "טגבנווה"
+
+msgid "Script|Tamil"
+msgstr "טמיל"
+
+msgid "Script|Telugu"
+msgstr "טלוגו"
+
+msgid "Script|Thai"
+msgstr "תאי"
+
+msgid "Script|Tibetan"
+msgstr "טיבטי"
+
+msgid "Script|Ugaritic"
+msgstr "אוגריתי"
+
+msgid "Script|Vai"
+msgstr "ואי"
+
+msgid "Script|Wancho"
+msgstr "וונצ׳ו"
+
+msgid "Script|Yezidi"
+msgstr "יעזי"
+
+msgid "Script|Yi"
+msgstr "יי"
+
+msgid ""
+"Select as many languages as needed\n"
+"Hold down the control key when clicking\n"
+"to make disjoint selections."
+msgstr "ניתן לבחור את כל השפות הנדרשות. יש ללחוץ על מקש Ctrl כדי לבחור שורות נפרדות"
+
+msgid "Selected Glyphs"
+msgstr "גליפים נבחרים"
+
+msgid "Selkup"
+msgstr "סלקופ"
+
+msgid "Sena"
+msgstr "סנה"
+
+msgid "Seneca"
+msgstr "סנקה"
+
+msgid "Serbian"
+msgstr "סרבית"
+
+msgid "Serer"
+msgstr "סרר"
+
+msgid "Set All"
+msgstr "לסמן הכל"
+
+#, c-format
+msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
+msgstr "מספר תגי שפה, בפרט \"%s\" אינם שייכים לשפות ידועות, והם יוסרו מהרשימה"
+
+msgid "Shan"
+msgstr "שאן"
+
+msgid "Sharada"
+msgstr "שרדה"
+
+msgid "Shavian"
+msgstr "שבית"
+
+msgid "Shona"
+msgstr "שונה"
+
+msgid "Shows when this character is exactly a stem3 hint"
+msgstr "הצגת גליפים שעונים בדיוק לדרישות תבנית stem3"
+
+msgid "Sicilian"
+msgstr "סיציליאנית"
+
+msgid "Sidamo"
+msgstr "סידאמו"
+
+msgid "Siddham"
+msgstr "סידהם"
+
+msgid "Silesian"
+msgstr "שלזית"
+
+msgid "Sindhi"
+msgstr "סינדהית"
+
+msgid "Skolt Sami"
+msgstr "סקולט סאמי"
+
+msgid "Slovak"
+msgstr "סלובקית"
+
+msgid "Slovenian"
+msgstr "סלובנית"
+
+msgid "Smoothing window:"
+msgstr "חלון החלקה:"
+
+msgid "Soga"
+msgstr "סוגה"
+
+msgid "Sogdian"
+msgstr "סוגדית"
+
+msgid "Somali"
+msgstr "סומלית"
+
+msgid "Soninke"
+msgstr "סונינקה"
+
+msgid "Sora Sompeng"
+msgstr "סורה סומפנג"
+
+msgid "Southern Sami"
+msgstr "סאמי דרומית"
+
+msgid "Southern Sotho"
+msgstr "סותו דרומית"
+
+msgid "Soyombo"
+msgstr "סויומבו"
+
+msgid "Spanish"
+msgstr "ספרדית"
+
+msgid "Specify bitmap sizes to be regenerated"
+msgstr "ציינו גדלים של גופני סיביות לייצור מחדש"
+
+msgid "Specify bitmap sizes to be removed"
+msgstr "ציינו גדלים של גופני סיביות למחיקה"
+
+msgid "Standard Moroccan Tamazight"
+msgstr "תמזיע׳ת מרוקאית תקנית"
+
+msgid "Straits Salish"
+msgstr "סאליש מיצרי חואן דה פוקה"
+
+msgid "Sukuma"
+msgstr "סוקומה"
+
+msgid "Summary:"
+msgstr "תקציר:"
+
+msgid "Swahili"
+msgstr "סווהילי"
+
+msgid "Swati"
+msgstr "סאווזי"
+
+msgid "Swedish"
+msgstr "שוודית"
+
+msgid "Tachelhit"
+msgstr "שילה"
+
+msgid "Tahitian"
+msgstr "טהיטית"
+
+msgid "Tai Le"
+msgstr "טאי לה"
+
+msgid "Tai Viet"
+msgstr "טאי וייט"
+
+msgid "Takri"
+msgstr "טאקרי"
+
+msgid "Tamashek"
+msgstr "טמאשק"
+
+msgid "Tangsa"
+msgstr "טנגסה"
+
+msgid "Tangut"
+msgstr "טאנגוט"
+
+msgid "Tatar"
+msgstr "טטרית"
+
+msgid "Tetum"
+msgstr "טטום"
+
+msgid "Thaana"
+msgstr "תאנה"
+
+msgid "The OpenType documentation suggests in a rather confusing way that if a base glyph (or base mark) contains an anchor point for one class in a lookup subtable, then it should contain anchors for all classes in the subtable"
+msgstr "סטנדרט OpenType רומז בצורה מבלבלת שאם גליף בסיס (או סימן בסיס) כולל עוגן עבור מחלקה אחת בתת־טבלה, אז הוא צריך לכלול עוגנים עבור כל המחלקות באותה תת־טבלה"
+
+msgid "The PostScript Language Reference Manual (Appendix B) says that an interpreter need not support paths with more than 1500 points. I think this count includes control points. From PostScript's point of view, all the contours in a character make up one path. Modern interpreters tend to support paths with more points than this limit. (Note a truetype font after conversion to PS will contain twice as many control points)"
+msgstr "בהתאם למדריך הייעץ של שפת PostScript (נספח B) אין חובה לתמוך בנתיבים המונים מעל 1500 נקודות. לדעתנו מניין זה כולל גם את נקודות הבקרה, ובגליף המורכב ממספר נתיבים כל נקודותיהם נספרות יחדיו. תוכנות פענוח מודרניות נוטות לתמוך במספר נקודות רב יותר ממגבלה זו. יש לשים לב שגופן TrueType יכלול מספר כפול של נקודות בקרה אחרי המרה ל־PostScript."
+
+msgid "The Type 2 Charstring Reference (Appendix B) says that subroutines may not be nested more than 10 deep. Each nesting level for references requires one subroutine level, and hints may require another level."
+msgstr "מדריך הייעץ של Type 2 דורש שעומק תתי־שגרות מקוננות יהיה לכל היותר 10. כל שכבת הפניה דורשת שכבת קינון אחת, ורמזים עשויים לדרוש עוד שכבה"
+
+msgid "The Type 2 Charstring Reference (Appendix B) says that there may be at most 96 horizontal and vertical stem hints in a character."
+msgstr "מדריך הייעץ של Type 2 (נספח B) קובע שניתן להגדיר לכל היותר 96 רמזים אופקיים ואנכיים בכל גליף"
+
+msgid "The coordinates of all points and control points in truetype must be integers (if they are not integers then FontForge will round them when it outputs them, potentially causing havoc). Even in PostScript fonts it is generally a good idea to use integral values."
+msgstr "הקואורדינטות של כל הנקודות ונקודות הבקרה בגופני TrueType חייבות להיות שלמות. FontForge תעגל נקודות לא שלמות בייצוא, והדבר עלול לפגוע במראה הגופן. גם בגופני PostScript מומלץ להשתמש בערכים שלמים בלבד."
+
+#, c-format
+msgid "The language, '%s', is not in the list of known languages and will be omitted"
+msgstr "תג שפה \"%s\" אינו שייך לשפה ידועה, והוא יוסר מהרשימה"
+
+msgid "The list of current pixel bitmap sizes"
+msgstr "רשימת הגדלים הנוכחית של גופני סיביות"
+
+msgid "There are so few glyphs selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all glyphs in the font"
+msgstr "נבחרו מעט מדי גליפים, ולא נראה שהגרף יוכל לייצג נאמנה את תכונות הגופן. ניתן לנקות את הבחירה, ואז הפקודה תחול על כלל הגליפים בגופן."
+
+msgid "There may be at most one reference with the use-my-metrics bit set"
+msgstr "רק הפניה אחת יכולה לסמן סיבית \"מידות־שלי\""
+
+msgid "This checks if the character almost, but not exactly, conforms to the requirements for a stem3 hint. That is, either vertically or horizontally, there must be exactly three hints, and they must have the same width and they must be evenly spaced."
+msgstr "הבדיקה מאתרת גליפים שעונים כמעט, אך לא בדיוק, לדרישות תבנית רמזים stem3. היינו, ישנם בדיוק שלושה רמזים אנכיים ואופקיים שהם באותו רוחב ובמרחק שווה"
+
+msgid "Tigre"
+msgstr "טיגרית"
+
+msgid "Tigrinya"
+msgstr "תיגרינית"
+
+msgid "Tirhuta"
+msgstr "תרותא"
+
+msgid "Tiv"
+msgstr "טיב"
+
+msgid "Tlingit"
+msgstr "טלינגיט"
+
+msgid "Tok Pisin"
+msgstr "טוק פיסין"
+
+msgid "Tongan"
+msgstr "טונגאית"
+
+msgid "Toto"
+msgstr "טוטו"
+
+msgid "TrueType glyphs can either contain references or contours. Not both."
+msgstr "גליפים מסוג TrueType יכולים להכיל נתיבים או הפניות, אך לא את שניהם"
+
+msgid "TrueType requires that all scaling and rotational entries in a transformation matrix be between -2 and 2"
+msgstr "תקן TrueType דורש שכל ערכי סילום וסיבוב במטריצת ההתמרה יהיו בטווח בין -2 ל־2"
+
+msgid "Tsonga"
+msgstr "טסונגה"
+
+msgid "Tswana"
+msgstr "סוואנה"
+
+msgid "Tumbuka"
+msgstr "טומבוקה"
+
+msgid "Turkish"
+msgstr "טורקית"
+
+msgid "Turkmen"
+msgstr "טורקמנית"
+
+msgid "Tuvalu"
+msgstr "טובאלו"
+
+msgid "Twi"
+msgstr "טווי"
+
+msgid "Type1 and 2 fonts only support translation of references. The first four entries of the transformation matrix should be [1 0 0 1]."
+msgstr "גופני Type1 או 2 תומכים בהפניות עם הזזה בלבד. ארבעת הערכים הראשונים של מטריצת ההתמרה חייבים להיות [1 0 0 1]"
+
+msgid "Udmurt"
+msgstr "אודמורט"
+
+msgid "Ukrainian"
+msgstr "אוקראינית"
+
+msgid "Umbundu"
+msgstr "אומבונדו"
+
+msgid "Unknown Language"
+msgstr "שפה לא ידועה"
+
+msgid "Upper Sorbian"
+msgstr "סורבית עילית"
+
+msgid "Urdu"
+msgstr "אורדו"
+
+msgid "Uyghur"
+msgstr "אויגורית"
+
+msgid "Uzbek"
+msgstr "אוזבקית"
+
+msgid "Venda"
+msgstr "וונדה"
+
+msgid "Venetian"
+msgstr "ונציאנית"
+
+msgid "Vertical Stem Hints"
+msgstr "רמזים לקווים אנכיים"
+
+msgid "Vietnamese"
+msgstr "וייטנאמית"
+
+msgid "Vithkuqi"
+msgstr "ויטוקוקי"
+
+msgid "Volapük"
+msgstr "‏וולאפיק"
+
+msgid "Walloon"
+msgstr "ולונית"
+
+msgid "Welsh"
+msgstr "וולשית"
+
+msgid "Western Panjabi"
+msgstr "לנדה"
+
+#, c-format
+msgid "Width: %d"
+msgstr "רוחב: %d"
+
+msgid "Wolof"
+msgstr "וולוף"
+
+msgid "Xhosa"
+msgstr "קוסה"
+
+msgid "Y near¹ _standard heights"
+msgstr "‫Y קרוב¹ לגבהים סטנדרטיים"
+
+msgid "Yao"
+msgstr "יאו"
+
+msgid "Yapese"
+msgstr "יאפזית"
+
+msgid "Yiddish"
+msgstr "יידיש"
+
+msgid "Yoruba"
+msgstr "יורובה"
+
+msgid ""
+"You must select at least one language.\n"
+"Use the \"Default\" language if nothing else fits."
+msgstr ""
+"יש לבחור שפה אחת לפחות.\n"
+"ניתן לבחור שפת \"ברירת מחדל\" אם אין שפה מתאימה אחרת."
+
+msgid "Zanabazar Square"
+msgstr "כיכר זנבזר"
+
+msgid "Zarma"
+msgstr "זארמה"
+
+msgid "Zhuang"
+msgstr "זואנג"
+
+msgid "Zulu"
+msgstr "זולו"
+
+msgid "[Unknown]"
+msgstr "[לא ידוע]"
+
+msgid "_Cancel"
+msgstr "ביטול"
+
+msgid "_Control points near horizontal/vertical"
+msgstr "נקודות בקרה קרובות לקו אנכי או אופקי"
+
+msgid "_Edges near horizontal/vertical"
+msgstr "קווים כמעט אופקיים או אנכיים"
+
+msgid "_Hints controlling no points"
+msgstr "רמזים שלא משפיעים על אף נקודה"
+
+msgid "_More hints than:"
+msgstr "מספר רמזים מעל:"
+
+msgid "_More points than:"
+msgstr "יותר נקודות מ־"
+
+msgid "_OK"
+msgstr "אישור"
+
+msgid "_Overlapped hints"
+msgstr "רמזים חופפים"
+
+msgid "_Points near¹ hint edges"
+msgstr "נקודות קרובות¹ לשולי הרמז"
+
+msgid "_Points too far"
+msgstr "נקודות רחוקות מדי"
+
+msgid "_Show exact *stem3"
+msgstr "הצגת תבניות stem3 מדוייקות"
+
+msgid "_X near¹"
+msgstr "‫X קרוב¹ ל־"
+
+msgid "_Y near¹"
+msgstr "‫Y קרוב¹ ל־"
+
+#, c-format
+msgid "¹ \"Near\" means within %f em-units"
+msgstr "¹ \"קרוב\" משמעותו פחות מ־%f יחידות em"

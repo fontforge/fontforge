@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -1288,6 +1288,9 @@ msgstr ""
 "Застаріла інструкція\n"
 "Виштовхування одного значення"
 
+msgid "Adlam"
+msgstr "адлам"
+
 msgid "Adobe Glyph List"
 msgstr "Список гліфів Adobe"
 
@@ -1349,6 +1352,12 @@ msgstr "Агав"
 
 msgid "Ahead Classes"
 msgstr "Випереджувальні класи"
+
+msgid "Ahom"
+msgstr "ахом"
+
+msgid "Akan"
+msgstr "акан"
 
 msgid "Akhand"
 msgstr "Аханд"
@@ -1967,6 +1976,9 @@ msgstr "Арабська справа ліворуч"
 msgid "Arabic Supplement"
 msgstr "Додаткові арабські"
 
+msgid "Aragonese"
+msgstr "арагонська"
+
 msgid "Archives"
 msgstr "Архіви"
 
@@ -2019,6 +2031,12 @@ msgstr "Ви справді бажаєте вилучити ці гліфи? Р�
 msgid "Armenian"
 msgstr "Вірменські"
 
+msgid "Aromanian"
+msgstr "арумунська"
+
+msgid "Arpitan"
+msgstr "арпітанська"
+
 msgid "Arrow Options"
 msgstr "Параметри стрілок"
 
@@ -2060,6 +2078,9 @@ msgstr "Співвідношення розмірів яку у гліфі пл�
 
 msgid "Assamese"
 msgstr "Ассамська"
+
+msgid "Asturian"
+msgstr "астурійська"
 
 msgid "At End"
 msgstr "За кінцем"
@@ -2333,6 +2354,9 @@ msgstr "Аймарська"
 
 msgid "Azebaijani (roman)"
 msgstr "Азербайджанська (романська)"
+
+msgid "Azerbaijani"
+msgstr "азербайджанська"
 
 msgid "Azeri (Cyrillic)"
 msgstr "Азербайджанська (кирилиця)"
@@ -3093,6 +3117,9 @@ msgstr "Кулька (круглий кінчик)"
 msgid "Balti"
 msgstr "Балтійська"
 
+msgid "Baluchi"
+msgstr "балучі"
+
 msgid "Bambara"
 msgstr "Бамбара"
 
@@ -3165,8 +3192,17 @@ msgstr "Базова багатомовна область"
 msgid "Basque"
 msgstr "Баскська"
 
+msgid "Bassa Vah"
+msgstr "басса"
+
 msgid "Batak"
 msgstr "Батак"
+
+msgid "Batak Toba"
+msgstr "батак тоба"
+
+msgid "Bavarian"
+msgstr "баеріш"
 
 msgid "Be_vel"
 msgstr "Ск_ошений"
@@ -3263,6 +3299,9 @@ msgstr "Білін"
 msgid "Bind to Path"
 msgstr "Зв’язати з контуром"
 
+msgid "Bislama"
+msgstr "біслама"
+
 msgid "Bitm_ap Strikes Available..."
 msgstr "Д_оступні растрові розміри…"
 
@@ -3332,8 +3371,8 @@ msgstr "Сині значення"
 msgid "BlueValues come in pairs. Select another."
 msgstr "BlueValues слід вказувати парами. Виберіть парне значення."
 
-msgid "Blues"
-msgstr "Сині зони"
+msgid "Bodo"
+msgstr "бодо"
 
 msgid "Bold"
 msgstr "Жирний"
@@ -3689,6 +3728,9 @@ msgstr "Н_етиповий"
 msgid "Ca_pital Height:"
 msgstr "_Висота прописної:"
 
+msgid "Cajun French"
+msgstr "кажунська французька"
+
 msgid "Call Script"
 msgstr "Викликати скрипт"
 
@@ -3852,6 +3894,12 @@ msgstr "Регістрозалежні форми"
 msgid "Catalan"
 msgstr "Каталанська"
 
+msgid "Caucasian Albanian"
+msgstr "кавказька албанська"
+
+msgid "Cayuga"
+msgstr "кайюга"
+
 msgid "Cebuano"
 msgstr "Себуано"
 
@@ -3890,6 +3938,9 @@ msgstr "Чакмійська"
 
 msgid "Cham"
 msgstr "Тьям"
+
+msgid "Chamorro"
+msgstr "чаморро"
 
 msgid "Change"
 msgstr "Змінити"
@@ -4106,8 +4157,14 @@ msgstr "Шукати підстановки, класи кернінґу тощ�
 msgid "Cherokee"
 msgstr "Черокі"
 
+msgid "Cheyenne"
+msgstr "чейєнн"
+
 msgid "Chichewa"
 msgstr "Чічеванська"
+
+msgid "Chiga"
+msgstr "кіга"
 
 msgid "Chin"
 msgstr "Чин"
@@ -4130,6 +4187,9 @@ msgstr "Китайська (Тайвань)"
 msgid "Chipewyan"
 msgstr "Чипевьян"
 
+msgid "Choctaw"
+msgstr "чокто"
+
 msgid "Choose a file format..."
 msgstr "Виберіть формат файла…"
 
@@ -4144,6 +4204,9 @@ msgstr "Чукотська"
 
 msgid "Church Slavonic"
 msgstr "Церковнослов’янська"
+
+msgid "Chuukese"
+msgstr "чуукська"
 
 msgid "Chuvash"
 msgstr "Чуваська"
@@ -4679,6 +4742,9 @@ msgstr "Випр.:"
 
 msgid "Corner"
 msgstr "Кут"
+
+msgid "Cornish"
+msgstr "корнська"
 
 msgid "Correct Direction"
 msgstr "Виправити напрямок"
@@ -6850,6 +6916,12 @@ msgstr "Гарнітура"
 msgid "Family Blue Color"
 msgstr "Колір синіх гарнітур"
 
+msgid "Fang"
+msgstr "фанг"
+
+msgid "Fanti"
+msgstr "фанті"
+
 msgid "Faroese"
 msgstr "Фарерська"
 
@@ -7563,6 +7635,9 @@ msgstr "Галісійська"
 msgid "Galla"
 msgstr "Галла"
 
+msgid "Ganda"
+msgstr "ганда"
+
 msgid "Garhwali"
 msgstr "Гархвалі"
 
@@ -8211,6 +8286,9 @@ msgstr "Гурмухі"
 msgid "Gurmukhi2"
 msgstr "Гурмухі2"
 
+msgid "Gusii"
+msgstr "гусії"
+
 msgid "HFlex Hint Color"
 msgstr "Колір гор. флекс-гінту"
 
@@ -8247,6 +8325,9 @@ msgstr "Гор./Верт. крива"
 msgid "H_ints"
 msgstr "_Гінти"
 
+msgid "Haida"
+msgstr "хайда"
+
 msgid "Haitian"
 msgstr "Гаїтянська"
 
@@ -8264,6 +8345,9 @@ msgstr "Напівширини"
 
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "Форми півширини та повної ширини"
+
+msgid "Halkomelem"
+msgstr "галкомелем"
 
 msgid "Hammer-Banna"
 msgstr "Хаммер-Банна"
@@ -8291,6 +8375,9 @@ msgstr "Харарі"
 
 msgid "Harauti"
 msgstr "Гарауті"
+
+msgid "Haryanvi"
+msgstr "харʼянві"
 
 msgid "Has _Vertical Metrics"
 msgstr "Має ве_ртикальну метрику"
@@ -8336,6 +8423,9 @@ msgstr "Дані керну/зросту"
 
 msgid "Height:"
 msgstr "Висота:"
+
+msgid "Herero"
+msgstr "гереро"
 
 msgid "Hidden"
 msgstr "Сховано"
@@ -8412,6 +8502,9 @@ msgstr "Хірагана"
 msgid "Hiragana & Katakana"
 msgstr "Хірагана і катакана"
 
+msgid "Hiri Motu"
+msgstr "хірі-моту"
+
 msgid "Histogram Dialog"
 msgstr "Діалогове вікно гістограми"
 
@@ -8473,6 +8566,9 @@ msgid ""
 msgstr ""
 "Г-м-м, у таблиці «gvar» вказано занадто багато загальних кортежів.\n"
 " У FontForge передбачено підтримку лише %d\n"
+
+msgid "Hmong"
+msgstr "хмонг"
 
 msgid "Ho"
 msgstr "Хо"
@@ -8656,6 +8752,9 @@ msgstr "ISO 8859-7 (грецька)"
 msgid "ISO 8859-8 (Hebrew)"
 msgstr "ISO 8859-8 (іврит)"
 
+msgid "Iban"
+msgstr "ібанська"
+
 msgid "Ibibio"
 msgstr "Ібібіо"
 
@@ -8682,6 +8781,9 @@ msgstr "Лінія нижнього краю рамки, вирівняної з
 
 msgid "Ideographic em-box top edge baseline"
 msgstr "Лінія верхнього краю рамки, вирівняної за em, ідеографічних символів"
+
+msgid "Ido"
+msgstr "ідо"
 
 msgid "If a class name is a number, it must be the index of the class in the array of classes_simple."
 msgstr "Якщо назвою класу є число, це число має бути номером класу у масиві classes_simple."
@@ -9341,6 +9443,12 @@ msgstr "Інструкції було змінено"
 msgid "Interface"
 msgstr "Інтерфейс"
 
+msgid "Interlingua"
+msgstr "інтерлінгва"
+
+msgid "Interlingue"
+msgstr "інтерлінгве"
+
 msgid "Intermediate Points:"
 msgstr "Проміжні точки:"
 
@@ -9721,6 +9829,12 @@ msgstr "KSC 5601-1987 (корейська)"
 msgid "Kabardian"
 msgstr "Кабардінська"
 
+msgid "Kabuverdianu"
+msgstr "кабувердіану"
+
+msgid "Kabyle"
+msgstr "кабільська"
+
 msgid "Kachchi"
 msgstr "Качинська"
 
@@ -9769,11 +9883,17 @@ msgstr "Каренська"
 msgid "Kashmiri"
 msgstr "Кашмірська"
 
+msgid "Kashubian"
+msgstr "кашубська"
+
 msgid "Katakana"
 msgstr "Катакана"
 
 msgid "Katakana Phonetic Extensions"
 msgstr "Фонетичні розширення катакани"
+
+msgid "Kawi"
+msgstr "каві"
 
 msgid "Kayah Li"
 msgstr "Кая-лі"
@@ -9926,6 +10046,9 @@ msgstr "Кікуйю"
 msgid "Kildin Sami"
 msgstr "Кільдинська саамська"
 
+msgid "Kinyarwanda"
+msgstr "кіньяруанда"
+
 msgid "Kinyarwanda/Ruanda"
 msgstr "Кіньяруанда/Руанда"
 
@@ -9941,6 +10064,9 @@ msgstr "Кодагу"
 msgid "Kokni"
 msgstr "Кокані"
 
+msgid "Komi"
+msgstr "комі"
+
 msgid "Komi-Permyak"
 msgstr "Комі (перм’яцька)"
 
@@ -9952,6 +10078,9 @@ msgstr "Комо"
 
 msgid "Komso"
 msgstr "Комсо"
+
+msgid "Kongo"
+msgstr "конґолезька"
 
 msgid "Konkani"
 msgstr "Конкані"
@@ -9968,11 +10097,17 @@ msgstr "Корейська (старий хангиль)"
 msgid "Koryak"
 msgstr "Корякська"
 
+msgid "Kosraean"
+msgstr "косрае"
+
 msgid "Kpelle"
 msgstr "Кпелле"
 
 msgid "Krio"
 msgstr "Кріо"
+
+msgid "Kuanyama"
+msgstr "кунама"
 
 msgid "Kui"
 msgstr "Куі"
@@ -10035,6 +10170,9 @@ msgstr "Ладакхська"
 msgid "Ladin"
 msgstr "Ладінська"
 
+msgid "Ladino"
+msgstr "ладино"
+
 msgid "Lahuli"
 msgstr "Лахулі"
 
@@ -10074,6 +10212,9 @@ msgstr "Вірменська"
 
 msgid "Lang|Avar"
 msgstr "Аварська"
+
+msgid "Lang|Balinese"
+msgstr "балійська"
 
 msgid "Lang|Bengali"
 msgstr "Бенгальська"
@@ -10130,6 +10271,9 @@ msgstr "Латинська"
 msgid "Lang|Limbu"
 msgstr "Лімбу"
 
+msgid "Lang|Makasar"
+msgstr "макасарська"
+
 msgid "Lang|Malayalam"
 msgstr "Малаялам"
 
@@ -10139,11 +10283,23 @@ msgstr "Манчжурська"
 msgid "Lang|Mongolian"
 msgstr "Монгольська"
 
+msgid "Lang|Odia"
+msgstr "одія"
+
 msgid "Lang|Oriya"
 msgstr "Орія"
 
+msgid "Lang|Persian"
+msgstr "перська"
+
+msgid "Lang|Sinhala"
+msgstr "сингальська"
+
 msgid "Lang|Sinhalese"
 msgstr "Сингальська"
+
+msgid "Lang|Sundanese"
+msgstr "сунданська"
 
 msgid "Lang|Syriac"
 msgstr "Сирійська"
@@ -10364,8 +10520,14 @@ msgstr "Дуже мала"
 msgid "Light Angle:"
 msgstr "Кут освітлення:"
 
+msgid "Ligurian"
+msgstr "лігурійська"
+
 msgid "Limbu"
 msgstr "Лімбу"
+
+msgid "Limburgish"
+msgstr "лімбургійська"
 
 msgid ""
 "Limit the font so that only the glyphs referenced in the first 256 encodings\n"
@@ -10488,6 +10650,12 @@ msgstr "Логічне додавання до позначеного"
 
 msgid "Logos"
 msgstr "Логотипи"
+
+msgid "Lojban"
+msgstr "ложбан"
+
+msgid "Lombard"
+msgstr "ломбардська"
 
 msgid "Lombardic Forms"
 msgstr "Ломбардські форми"
@@ -10680,6 +10848,9 @@ msgstr "Низький"
 msgid "Low Mari"
 msgstr "Нижньомарійська"
 
+msgid "Low Saxon"
+msgstr "нижньосаксонська"
+
 msgid "Low Surrogates"
 msgstr "Нижні замінники"
 
@@ -10701,6 +10872,12 @@ msgstr "Малі літери у малу капітель"
 msgid "Lowercase to Small Capitals"
 msgstr "Малі літери у капітель"
 
+msgid "Luba-Katanga"
+msgstr "луба-катанга"
+
+msgid "Luba-Lulua"
+msgstr "луба-лулуа"
+
 msgid "Lule Sami"
 msgstr "Лулесаамська"
 
@@ -10709,6 +10886,9 @@ msgstr "Луо"
 
 msgid "Luxembourgish"
 msgstr "Люксембурзька"
+
+msgid "Luyia"
+msgstr "луйя"
 
 msgid "Lycian"
 msgstr "Лікійська"
@@ -10890,6 +11070,9 @@ msgstr "Македонська"
 msgid "Mag:"
 msgstr "Збіл.:"
 
+msgid "Magahi"
+msgstr "магадхі"
+
 msgid "Magnification:"
 msgstr "Збільшення:"
 
@@ -10950,6 +11133,12 @@ msgstr ""
 msgid "Make the counters narrower"
 msgstr "Зробити прогалини вужчими"
 
+msgid "Makhuwa"
+msgstr "макува"
+
+msgid "Makonde"
+msgstr "маконде"
+
 msgid "Malagasy"
 msgstr "Малагасійська"
 
@@ -10986,8 +11175,14 @@ msgstr "Мальтійська"
 msgid "Mandaic"
 msgstr "Мандейська"
 
+msgid "Mandar"
+msgstr "мандарська"
+
 msgid "Mandinka"
 msgstr "Мандінка"
+
+msgid "Manichaean"
+msgstr "маніхейський"
 
 msgid "Maninka"
 msgstr "Манінка"
@@ -11000,6 +11195,9 @@ msgstr "Мансі"
 
 msgid "Manufacturer"
 msgstr "Виробник"
+
+msgid "Manx"
+msgstr "менкська"
 
 msgid "Manx Gaelic"
 msgstr "Менська гаельська"
@@ -11140,6 +11338,9 @@ msgstr ""
 "Позначки у лігатурі має бути впорядковано за напрямком писемності.\n"
 "Ця позначка і %d вказані у помилковому порядку."
 
+msgid "Marshallese"
+msgstr "маршалльська"
+
 msgid "Marwari"
 msgstr "Марварі"
 
@@ -11278,6 +11479,9 @@ msgstr ""
 "яка не потребує пересування\n"
 "нижніх індексів вниз."
 
+msgid "Mazanderani"
+msgstr "мазандеранська"
+
 msgid "Mbundu"
 msgstr "Мбунду"
 
@@ -11358,6 +11562,9 @@ msgstr "Помірно високий"
 msgid "Medium Low"
 msgstr "Помірно низький"
 
+msgid "Medumba"
+msgstr "медумба"
+
 msgid "Meetei Mayek"
 msgstr "Маніпурі"
 
@@ -11415,6 +11622,9 @@ msgstr "Мероїтські (курсив)"
 
 msgid "Meroitic Hieroglyphs"
 msgstr "Мероїтські ієрогліфи"
+
+msgid "Meru"
+msgstr "меру"
 
 msgid ""
 "MetaFont (mf) generates lots of verbiage to stdout.\n"
@@ -11476,6 +11686,9 @@ msgstr "Мінімальний керн"
 
 msgid "MinConnectorOverlap:"
 msgstr "МінПерекриттяЗ’єднань:"
+
+msgid "Minangkabau"
+msgstr "мінангкабау"
 
 msgid ""
 "Minimum allowed height of the bottom\n"
@@ -11608,6 +11821,9 @@ msgstr "Мала в_ісь:"
 
 msgid "Minor:"
 msgstr "Додаткова:"
+
+msgid "Mirandese"
+msgstr "мірандська"
 
 msgid "Misc."
 msgstr "Інше"
@@ -11812,8 +12028,14 @@ msgstr "Вказано більше інструкцій push, ніж потрі
 msgid "More than 256 entries in subfont %s"
 msgstr "Більше за 256 записів у підшрифті %s"
 
+msgid "Morisyen"
+msgstr "маврикійська креольська"
+
 msgid "Moroccan"
 msgstr "Марокканська"
+
+msgid "Mossi"
+msgstr "моссі"
 
 msgid ""
 "Most font formats cannot specify adjacent points (or control points)\n"
@@ -12046,6 +12268,9 @@ msgstr "Ігнорування зайвих кодувань"
 msgid "Mundari"
 msgstr "Мундарі"
 
+msgid "Muscogee"
+msgstr "крік"
+
 msgid "Music"
 msgstr "Музичний"
 
@@ -12212,6 +12437,9 @@ msgstr "Вузький"
 msgid "Naskapi"
 msgstr "Наскапі"
 
+msgid "Navajo"
+msgstr "навахо"
+
 msgid "Navigation"
 msgstr "Навігація"
 
@@ -12223,6 +12451,9 @@ msgstr "Ндонга"
 
 msgid "Ne_xt Control Point"
 msgstr "Н_аступна контрольна точка"
+
+msgid "Neapolitan"
+msgstr "неаполітанська"
 
 msgid "Near"
 msgstr "Біля"
@@ -12360,6 +12591,9 @@ msgstr "Список назв нового шрифту"
 
 msgid "NewFontsQuadratic"
 msgstr "Квадратичність нового шрифту"
+
+msgid "Newa"
+msgstr "нева"
 
 msgid "Newari"
 msgstr "Неварська"
@@ -12906,6 +13140,9 @@ msgstr ""
 msgid "Northern Sami"
 msgstr "Північносаамська"
 
+msgid "Northern Sotho"
+msgstr "північна сото"
+
 msgid "Northern Tai"
 msgstr "Північна тайська"
 
@@ -12920,6 +13157,9 @@ msgstr "Норвезька (книжна)"
 
 msgid "Norwegian (Nynorsk)"
 msgstr "Норвезька сучасна"
+
+msgid "Norwegian Nynorsk"
+msgstr "норвезька (нюношк)"
 
 msgid "Not ASCII"
 msgstr "Не ASCII"
@@ -13087,8 +13327,14 @@ msgstr "Знак числового поля"
 msgid "Numeric Forms"
 msgstr "Числові форми"
 
+msgid "Nyamwezi"
+msgstr "ньямвезі"
+
 msgid "Nyanja/Chewa"
 msgstr "Ньянджа/Чева"
+
+msgid "Nyankole"
+msgstr "ньянколе"
 
 msgid "O Black Letter"
 msgstr "O Готичні"
@@ -13274,6 +13520,12 @@ msgstr "Оджибва"
 
 msgid "Ol Chiki"
 msgstr "Ол-чикі"
+
+msgid "Old Hungarian"
+msgstr "давньоугорський"
+
+msgid "Old Irish"
+msgstr "давньоірландська"
 
 msgid "Old Italic"
 msgstr "Давня італійська"
@@ -13567,6 +13819,9 @@ msgstr "Орнаменти"
 msgid "Oromo"
 msgstr "Оромо"
 
+msgid "Osage"
+msgstr "осейджиська"
+
 msgid "Osmanya"
 msgstr "Османья"
 
@@ -13766,6 +14021,9 @@ msgstr "Налаштування сторінки"
 msgid "Page_Size:"
 msgstr "_Розмір сторінки:"
 
+msgid "Pahawh Hmong"
+msgstr "пахау хмонг"
+
 msgid "Pair Position (kerning)"
 msgstr "Парне розташування (кернінґ)"
 
@@ -13774,6 +14032,9 @@ msgstr "Парне розташування"
 
 msgid "Pairwise Positioning (kerning)"
 msgstr "Парне розташування (кернінґ)"
+
+msgid "Palauan"
+msgstr "палауанська"
 
 msgid "Palaung"
 msgstr "Палаунг"
@@ -13792,6 +14053,9 @@ msgstr "Растровий Palm OS"
 
 msgid "Palpa"
 msgstr "Палпа"
+
+msgid "Pangasinan"
+msgstr "пангасінанська"
 
 msgid "PanoseArmStyle|Any"
 msgstr "Будь-який"
@@ -14292,6 +14556,9 @@ msgstr "Будь ласка, вкажіть нове доповнення для
 msgid "Please specify a script"
 msgstr "Будь ласка, вкажіть писемність"
 
+msgid "Pohnpeian"
+msgstr "понапе"
+
 msgid "Poin_ts too close"
 msgstr "За_надто близькі точки"
 
@@ -14672,6 +14939,9 @@ msgstr "Близькість"
 msgid "Proximity:"
 msgstr "Близькість:"
 
+msgid "Psalter Pahlavi"
+msgstr "пехлеві релігійний"
+
 msgid "Punjabi"
 msgstr "Пенджабі"
 
@@ -14811,6 +15081,9 @@ msgstr "Різка/Горизонтальна"
 
 msgid "Rapid/Vertical"
 msgstr "Різка/Вертикальна"
+
+msgid "Rarotongan"
+msgstr "раротонга"
 
 msgid "Raster"
 msgstr "Растр"
@@ -15410,6 +15683,9 @@ msgstr "Віддзеркалені форми лівопису"
 msgid "Ro_und"
 msgstr "З_аокруглений"
 
+msgid "Rohingya"
+msgstr "рогінджа"
+
 msgid "Roman Connected"
 msgstr "Прямі з’єднані"
 
@@ -15421,6 +15697,9 @@ msgstr "Прямі з хвостиками"
 
 msgid "Romanian"
 msgstr "Румунська"
+
+msgid "Romansh"
+msgstr "ретороманська"
 
 msgid "Romany"
 msgstr "Ромська"
@@ -15814,6 +16093,12 @@ msgstr "Санталі"
 msgid "Saraiki"
 msgstr "Сараїкі"
 
+msgid "Sardinian"
+msgstr "сардинська"
+
+msgid "Sasak"
+msgstr "сасакська"
+
 msgid "Saturation and Value, and the three colors must be between 0 and 1"
 msgstr "Насиченість і значення, а також три кольори повинні мати значення від 0 до 1"
 
@@ -15991,6 +16276,9 @@ msgstr "Науковий"
 
 msgid "Scientific Inferiors"
 msgstr "Підрядкові математичні"
+
+msgid "Scots"
+msgstr "шотландська"
 
 msgid "Scottish Gaelic"
 msgstr "Шотландська гаельська"
@@ -16496,6 +16784,9 @@ msgstr "Напівширокий (112,5%)"
 
 msgid "Sena"
 msgstr "Сена"
+
+msgid "Seneca"
+msgstr "сенека"
 
 msgid "Separate ratios for horizontal and vertical stems"
 msgstr "Окремі значення для горизонтальних і вертикальних основних штрихів"
@@ -17005,6 +17296,9 @@ msgstr "Зсув при натисканні"
 msgid "Sho_w"
 msgstr "По_казувати"
 
+msgid "Shona"
+msgstr "шона"
+
 #, c-format
 msgid "Shouldn't be in addinfo \"%s"
 msgstr "Не повинно бути у addinfo — «%s"
@@ -17078,6 +17372,9 @@ msgstr "Стискання:"
 msgid "Sibe"
 msgstr "Сібе"
 
+msgid "Sicilian"
+msgstr "сицилійська"
+
 msgid "Sidamo"
 msgstr "Сидама"
 
@@ -17092,6 +17389,9 @@ msgstr "Коефіцієнт розширення бічної основи"
 
 msgid "Side Bearings:"
 msgstr "Бічні основи:"
+
+msgid "Silesian"
+msgstr "сілезька"
 
 msgid "Silte Gurage"
 msgstr "Сілте (гураге)"
@@ -17291,6 +17591,9 @@ msgstr ""
 msgid "Sodo Gurage"
 msgstr "Содо (гураге)"
 
+msgid "Soga"
+msgstr "сога"
+
 msgid "Somali"
 msgstr "Сомалійська"
 
@@ -17391,6 +17694,9 @@ msgstr "Південна слейві"
 
 msgid "Southern Sami"
 msgstr "Південносаамська"
+
+msgid "Southern Sotho"
+msgstr "південна сото"
 
 msgid "Space Regions"
 msgstr "Інтервали"
@@ -17695,6 +18001,9 @@ msgstr "Стандартний"
 msgid "Standard Ligatures"
 msgstr "Стандартні лігатури"
 
+msgid "Standard Moroccan Tamazight"
+msgstr "стандартна марокканська берберська"
+
 msgid ""
 "Standard shift down applied to the\n"
 "denominator in display style.\n"
@@ -17869,6 +18178,9 @@ msgstr "Прямий штрих, вертикальні"
 
 msgid "Straight Arms/Wedge"
 msgstr "Прямий штрих, клиноподібні"
+
+msgid "Straits Salish"
+msgstr "саліська стрейт"
 
 msgid "Stretch:"
 msgstr "Розтягування:"
@@ -18081,6 +18393,9 @@ msgstr "Підтаблиця поза межами таблиці GPOS"
 msgid "Subtable extends beyond end of GSUB table"
 msgstr "Підтаблиця поза межами таблиці GSUB"
 
+msgid "Sukuma"
+msgstr "сукума"
+
 msgid "Sum Around:"
 msgstr "Сума:"
 
@@ -18190,6 +18505,9 @@ msgstr "Широкий рукописний"
 
 msgid "Swash Variance"
 msgstr "Варіативність розплескування"
+
+msgid "Swati"
+msgstr "сисваті"
 
 msgid "Swedish"
 msgstr "Шведська"
@@ -18349,6 +18667,9 @@ msgstr "Таблиці «%c%c%c%c» і «%c%c%c%c» перетинаються"
 msgid "Tabular Numbers"
 msgstr "Табличні цифри"
 
+msgid "Tachelhit"
+msgstr "тачеліт"
+
 msgid "Tag must be 4 characters long"
 msgstr "Теґ має складатися з 4 символів"
 
@@ -18388,6 +18709,9 @@ msgstr "Таджицька"
 msgid "Takri"
 msgstr "Такрі"
 
+msgid "Tamashek"
+msgstr "тамашек"
+
 msgid "Tamazight (Latin)"
 msgstr "Берберська (латиниця)"
 
@@ -18396,6 +18720,9 @@ msgstr "Тамільська"
 
 msgid "Tangent"
 msgstr "Дотична"
+
+msgid "Tangut"
+msgstr "тангут"
 
 msgid "Tatar"
 msgstr "Татарська"
@@ -18423,6 +18750,9 @@ msgstr "Кінцеві форми №2"
 
 msgid "Terminal Forms #3"
 msgstr "Кінцеві форми №3"
+
+msgid "Tetum"
+msgstr "тетум"
 
 msgid "Text Field"
 msgstr "Текстове поле"
@@ -20810,6 +21140,12 @@ msgstr "Колір тексту заголовків"
 msgid "Titling"
 msgstr "Форми заголовків"
 
+msgid "Tiv"
+msgstr "тів"
+
+msgid "Tlingit"
+msgstr "тлінгіт"
+
 msgid "To P_DF File"
 msgstr "До фа_йла PDF"
 
@@ -20873,6 +21209,9 @@ msgstr "До:"
 
 msgid "Todo"
 msgstr "Тодо"
+
+msgid "Tok Pisin"
+msgstr "ток-пісін"
 
 msgid "Tonga"
 msgstr "Тонга"
@@ -21188,6 +21527,9 @@ msgstr "Тсвана"
 msgid "Tulu"
 msgstr "Тулу"
 
+msgid "Tumbuka"
+msgstr "тумбука"
+
 msgid "Turkish"
 msgstr "Турецька"
 
@@ -21196,6 +21538,9 @@ msgstr "Туркменська"
 
 msgid "Turoyo Aramaic"
 msgstr "Туройо (арамейська)"
+
+msgid "Tuvalu"
+msgstr "тувалу"
 
 msgid "Tuvin"
 msgstr "Тувинська"
@@ -21303,6 +21648,9 @@ msgstr "Надзвичайно вузький (50%)"
 
 msgid "Ultra-Expanded (200%)"
 msgstr "Надзвичайно широкий (2005)"
+
+msgid "Umbundu"
+msgstr "умбунду"
 
 msgid ""
 "UnTouch Point\n"
@@ -22056,6 +22404,9 @@ msgstr "Ідентифікатор виробника:"
 msgid "Vendor URL"
 msgstr "URL виробника"
 
+msgid "Venetian"
+msgstr "венеційська"
+
 msgid "Version"
 msgstr "Версія"
 
@@ -22197,6 +22548,9 @@ msgstr "Перегляд"
 msgid "View Point"
 msgstr "Точка спостереження"
 
+msgid "Volapük"
+msgstr "волапюк"
+
 msgid "Vowel Jamo Forms"
 msgstr "Форми голосних джамо"
 
@@ -22223,6 +22577,9 @@ msgstr "Ва"
 
 msgid "Wagdi"
 msgstr "Ваґді"
+
+msgid "Walloon"
+msgstr "валлонська"
 
 msgid "Wansung (Korean)"
 msgstr "Wansung (корейська)"
@@ -22431,6 +22788,9 @@ msgstr "Валійська"
 
 msgid "West-Cree"
 msgstr "Західна крі"
+
+msgid "Western Panjabi"
+msgstr "ланда"
 
 msgid "What is the pixel size of the font in this file?"
 msgstr "Яким є розмір пікселя для шрифту у цьому файлі?"
@@ -22959,6 +23319,12 @@ msgstr "Y поряд¹ зі с_тандартними висотами"
 msgid "Y-Cree"
 msgstr "Крі (Y)"
 
+msgid "Yao"
+msgstr "яо"
+
+msgid "Yapese"
+msgstr "яп"
+
 msgid "Yes"
 msgstr "Так"
 
@@ -23262,6 +23628,12 @@ msgstr "З_меншити"
 
 msgid "Zande"
 msgstr "Занді"
+
+msgid "Zarma"
+msgstr "джерма"
+
+msgid "Zhuang"
+msgstr "чжуан"
 
 msgid "Zone:"
 msgstr "Зона:"
