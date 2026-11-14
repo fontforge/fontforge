@@ -1055,7 +1055,7 @@ return( ret );
 #define SVGMINLRPAD 10
 
 int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
-    char *end;
+    const char *end;
     int em_size, xstart, xend, ascent;
     real trans[6] = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
     DBounds b;
@@ -1191,7 +1191,7 @@ return( ret );
 /*  be embedded within another xml/html document there may be several of them */
 /*  and there may be several fonts within each */
 static int _FindSVGFontNodes(xmlNodePtr node,xmlNodePtr *fonts,int cnt, int max,
-	char *nodename) {
+	const char *nodename) {
     if ( xmlStrcmp(node->name,(const xmlChar *) nodename)==0 ) {
 	if ( strcmp(nodename,"svg")==0 )
 	    nodename = "font";
@@ -1214,7 +1214,7 @@ static xmlNodePtr *FindSVGFontNodes(xmlDocPtr doc) {
     xmlNodePtr *fonts=NULL;
     int cnt;
 
-    fonts = calloc(100,sizeof(xmlNodePtr));	/* If the file has more than 100 fonts in it then it's foolish to expect the user to pick out one, so let's limit ourselves to 100 */
+    fonts = (xmlNodePtr *) calloc(100,sizeof(xmlNodePtr));	/* If the file has more than 100 fonts in it then it's foolish to expect the user to pick out one, so let's limit ourselves to 100 */
     cnt = _FindSVGFontNodes(xmlDocGetRootElement(doc),fonts,0,100,"svg");
     if ( cnt==0 ) {
 	free(fonts);
@@ -1231,7 +1231,7 @@ static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
     int choice;
 
     for ( cnt=0; fonts[cnt]!=NULL; ++cnt);
-    names = malloc((cnt+1)*sizeof(char *));
+    names = (char **) malloc((cnt+1)*sizeof(char *));
     for ( cnt=0; fonts[cnt]!=NULL; ++cnt) {
 	name = xmlGetProp(fonts[cnt],(xmlChar *) "id");
 	if ( name==NULL ) {
@@ -1393,7 +1393,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	    }
 	    sp = SplinePointCreate(x,y);
 	    current = sp->me;
-	    cur = chunkalloc(sizeof(SplineSet));
+	    cur = (SplineSet *) chunkalloc(sizeof(SplineSet));
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -1422,7 +1422,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 	} else {
 	    if ( cur==NULL ) {
 		sp = SplinePointCreate(current.x,current.y);
-		cur = chunkalloc(sizeof(SplineSet));
+		cur = (SplineSet *) chunkalloc(sizeof(SplineSet));
 		if ( head==NULL )
 		    head = cur;
 		else
@@ -1643,7 +1643,7 @@ return( NULL );
     if ( 2*rx>width ) rx = width/2;
     if ( 2*ry>height ) ry = height/2;
 
-    cur = chunkalloc(sizeof(SplineSet));
+    cur = (SplineSet *) chunkalloc(sizeof(SplineSet));
     if ( rx==0 ) {
 	cur->first = SplinePointCreate(x,y+height);
 	cur->last = SplinePointCreate(x+width,y+height);
@@ -1737,7 +1737,7 @@ static SplineSet *SVGParseLine(xmlNodePtr line) {
     sp1 = SplinePointCreate(x,y);
     sp2 = SplinePointCreate(x2,y2);
     SplineMake(sp1,sp2,false);
-    cur = chunkalloc(sizeof(SplineSet));
+    cur = (SplineSet *) chunkalloc(sizeof(SplineSet));
     cur->first = sp1;
     cur->last = sp2;
 return( cur );
@@ -1794,7 +1794,7 @@ return( NULL );
     /* offset from on-curve point to control points                 */
     double drx = rx * magic;
     double dry = ry * magic;
-    cur = chunkalloc(sizeof(SplineSet));
+    cur = (SplineSet *) chunkalloc(sizeof(SplineSet));
     cur->first = SplinePointCreate(cx-rx,cy);
     cur->first->nextcp.x = cx-rx; cur->first->nextcp.y = cy+dry;
     cur->first->prevcp.x = cx-rx; cur->first->prevcp.y = cy-dry;
@@ -1832,7 +1832,7 @@ return( NULL );
     y = strtod(end,&end);
     while ( isspace(*end)) ++end;
 
-    cur = chunkalloc(sizeof(SplineSet));
+    cur = (SplineSet *) chunkalloc(sizeof(SplineSet));
     cur->first = cur->last = SplinePointCreate(x,y);
     while ( *end ) {
 	x = strtod(end,&end);
@@ -2030,7 +2030,7 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 	LogError(_("Could not find Color Source with id %s."), name );
     else if ( (islinear = (xmlStrcmp(colour_source->name,(xmlChar *) "linearGradient")==0)) ||
 	    xmlStrcmp(colour_source->name,(xmlChar *) "radialGradient")==0 ) {
-	struct gradient *grad = chunkalloc(sizeof(struct gradient));
+	struct gradient *grad = (struct gradient *) chunkalloc(sizeof(struct gradient));
 	int bbox_units;
 	*_grad = grad;
 
@@ -2132,14 +2132,14 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 	    /* I'm not sure how to use the style stop-color, but I'm guessing */
 	    /*  this might be it */
 	    grad->stop_cnt = 1;
-	    grad->grad_stops = calloc(1,sizeof(struct grad_stops));
+	    grad->grad_stops = (struct grad_stops *) calloc(1,sizeof(struct grad_stops));
 	    grad->grad_stops[scnt].offset = 1;
 	    grad->grad_stops[scnt].col = st->stopColor;
 	    grad->grad_stops[scnt].opacity = st->stopOpacity;
 	    ++scnt;
 	} else {
 	    grad->stop_cnt = scnt;
-	    grad->grad_stops = calloc(scnt,sizeof(struct grad_stops));
+	    grad->grad_stops = (struct grad_stops *) calloc(scnt,sizeof(struct grad_stops));
 	    scnt = 0;
 	    for ( kid = colour_source->children; kid!=NULL; kid=kid->next ) if ( xmlStrcmp(kid->name,(xmlChar *) "stop")==0 ) {
 		grad->grad_stops[scnt].col = st->stopColor;
@@ -2235,7 +2235,7 @@ static void xmlApplyColourSources(xmlNodePtr top,Entity *head,
 
 static int xmlParseColor(xmlChar *name,uint32_t *color, char **url,struct svg_state *st) {
     int doit, i;
-    static struct { char *name; uint32_t col; } stdcols[] = {
+    static struct { const char *name; uint32_t col; } stdcols[] = {
 	{ "red", 0xff0000 },
 	{ "green", 0x008000 },
 	{ "blue", 0x0000ff },
@@ -2458,7 +2458,7 @@ return( NULL );		/* I can only handle data URIs */
 return( NULL );
     base = img->list_len==0 ? img->u.image : img->u.images[0];
 
-    ent = chunkalloc(sizeof(Entity));
+    ent = (Entity *) chunkalloc(sizeof(Entity));
     ent->type = et_image;
     ent->u.image.image = img;
     ent->u.image.transform[1] = ent->u.image.transform[2] = 0;
@@ -2471,7 +2471,7 @@ return( ent );
 }
 
 static Entity *EntityCreate(SplinePointList *head,struct svg_state *state) {
-    Entity *ent = calloc(1,sizeof(Entity));
+    Entity *ent = (Entity *) calloc(1,sizeof(Entity));
     ent->type = et_splines;
     ent->u.splines.splines = head;
     ent->u.splines.cap = state->lc;
@@ -3049,7 +3049,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 	    /* Probably a variant glyph marked with a variation selector */
 	    /* ... not a true ligature at all */
 	    /* http://babelstone.blogspot.com/2007/06/secret-life-of-variation-selectors.html */
-	    struct altuni *altuni = chunkalloc(sizeof(struct altuni));
+	    struct altuni *altuni = (struct altuni *) chunkalloc(sizeof(struct altuni));
 	    altuni->unienc = u[0];
 	    altuni->vs = u[1];
 	    altuni->fid = 0;
@@ -3058,7 +3058,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 	} else if ( u[1]!='\0' ) {
 	    /* Normal ligature */
 	    for ( len=0; u[len]!=0; ++len );
-	    chars = malloc(len*sizeof(SplineChar *));
+	    chars = (SplineChar **) malloc(len*sizeof(SplineChar *));
 	    for ( len=len2=0; u[len]!=0; ++len ) {
 		chars[len] = SFGetChar(sc->parent,u[len],NULL);
 		if ( chars[len]==NULL )
@@ -3069,7 +3069,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 		}
 	    }
 	    if ( any==NULL ) any=sc;
-	    comp = pt = malloc(len2+1);
+	    comp = pt = (char *) malloc(len2+1);
 	    *pt = '\0';
 	    for ( len=0; u[len]!=0; ++len ) {
 		if ( chars[len]!=NULL )
@@ -3131,7 +3131,7 @@ static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc
 	    }
 	}
     }
-    names = pt = malloc(len+(g!=NULL?strlen((char *)g):0)+1);
+    names = pt = (char *) malloc(len+(g!=NULL?strlen((char *)g):0)+1);
     if ( utf8!=NULL ) {
 	for ( i=0; u[i]!=0; ++i ) {
 	    temp = SFGetChar(sf,u[i],NULL);
@@ -3228,7 +3228,7 @@ return;
 	    if ( end2!=NULL ) *end2 = '\0';
 	    sc2 = SFGetChar(sf,-1,pt2);
 	    if ( sc2!=NULL ) {
-		KernPair *kp = chunkalloc(sizeof(KernPair));
+		KernPair *kp = (KernPair *) chunkalloc(sizeof(KernPair));
 		kp->sc = sc2;
 		kp->off = off;
 		if ( isv ) {
@@ -3455,13 +3455,13 @@ return( NULL );
 
     /* Give ourselves an xuid, just in case they want to convert to PostScript*/
     if ( xuid!=NULL ) {
-	sf->xuid = malloc(strlen(xuid)+20);
+	sf->xuid = (char *) malloc(strlen(xuid)+20);
 	sprintf(sf->xuid,"[%s %d]", xuid, (ff_random_int()&0xffffff));
     }
 
     ff_progress_change_total(cnt);
     sf->glyphcnt = sf->glyphmax = cnt;
-    sf->glyphs = malloc(cnt*sizeof(SplineChar *));
+    sf->glyphs = (SplineChar **) malloc(cnt*sizeof(SplineChar *));
 
     cnt = 0;
     for ( kids = font->children; kids!=NULL; kids=kids->next ) {
@@ -3494,11 +3494,11 @@ return( NULL );
 	}
     }
 
-    map = chunkalloc(sizeof(EncMap));
+    map = (EncMap *) chunkalloc(sizeof(EncMap));
     map->enccount = map->encmax = map->backmax = sf->glyphcnt;
     map->enc = FindOrMakeEncoding("Original");
-    map->map = malloc(sf->glyphcnt*sizeof(int));
-    map->backmap = malloc(sf->glyphcnt*sizeof(int));
+    map->map = (int *) malloc(sf->glyphcnt*sizeof(int));
+    map->backmap = (int *) malloc(sf->glyphcnt*sizeof(int));
     for ( i=0; i<sf->glyphcnt; ++i )
 	map->map[i] = map->backmap[i] = i;
     sf->map = map;
@@ -3731,7 +3731,7 @@ return( NULL );
     }
 
     for ( cnt=0; fonts[cnt]!=NULL; ++cnt);
-    ret = malloc((cnt+1)*sizeof(char *));
+    ret = (char **) malloc((cnt+1)*sizeof(char *));
     for ( cnt=0; fonts[cnt]!=NULL; ++cnt) {
 	name = xmlGetProp(fonts[cnt],(xmlChar *) "id");
 	if ( name==NULL ) {

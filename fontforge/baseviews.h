@@ -46,6 +46,15 @@ enum fvtrans_flags { fvt_alllayers=1, fvt_round_to_int=2,
 	fvt_justapply=0x100, fvt_revert=0x200, fvt_nopreserve=0x400,
 	fvt_noupdate=0x800 };
 
+#ifdef __cplusplus
+extern "C++" {
+inline enum fvtrans_flags operator|(enum fvtrans_flags lhs, enum fvtrans_flags rhs) {
+    return static_cast<enum fvtrans_flags>(static_cast<int>(lhs) |
+                                           static_cast<int>(rhs));
+}
+}
+#endif
+
 typedef struct drect {
     real x, y;
     real width, height;
