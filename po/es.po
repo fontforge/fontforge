@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -3163,6 +3163,12 @@ msgstr "Subrutina de flex incorrecta en %s"
 msgid "Bad font"
 msgstr "Fuente incorrecta"
 
+msgid "Bad font, invalid LayerCount."
+msgstr "Fuente incorrecta, LayerCount incorrecto."
+
+msgid "Bad font, invalid layer index."
+msgstr "Fuente incorrecta, índice de capa inválido."
+
 msgid "Bad font, offset out of bounds."
 msgstr "Fuente incorrecta, desplazamiento fuera de límites."
 
@@ -3336,6 +3342,18 @@ msgstr "Desplazamiento incorrecto: %d para la subfuente %s"
 #, c-format
 msgid "Bad opacity on line %d, must be between 0.0 and 1.0."
 msgstr "Opacidad incorrecta en la línea %d, debe estar entre 0.0 y 1.0."
+
+#, c-format
+msgid "Bad openTypeOS2Selection bit number: bit %d is out of range. It will be ignored"
+msgstr "Número de bit de openTypeOS2Selection incorrecto: el bit %d está fuera de rango. Se ignorará"
+
+#, c-format
+msgid "Bad openTypeOS2Selection bit number: bit %d is reserved and must not be set. It will be ignored"
+msgstr "Número de bit de openTypeOS2Selection incorrecto: el bit %d está reservado y no debe establecerse. Se ignorará"
+
+#, c-format
+msgid "Bad openTypeOS2Selection bit number: bit %d should be set through styleMapStyleName. It will be ignored"
+msgstr "Número de bit de openTypeOS2Selection incorrecto: el bit %d debe establecerse a través de styleMapStyleName. Se ignorará"
 
 msgid "Bad openTypeOS2type key: all bits are set. It will be ignored"
 msgstr "Clave de tipo openTypeOS2 incorrecta: todos los bits están configurados. Se ignorará"
@@ -3809,9 +3827,6 @@ msgstr "Valores Blue"
 
 msgid "BlueValues come in pairs. Select another."
 msgstr "Los valores Blue vienen en pares. Selecciona otro."
-
-msgid "Blues"
-msgstr "Blues"
 
 msgid "Bodo"
 msgstr "Bodo"
@@ -10888,6 +10903,10 @@ msgstr "En la subtabla de búsqueda %.30s, te refieres a un glifo llamado %.80s,
 msgid "In lookup subtable %.30s you replace a glyph with itself. Was this intentional?"
 msgstr "En la subtabla de búsquedas %.30s reemplazas un glifo por sí mismo. ¿Esto es intencional?"
 
+#, c-format
+msgid "In openTypeOS2Selection bit %d is set but Fontforge does not support it. It will be ignored"
+msgstr "En openTypeOS2Selection el bit %d está configurado pero Fontforge no lo soporta. Se ignorará"
+
 msgid "In the 'kern' table, a subtable's length does not match the number of kerning pairs."
 msgstr "En la tabla 'interletraje', la longitud de una subtabla no coincide con el número de pares de interletraje."
 
@@ -12350,6 +12369,9 @@ msgstr "Alternativas de izquierda a derecha"
 msgid "Left to Right mirrored forms"
 msgstr "Formas espejadas de izquierda a derecha"
 
+msgid "Legacy recommended glyphs"
+msgstr "Glifos heredados recomendados"
+
 msgid "Lelemi"
 msgstr "Lelemi"
 
@@ -13130,6 +13152,9 @@ msgstr "Crear _línea"
 
 msgid "Make _Parallel..."
 msgstr "_Poner en paralelo..."
+
+msgid "Make sure legacy (pre-OT 1.8) recommended glyphs, namely '.notdef', '.null' and 'nonmarkingreturn', exist at the beginning of the glyph order. Starting OpenType 1.8, only '.notdef' is mandatory."
+msgstr "Asegúrate de que los glifos heredados (pre-OT 1.8) recomendados, es decir, '.notdef', '. ull' y 'nonmarkingreturn', existan al principio del orden de los glifos. A partir de OpenType 1.8, sólo '.notdef' es obligatorio."
 
 msgid ""
 "Make sure similar or equal counters remain the same in gridfitted outlines.\n"
@@ -22125,6 +22150,25 @@ msgstr ""
 "\"FONTLOG.txt\" en el mismo directorio que la fuente."
 
 msgid ""
+"The FONTLOG is a text file containing relevant information\n"
+"about the font including such things as its changelog.\n"
+"(A general template is available in the OFL FAQ on https://openfontlicense.org/ofl-faq/)\n"
+"Usage within an open font project is highly recommended but not required.\n"
+"If your font already contains a fontlog table (see the Element->Font Info)\n"
+"and you check this box, then the internal fontlog information will be\n"
+"appended to the file \"FONTLOG.txt\" in the same directory\n"
+"as the font itself."
+msgstr ""
+"El registro de fuente (FONTLOG) es un archivo de texto que contiene información \n"
+"relevante sobre la fuente, incluyendo cosas como su registro de cambios.\n"
+"(Una plantilla general está disponible en las preguntas frecuentes de OFL en\n"
+"https://openfontlicense.org/ofl-faq/). El uso dentro de un proyecto abierto de fuente\n"
+"es altamente recomendado pero no se requiere. \n"
+"Si tu fuente ya contiene una tabla fontlog, (vease Elemento->Información de la fuente)\n"
+"y marcas esta casilla, entonces la información interna del registro de fuente será \n"
+"adjuntada al archivo \"FONTLOG.txt\" en el mismo directorio que la fuente."
+
+msgid ""
 "The Italic correction field is used by both TeX and the MS 'MATH'\n"
 "table. It is used when joining slanted text (italic) to upright.\n"
 "It is the amount of extra white space needed so the slanted text\n"
@@ -22153,6 +22197,23 @@ msgid ""
 msgstr ""
 "La OFL es una licencia de software aprovada por la comunidad para proyectos libres/abiertos de fuentes.\n"
 "Las fuentes bajo la OFL pueden ser usadas, estudiadas, copiadas, modificadas, embebidas, combinadas y redistribuidas al mismo tiempo que le dan a sus autores suficiente control e integridad artística. Para más detalles, incluyendo preguntas frecuentes, entra a http://scripts.sil.org/OFL.\n"
+"\n"
+"Los metadatos de esta fuente ayudarán a los usuarios, diseñadores y canales de distribución a saber quién eres, cómo contactarte y qué derechos estás otorgando.\n"
+"Al lanzar versiones modificadas, recuerda añadir tu aviso adicional, incluyendo cualquier nombre reservado de fuente, o RFN. FontForge solía agregar RFNs por defecto, pero ya no lo hace debido a que son usados por una minoría de las fuentes OFL, y los RFNs de FontForge eran a menudo legalmente no válidos. Por favor accede al sitio oficial de SIL FAQ y a la incidencia no. 4434 de GitHub de FontForge para más información.\n"
+"\n"
+"¡Diviértete diseñando fuentes abiertas! 🔣🔧🥳"
+
+msgid ""
+"The OFL is a community-approved software license designed for libre/open font projects. \n"
+"Fonts under the OFL can be used, studied, copied, modified, embedded, merged and redistributed while giving authors enough control and artistic integrity. For more details including an FAQ see https://openfontlicense.org. \n"
+"\n"
+"This font metadata will help users, designers and distribution channels to know who you are, how to contact you and what rights you are granting. \n"
+"When releasing modified versions, remember to add your additional notice, including any extra Reserved Font Name(s). FontForge used to add RFN's by default, but no longer does, as they are used by a minority of OFL fonts and FontForge's RFN's were often legally invalid. Please see the official SIL FAQ and FontForge GitHub issue №4434 for more information. \n"
+"\n"
+"Have fun designing open fonts! 🔣🔧🥳"
+msgstr ""
+"OFL es una licencia de software aprovada por la comunidad para proyectos libres/abiertos de fuentes.\n"
+"Las fuentes bajo la OFL pueden ser usadas, estudiadas, copiadas, modificadas, embebidas, combinadas y redistribuidas al mismo tiempo que le dan a sus autores suficiente control e integridad artística. Para más detalles, incluyendo preguntas frecuentes, entra a https://openfontlicense.org.\n"
 "\n"
 "Los metadatos de esta fuente ayudarán a los usuarios, diseñadores y canales de distribución a saber quién eres, cómo contactarte y qué derechos estás otorgando.\n"
 "Al lanzar versiones modificadas, recuerda añadir tu aviso adicional, incluyendo cualquier nombre reservado de fuente, o RFN. FontForge solía agregar RFNs por defecto, pero ya no lo hace debido a que son usados por una minoría de las fuentes OFL, y los RFNs de FontForge eran a menudo legalmente no válidos. Por favor accede al sitio oficial de SIL FAQ y a la incidencia no. 4434 de GitHub de FontForge para más información.\n"
@@ -22581,12 +22642,20 @@ msgid "The control point right of the selected point is outside the spline segme
 msgstr "El punto de control a la derecha del punto seleccionado está fuera del segmento de curva"
 
 #, c-format
+msgid "The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog."
+msgstr "La convención es que las fuentes PostScript deben tener un tamaño em de 1000. Pero esta fuente tiene un famaño de %d. Esto no es un error, pero puede que consideres alterar el tamaño de em con el diálogo Elemento->Información de la fuente->General."
+
+#, c-format
 msgid ""
 "The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
 "La convención es que las fuentes PostScript deben tener un tamaño em de 1000. Pero esta fuente tiene un famaño de %d. Esto no es un error, pero puede que consideres alterar el tamaño de em con el diálogo Elemento->Información de la fuente->General.\n"
 "¿Deseas continuar con la generación de tu fuente a pesar de esto?"
+
+#, c-format
+msgid "The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog."
+msgstr "La convención es que las fuentes TrueType deben tener un tamaño que sea potencia de 2. Pero esta fuente tiene un famaño de %d. Esto no es un error, pero puede que consideres alterar el tamaño de em con el diálogo Elemento->Información de la fuente->General."
 
 #, c-format
 msgid ""
@@ -26393,6 +26462,10 @@ msgstr "Advertencia: No hay caracteres seleccionados en AddDHint(%d,%d %d,%d %d,
 msgid "Warning: No characters selected in AddHint(%d,%d,%d)"
 msgstr "Advertencia: No hay caracteres seleccionados en AddDHint(%d %d,%d)"
 
+#, c-format
+msgid "Warning: No endpoint pairs found within a tolerance of %g."
+msgstr "Advertencia: No se han encontrado pares de puntos finales dentro de una tolerancia de %g."
+
 msgid "Warning: No stroke output for contour"
 msgstr "Advertencia: No hay salida de trazo para el contorno"
 
@@ -29120,6 +29193,9 @@ msgstr "Sin pistas"
 
 msgid "of each master design, or by entering the design"
 msgstr "maestro o indicando los valores del diseño para cada uno"
+
+msgid "openfontlicense.org"
+msgstr "openfontlicense.org"
 
 msgid "optical bounds table"
 msgstr "tabla de límites ópticos"

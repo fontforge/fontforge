@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Language: ko_KR\n"
@@ -1523,6 +1523,9 @@ msgstr "전방 클래스"
 msgid "Ahom"
 msgstr "아홈 문자"
 
+msgid "Akan"
+msgstr "아칸어"
+
 msgid "Akhand"
 msgstr "Akhand"
 
@@ -2149,6 +2152,9 @@ msgstr "오른쪽에서 왼쪽(아랍어)"
 msgid "Arabic Supplement"
 msgstr "아랍 문자 보충"
 
+msgid "Aragonese"
+msgstr "아라곤어"
+
 msgid "Archives"
 msgstr "압축 파일"
 
@@ -2208,6 +2214,9 @@ msgstr "정말 이 글리프를 삭제하시겠습니까? 이 조작은 취소�
 msgid "Armenian"
 msgstr "아르메니아 문자"
 
+msgid "Aromanian"
+msgstr "아로마니아어"
+
 msgid "Arrow Options"
 msgstr "화살표 옵션"
 
@@ -2260,6 +2269,9 @@ msgstr "타일 상형문자와 동일한 가로 세로 비율"
 
 msgid "Assamese"
 msgstr "아삼어"
+
+msgid "Asturian"
+msgstr "아스투리아어"
 
 msgid "At End"
 msgstr "종료"
@@ -2547,6 +2559,9 @@ msgstr "아이마라어"
 
 msgid "Azebaijani (roman)"
 msgstr "아제르바이잔어(로마자)"
+
+msgid "Azerbaijani"
+msgstr "아제르바이잔어"
 
 msgid "Azeri (Cyrillic)"
 msgstr "아제르바이잔어(키릴문자)"
@@ -3322,6 +3337,9 @@ msgstr "볼(원형 캡)"
 msgid "Balti"
 msgstr "볼티어"
 
+msgid "Baluchi"
+msgstr "발루치어"
+
 msgid "Bambara"
 msgstr "밤바라어"
 
@@ -3498,6 +3516,9 @@ msgstr "빌렌어"
 msgid "Bind to Path"
 msgstr "경로 통합"
 
+msgid "Bislama"
+msgstr "비슬라마어"
+
 msgid "Bitm_ap Strikes Available..."
 msgstr "비트맵 스트라이크 사용 가능(_a)..."
 
@@ -3573,8 +3594,8 @@ msgstr "BlueValue"
 msgid "BlueValues come in pairs. Select another."
 msgstr "BlueValues는 짝으로 지정합니다. 하나 더 선택해 주십시오."
 
-msgid "Blues"
-msgstr "Blue값"
+msgid "Bodo"
+msgstr "보도어"
 
 msgid "Bold"
 msgstr "볼드체"
@@ -3970,6 +3991,9 @@ msgstr "서예(직사각형)(_l)"
 msgid "Ca_pital Height:"
 msgstr "대문자 높이(_p):"
 
+msgid "Cajun French"
+msgstr "케이준 프랑스어"
+
 msgid "Call Script"
 msgstr "문자열를 불러오기"
 
@@ -4135,6 +4159,9 @@ msgstr "카탈로니아어"
 msgid "Caucasian Albanian"
 msgstr "캅카스 알바니아 문자"
 
+msgid "Cayuga"
+msgstr "카유가어"
+
 msgid "Cebuano"
 msgstr "세부아노어"
 
@@ -4178,6 +4205,9 @@ msgstr "차크마 문자"
 
 msgid "Cham"
 msgstr "참 문자"
+
+msgid "Chamorro"
+msgstr "차모로어"
 
 msgid "Change"
 msgstr "변경"
@@ -4667,8 +4697,14 @@ msgstr "체로키문자 보충"
 msgid "Chess Symbols"
 msgstr "체스 기호"
 
+msgid "Cheyenne"
+msgstr "샤이엔어"
+
 msgid "Chichewa"
 msgstr "체와어"
+
+msgid "Chiga"
+msgstr "치가어"
 
 msgid "Chin"
 msgstr "친어"
@@ -4691,6 +4727,9 @@ msgstr "중국어(대만)"
 msgid "Chipewyan"
 msgstr "치페와이언어"
 
+msgid "Choctaw"
+msgstr "촉토어"
+
 msgid "Choose a file format..."
 msgstr "파일포맷를 선택해 주십시오..."
 
@@ -4708,6 +4747,9 @@ msgstr "추크치어"
 
 msgid "Church Slavonic"
 msgstr "고대교회 슬라브어"
+
+msgid "Chuukese"
+msgstr "추크어"
 
 msgid "Chuvash"
 msgstr "츄바시어"
@@ -5262,6 +5304,9 @@ msgstr "핵심 python 패키지 'pkg_resources'를 찾을 수 없음: 플러그�
 
 msgid "Corner"
 msgstr "모서리점"
+
+msgid "Cornish"
+msgstr "콘월어"
 
 msgid "Correct Direction"
 msgstr "올바른 방향"
@@ -7539,6 +7584,12 @@ msgstr "패밀리 블루 컬러"
 msgid "FamilyBl_ues"
 msgstr "패밀리 파란색(_U)"
 
+msgid "Fang"
+msgstr "팡그어"
+
+msgid "Fanti"
+msgstr "판티어"
+
 msgid "Faroese"
 msgstr "페로어"
 
@@ -8288,6 +8339,9 @@ msgstr "갈리시아어"
 msgid "Galla"
 msgstr "갈라어/오로모어"
 
+msgid "Ganda"
+msgstr "간다어"
+
 msgid "Garhwali"
 msgstr "가르와리어"
 
@@ -8456,6 +8510,9 @@ msgstr ""
 "Ghostview는 (아마 그 외에도)\n"
 "점이 1개도 위에 놓이지 않는 힌트가 존재하면 \n"
 "문제가 발생합니다."
+
+msgid "Gilaki"
+msgstr "길라키어"
 
 msgid "Gilyak"
 msgstr "길랴크어"
@@ -8971,6 +9028,9 @@ msgstr "구르무키 자"
 msgid "Gurmukhi2"
 msgstr "구르무키 자2"
 
+msgid "Gusii"
+msgstr "구시어"
+
 msgid "HFlex Hint Color"
 msgstr "HFlex 힌트 색상"
 
@@ -9007,6 +9067,9 @@ msgstr "HV 곡선"
 msgid "H_ints"
 msgstr "힌트(_I)"
 
+msgid "Haida"
+msgstr "하이다어"
+
 msgid "Haitian"
 msgstr "하이티어"
 
@@ -9024,6 +9087,9 @@ msgstr "반각폭"
 
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "반각 문자와 전각 문자"
+
+msgid "Halkomelem"
+msgstr "할코멜렘어"
 
 msgid "Hammer-Banna"
 msgstr "하베르-바나어"
@@ -9063,6 +9129,9 @@ msgstr "하라리어"
 
 msgid "Harauti"
 msgstr "하란츄어"
+
+msgid "Haryanvi"
+msgstr "하리안비어"
 
 msgid "Has _Vertical Metrics"
 msgstr "세로쓰기 메트릭가 존재(_V)"
@@ -9108,6 +9177,9 @@ msgstr "높이/Kern 데이터"
 
 msgid "Height:"
 msgstr "높이:"
+
+msgid "Herero"
+msgstr "헤레로어"
 
 msgid "Hidden"
 msgstr "숨겨진"
@@ -9187,6 +9259,9 @@ msgstr "히라가나(일본어문자)"
 msgid "Hiragana & Katakana"
 msgstr "히라가나와 가타카나"
 
+msgid "Hiri Motu"
+msgstr "히리 모투어"
+
 msgid "Histogram Dialog"
 msgstr "막대그래프에 대한 대화상자"
 
@@ -9248,6 +9323,9 @@ msgid ""
 msgstr ""
 "흠, 'gvar' 테이블내의 지정된 글로벌 tuples가 너무 많습니다.\n"
 " FontForge는 %d개만 지원합니다\n"
+
+msgid "Hmong"
+msgstr "히몸어"
 
 msgid "Ho"
 msgstr "호어"
@@ -9469,6 +9547,9 @@ msgstr "ISO-8859-8 (히브리어)"
 msgid "ISO 8859-9  (Latin5)"
 msgstr "ISO 8859-9(라틴5)"
 
+msgid "Iban"
+msgstr "이반어"
+
 msgid "Ibibio"
 msgstr "이비비오어"
 
@@ -9498,6 +9579,9 @@ msgstr "이미지 상자 맨 아래 가장자리 기준선"
 
 msgid "Ideographic em-box top edge baseline"
 msgstr "이미지 상자 맨 위 가장자리 기준선"
+
+msgid "Ido"
+msgstr "이도어"
 
 msgid "If a class name is a number, it must be the index of the class in the array of classes_simple."
 msgstr "클래스 이름이 숫자 인 경우는 classes_simple의 배열 클래스의 인덱스해야합니다."
@@ -10149,6 +10233,12 @@ msgstr "명령이 변경되었습니다"
 msgid "Interface"
 msgstr "인터페이스"
 
+msgid "Interlingua"
+msgstr "인터링구아"
+
+msgid "Interlingue"
+msgstr "인테르링구에"
+
 msgid "Intermediate Points:"
 msgstr "중간 점:"
 
@@ -10538,6 +10628,12 @@ msgstr "KSC 5601-1987 (한국어)"
 msgid "Kabardian"
 msgstr "카바르드어"
 
+msgid "Kabuverdianu"
+msgstr "크리올어"
+
+msgid "Kabyle"
+msgstr "커바일어"
+
 msgid "Kachchi"
 msgstr "캇치어"
 
@@ -10592,6 +10688,9 @@ msgstr "카렌어"
 msgid "Kashmiri"
 msgstr "카슈미르어"
 
+msgid "Kashubian"
+msgstr "카슈비아어"
+
 msgid "Katakana"
 msgstr "가타가나(일본어문자)"
 
@@ -10600,6 +10699,9 @@ msgstr "카타카나 (& 음성 확장)"
 
 msgid "Katakana Phonetic Extensions"
 msgstr "가타카나 음성 확장"
+
+msgid "Kawi"
+msgstr "카위어"
 
 msgid "Kayah Li"
 msgstr "카야・리 자"
@@ -10764,6 +10866,9 @@ msgstr "키큐어"
 msgid "Kildin Sami"
 msgstr "키루딘・사미어"
 
+msgid "Kinyarwanda"
+msgstr "르완다어"
+
 msgid "Kinyarwanda/Ruanda"
 msgstr "킨야르완다어/르완다어"
 
@@ -10779,6 +10884,9 @@ msgstr "코다그어"
 msgid "Kokni"
 msgstr "코쿠니어"
 
+msgid "Komi"
+msgstr "코미어"
+
 msgid "Komi-Permyak"
 msgstr "코미・페름야크어"
 
@@ -10790,6 +10898,9 @@ msgstr "코모어"
 
 msgid "Komso"
 msgstr "콘조어"
+
+msgid "Kongo"
+msgstr "콩고어"
 
 msgid "Konkani"
 msgstr "콘카니어"
@@ -10806,11 +10917,17 @@ msgstr "오래된 한글"
 msgid "Koryak"
 msgstr "코랴크어"
 
+msgid "Kosraean"
+msgstr "코스라이엔어"
+
 msgid "Kpelle"
 msgstr "쿠페레어"
 
 msgid "Krio"
 msgstr "쿠리오어"
+
+msgid "Kuanyama"
+msgstr "쿠안야마어"
 
 msgid "Kui"
 msgstr "쿠이(Kui)어"
@@ -10872,6 +10989,9 @@ msgstr "라다키어"
 msgid "Ladin"
 msgstr "라딘어"
 
+msgid "Ladino"
+msgstr "라디노어"
+
 msgid "Lahuli"
 msgstr "라호르어"
 
@@ -10911,6 +11031,9 @@ msgstr "아르메니아어"
 
 msgid "Lang|Avar"
 msgstr "아바르어"
+
+msgid "Lang|Balinese"
+msgstr "발리어"
 
 msgid "Lang|Bengali"
 msgstr "벵골어"
@@ -10967,6 +11090,9 @@ msgstr "라틴어"
 msgid "Lang|Limbu"
 msgstr "림부어"
 
+msgid "Lang|Makasar"
+msgstr "마카사어"
+
 msgid "Lang|Malayalam"
 msgstr "말라얄람어"
 
@@ -10976,11 +11102,23 @@ msgstr "만주어"
 msgid "Lang|Mongolian"
 msgstr "몽골어"
 
+msgid "Lang|Odia"
+msgstr "오리야어"
+
 msgid "Lang|Oriya"
 msgstr "오리야어"
 
+msgid "Lang|Persian"
+msgstr "페르시아어"
+
+msgid "Lang|Sinhala"
+msgstr "싱할라어"
+
 msgid "Lang|Sinhalese"
 msgstr "신할리어"
+
+msgid "Lang|Sundanese"
+msgstr "순다어"
 
 msgid "Lang|Syriac"
 msgstr "시리아어"
@@ -11224,8 +11362,14 @@ msgstr "밝은"
 msgid "Light Angle:"
 msgstr "빛의 각도:"
 
+msgid "Ligurian"
+msgstr "리구리아어"
+
 msgid "Limbu"
 msgstr "림부 문자"
+
+msgid "Limburgish"
+msgstr "림버거어"
 
 msgid ""
 "Limit the font so that only the glyphs referenced in the first 256 encodings\n"
@@ -11360,6 +11504,12 @@ msgstr "선택 가능한 논리 And"
 
 msgid "Logos"
 msgstr "로고"
+
+msgid "Lojban"
+msgstr "로반어"
+
+msgid "Lombard"
+msgstr "롬바르드어"
 
 msgid "Lombardic Forms"
 msgstr "롬바르디아 문자 형태"
@@ -11547,6 +11697,9 @@ msgstr "낮음"
 msgid "Low Mari"
 msgstr "목지마리어"
 
+msgid "Low Saxon"
+msgstr "저지 색슨어"
+
 msgid "Low Surrogates"
 msgstr "하위 서러게이트"
 
@@ -11568,6 +11721,12 @@ msgstr "소문자에서 초소형대문자로"
 msgid "Lowercase to Small Capitals"
 msgstr "소문자에서 소형 대문자로"
 
+msgid "Luba-Katanga"
+msgstr "루바-카탄가어"
+
+msgid "Luba-Lulua"
+msgstr "루바-룰루아어"
+
 msgid "Lule Sami"
 msgstr "루레・사미어"
 
@@ -11576,6 +11735,9 @@ msgstr "루오어"
 
 msgid "Luxembourgish"
 msgstr "룩셈부르크어"
+
+msgid "Luyia"
+msgstr "루야어"
 
 msgid "Lycian"
 msgstr "리키아 문자"
@@ -11755,6 +11917,9 @@ msgstr "매킨토시 라틴어"
 msgid "Mag:"
 msgstr "배율:"
 
+msgid "Magahi"
+msgstr "마가히어"
+
 msgid "Magnification:"
 msgstr "확대율:"
 
@@ -11827,6 +11992,12 @@ msgstr ""
 msgid "Make the counters narrower"
 msgstr "카운터를 좁히십시오"
 
+msgid "Makhuwa"
+msgstr "마쿠와어"
+
+msgid "Makonde"
+msgstr "마콘데어"
+
 msgid "Malagasy"
 msgstr "마다가스카르어"
 
@@ -11863,6 +12034,9 @@ msgstr "몰타어"
 msgid "Mandaic"
 msgstr "만다이아 문자"
 
+msgid "Mandar"
+msgstr "만다르어"
+
 msgid "Mandinka"
 msgstr "만딩카어"
 
@@ -11880,6 +12054,9 @@ msgstr "만시어"
 
 msgid "Manufacturer"
 msgstr "제작자"
+
+msgid "Manx"
+msgstr "맹크스어"
 
 msgid "Manx Gaelic"
 msgstr "만섬 게일어"
@@ -12021,6 +12198,9 @@ msgid ""
 "Marks within a ligature should be ordered with the direction of writing.\n"
 "This one and %d are out of order."
 msgstr "합음자에 포함되는 복수의 마크는 필기방향으로 나열되어야 합니다. 이것과 %d는 순서가 맞지 않습니다."
+
+msgid "Marshallese"
+msgstr "마셜어"
 
 msgid "Marwari"
 msgstr "마르와리어"
@@ -12168,6 +12348,9 @@ msgstr ""
 msgid "Mayan Numerals"
 msgstr "마야 숫자"
 
+msgid "Mazanderani"
+msgstr "마잔데라니어"
+
 msgid "Mbundu"
 msgstr "분다어"
 
@@ -12250,6 +12433,9 @@ msgstr "중간 높음"
 msgid "Medium Low"
 msgstr "중간 낮음"
 
+msgid "Medumba"
+msgstr "메둠바어"
+
 msgid "Meetei Mayek"
 msgstr "메이테이 마옉 문자"
 
@@ -12308,6 +12494,9 @@ msgstr "메로이트 필기체"
 
 msgid "Meroitic Hieroglyphs"
 msgstr "메로이트 상형 문자"
+
+msgid "Meru"
+msgstr "메루어"
 
 msgid ""
 "MetaFont (mf) generates lots of verbiage to stdout.\n"
@@ -12373,6 +12562,9 @@ msgstr "최소 커닝"
 
 msgid "MinConnectorOverlap:"
 msgstr "문자 최소 겹침:"
+
+msgid "Minangkabau"
+msgstr "미낭카바우어"
 
 msgid ""
 "Minimum allowed height of the bottom\n"
@@ -12500,6 +12692,9 @@ msgstr "보조 축 (높이)(_H):"
 
 msgid "Minor:"
 msgstr "작은:"
+
+msgid "Mirandese"
+msgstr "미란데어"
 
 msgid "Misc."
 msgstr "그 외"
@@ -12731,8 +12926,14 @@ msgstr "필요한 횟수보다 더 많은 push가 있습니다"
 msgid "More than 256 entries in subfont %s"
 msgstr "서브폰트%s에 256개를 넘는 항목이 있습니다"
 
+msgid "Morisyen"
+msgstr "모리스얀어"
+
 msgid "Moroccan"
 msgstr "모로코어"
+
+msgid "Mossi"
+msgstr "모시어"
 
 msgid ""
 "Most font formats cannot specify adjacent points (or control points)\n"
@@ -12965,6 +13166,9 @@ msgstr "다른 인코딩은 무시됩니다."
 msgid "Mundari"
 msgstr "문다리어"
 
+msgid "Muscogee"
+msgstr "크리크어"
+
 msgid "Music"
 msgstr "음악"
 
@@ -13157,6 +13361,9 @@ msgstr "좁음"
 msgid "Naskapi"
 msgstr "나스카피어"
 
+msgid "Navajo"
+msgstr "나바호어"
+
 msgid "Navigation"
 msgstr "탐색"
 
@@ -13168,6 +13375,9 @@ msgstr "은동가어"
 
 msgid "Ne_xt Control Point"
 msgstr "다음 제어점(_X)"
+
+msgid "Neapolitan"
+msgstr "나폴리어"
 
 msgid "Near"
 msgstr "가까운"
@@ -13883,6 +14093,9 @@ msgstr ""
 msgid "Northern Sami"
 msgstr "북사미어"
 
+msgid "Northern Sotho"
+msgstr "북부 소토어"
+
 msgid "Northern Tai"
 msgstr "북타이어"
 
@@ -13897,6 +14110,9 @@ msgstr "노르웨이어(보크몰)"
 
 msgid "Norwegian (Nynorsk)"
 msgstr "노르웨이어(뉘노르스크)"
+
+msgid "Norwegian Nynorsk"
+msgstr "노르웨이어(니노르스크)"
 
 msgid "Not ASCII"
 msgstr "ASCII가 아닙니다"
@@ -14075,8 +14291,14 @@ msgstr "숫자 양식"
 msgid "Nushu"
 msgstr "여서문자"
 
+msgid "Nyamwezi"
+msgstr "니암웨지어"
+
 msgid "Nyanja/Chewa"
 msgstr "냔자어/체와어"
+
+msgid "Nyankole"
+msgstr "니안콜어"
 
 msgid "Nyiakeng Puachue Hmong"
 msgstr "니야켕 푸아추에 몽"
@@ -14269,6 +14491,9 @@ msgstr "올치키 문자"
 
 msgid "Old Hungarian"
 msgstr "로바쉬 문자"
+
+msgid "Old Irish"
+msgstr "고대 아일랜드어"
 
 msgid "Old Italic"
 msgstr "오래된 이탤릭"
@@ -14816,6 +15041,9 @@ msgstr " 짝단위 위치지정"
 msgid "Pairwise Positioning (kerning)"
 msgstr "짝단위 위치 지정 (커닝)"
 
+msgid "Palauan"
+msgstr "팔라우어"
+
 msgid "Palaung"
 msgstr "파라웅어"
 
@@ -14842,6 +15070,9 @@ msgstr "팔미라 자"
 
 msgid "Palpa"
 msgstr "팔파어"
+
+msgid "Pangasinan"
+msgstr "판가시난어"
 
 msgid "Panose"
 msgstr "Panose"
@@ -15350,6 +15581,9 @@ msgstr "%.20s-%.20s의 보충번호를 재지정해 주십시오."
 
 msgid "Please specify a script"
 msgstr "스크립트를 지정하십시오."
+
+msgid "Pohnpeian"
+msgstr "폼페이어"
 
 msgid "Poin_ts too close"
 msgstr "너무 가까운 점(_T)"
@@ -15883,6 +16117,9 @@ msgstr "가파른/수평"
 
 msgid "Rapid/Vertical"
 msgstr "빠른/수직"
+
+msgid "Rarotongan"
+msgstr "라로통가어"
 
 msgid "Raster"
 msgstr "라스터"
@@ -16507,6 +16744,9 @@ msgstr "오른쪽에서 왼쪽으로 미러링된 양식"
 msgid "Ro_und"
 msgstr "둥근(_u)"
 
+msgid "Rohingya"
+msgstr "로힝야어"
+
 msgid "Roman Connected"
 msgstr "로마자와 연관된"
 
@@ -16518,6 +16758,9 @@ msgstr "로마자의 흔적"
 
 msgid "Romanian"
 msgstr "루마니아어"
+
+msgid "Romansh"
+msgstr "로만시어"
 
 msgid "Romany"
 msgstr "로마니어"
@@ -16945,6 +17188,12 @@ msgstr "산탈어"
 msgid "Saraiki"
 msgstr "사라이키어"
 
+msgid "Sardinian"
+msgstr "사르디니아어"
+
+msgid "Sasak"
+msgstr "사사크어"
+
 msgid "Saturation and Value, and the three colors must be between 0 and 1"
 msgstr "채도 및 명도, 세 가지 색상은 0과 1 사이여야 합니다."
 
@@ -17131,6 +17380,9 @@ msgstr "체계적인"
 
 msgid "Scientific Inferiors"
 msgstr "과학문헌용 아랫글자"
+
+msgid "Scots"
+msgstr "스코틀랜드어"
 
 msgid "Scottish Gaelic"
 msgstr "스코틀랜드・게일어"
@@ -17636,6 +17888,9 @@ msgstr "반확장 (112.5%)"
 msgid "Sena"
 msgstr "시나어"
 
+msgid "Seneca"
+msgstr "세네카어"
+
 msgid "Separate ratios for horizontal and vertical stems"
 msgstr "수평과 수직 줄기에 대한 개별 비율"
 
@@ -18132,6 +18387,9 @@ msgstr "신문 변환"
 msgid "Sho_w"
 msgstr "표시(_W)"
 
+msgid "Shona"
+msgstr "쇼나어"
+
 msgid "Shorthand Format Controls"
 msgstr "속기 형식 제어"
 
@@ -18208,6 +18466,9 @@ msgstr "장평 축소폭:"
 msgid "Sibe"
 msgstr "시베어"
 
+msgid "Sicilian"
+msgstr "시칠리아어"
+
 msgid "Sidamo"
 msgstr "시다모어"
 
@@ -18225,6 +18486,9 @@ msgstr "측면 베어링 확장 계수"
 
 msgid "Side Bearings:"
 msgstr "측면 베어링:"
+
+msgid "Silesian"
+msgstr "실레시아어"
 
 msgid "Silte Gurage"
 msgstr "실테・구라게어"
@@ -18446,6 +18710,9 @@ msgstr ""
 msgid "Sodo Gurage"
 msgstr "소도・구라게어"
 
+msgid "Soga"
+msgstr "소가어"
+
 msgid "Sogdian"
 msgstr "소그드 문자"
 
@@ -18549,6 +18816,9 @@ msgstr "남슬라비어"
 
 msgid "Southern Sami"
 msgstr "남사미어"
+
+msgid "Southern Sotho"
+msgstr "남부 소토어"
 
 msgid "Soyombo"
 msgstr "소욤보 자"
@@ -18854,6 +19124,9 @@ msgstr "표준"
 msgid "Standard Ligatures"
 msgstr "표준 합음자"
 
+msgid "Standard Moroccan Tamazight"
+msgstr "표준 모로코 타마지트어"
+
 msgid "Standard Solid Fill"
 msgstr "표준 솔리드 채우기"
 
@@ -19032,6 +19305,9 @@ msgstr "Straight Arms/수직"
 
 msgid "Straight Arms/Wedge"
 msgstr "Straight Arms/쐐기"
+
+msgid "Straits Salish"
+msgstr "해안 살리시어"
 
 msgid "Stretch:"
 msgstr "장평 확장폭:"
@@ -19247,6 +19523,9 @@ msgstr "서브 테이블이 GPOS 테이블의 끝을 넘어서 늘어져 있습�
 msgid "Subtable extends beyond end of GSUB table"
 msgstr "서브테이블이 GSUB 테이블의 끝을 넘어서 있습니다"
 
+msgid "Sukuma"
+msgstr "수쿠마어"
+
 msgid "Sum Around:"
 msgstr "허용오차:"
 
@@ -19377,6 +19656,9 @@ msgstr "스와쉬자형"
 
 msgid "Swash Variance"
 msgstr "스와쉬 자형 변화"
+
+msgid "Swati"
+msgstr "시스와티어"
 
 msgid "Swedish"
 msgstr "스웨덴어"
@@ -19551,6 +19833,9 @@ msgstr "표 %c%c%c%c그리고 %c%c%c%c가 겹친다"
 msgid "Tabular Numbers"
 msgstr "표 표시용 숫자"
 
+msgid "Tachelhit"
+msgstr "타셸히트어"
+
 msgid "Tag must be 4 characters long"
 msgstr "태그의 길이가 4자이어야 합니다"
 
@@ -19592,6 +19877,12 @@ msgstr "타지크어"
 
 msgid "Takri"
 msgstr "타크리 자"
+
+msgid "Talysh"
+msgstr "탈리쉬어"
+
+msgid "Tamashek"
+msgstr "타마섹어"
 
 msgid "Tamazight (Latin)"
 msgstr "타마지트어(라틴문자)"
@@ -19652,6 +19943,9 @@ msgstr "어미형3"
 
 msgid "Tertiary Ideographic Plane"
 msgstr "3차 표식 평면"
+
+msgid "Tetum"
+msgstr "테툼어"
 
 msgid "Text Field"
 msgstr "텍스트 필드"
@@ -22110,6 +22404,12 @@ msgstr "제목 텍스트 색"
 msgid "Titling"
 msgstr "타이틀용자형"
 
+msgid "Tiv"
+msgstr "티브어"
+
+msgid "Tlingit"
+msgstr "틀링깃족어"
+
 msgid "To P_DF File"
 msgstr "PDF에 출력(_D)"
 
@@ -22172,6 +22472,9 @@ msgstr "지정값:"
 
 msgid "Todo"
 msgstr "토도어"
+
+msgid "Tok Pisin"
+msgstr "토크 피신어"
 
 msgid "Tonga"
 msgstr "통가어(니야사지방)"
@@ -22498,6 +22801,9 @@ msgstr "츠와나어"
 msgid "Tulu"
 msgstr "툴루어"
 
+msgid "Tumbuka"
+msgstr "툼부카어"
+
 msgid "Turkish"
 msgstr "터키어"
 
@@ -22506,6 +22812,9 @@ msgstr "투르크멘어"
 
 msgid "Turoyo Aramaic"
 msgstr "토로요・아람어"
+
+msgid "Tuvalu"
+msgstr "투발루어"
 
 msgid "Tuvin"
 msgstr "토우바어"
@@ -22635,6 +22944,9 @@ msgstr "초압축 (50%)"
 
 msgid "Ultra-Expanded (200%)"
 msgstr "초확장 (200%)"
+
+msgid "Umbundu"
+msgstr "움분두어"
 
 msgid ""
 "UnTouch Point\n"
@@ -23422,6 +23734,9 @@ msgstr "벤더 ID"
 msgid "Vendor URL"
 msgstr "벤더의 URL"
 
+msgid "Venetian"
+msgstr "베네치아어"
+
 msgid "Version"
 msgstr "버전"
 
@@ -23567,6 +23882,9 @@ msgstr "보기"
 msgid "View Point"
 msgstr "시점"
 
+msgid "Volapük"
+msgstr "볼라퓌크어"
+
 msgid "Vowel Jamo Forms"
 msgstr "한글 자모모음형"
 
@@ -23596,6 +23914,9 @@ msgstr "와어"
 
 msgid "Wagdi"
 msgstr "와그디어"
+
+msgid "Walloon"
+msgstr "왈론어"
 
 msgid "Wancho"
 msgstr "완초"
@@ -23854,6 +24175,9 @@ msgstr "웰시어"
 
 msgid "West-Cree"
 msgstr "서크리어"
+
+msgid "Western Panjabi"
+msgstr "라한다어"
 
 msgid "What is the pixel size of the font in this file?"
 msgstr "이 파일내의 폰트 픽셀수는 얼마입니까?"
@@ -24419,6 +24743,12 @@ msgstr "Y-크리어"
 msgid "Y:"
 msgstr "Y:"
 
+msgid "Yao"
+msgstr "야오족어"
+
+msgid "Yapese"
+msgstr "얍페세어"
+
 msgid "Yes"
 msgstr "네"
 
@@ -24735,6 +25065,12 @@ msgstr "자나바자르 사각 문자"
 
 msgid "Zande"
 msgstr "잔데어"
+
+msgid "Zarma"
+msgstr "자르마어"
+
+msgid "Zhuang"
+msgstr "주앙어"
 
 msgid "Zone:"
 msgstr "구역:"

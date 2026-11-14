@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -318,6 +318,9 @@ msgstr "წვერ_ოს დამატება"
 msgid "Aari"
 msgstr "აარი"
 
+msgid "Abkhazian"
+msgstr "აფხაზური"
+
 msgid "Achi"
 msgstr "აჩი"
 
@@ -436,11 +439,17 @@ msgstr "გაფართოებული სიგანე არ შეი
 msgid "Advance width of glyph %.30s must be less than 127"
 msgstr "%.30s ასონიშნის გაფართობული სიგანე უნდა იყოს არაუმეტეს 127"
 
+msgid "Adyghe"
+msgstr "ადიღეური"
+
 msgid "Afar"
 msgstr "აფარული"
 
 msgid "Afm Save Failed"
 msgstr "Afm ვერ შეინახა"
+
+msgid "Afrikaans"
+msgstr "აფრიკაანსი"
 
 msgid "After rotating or skewing a glyph you should probably apply Element->Add Extrema"
 msgstr "ასონიშნის მობრუნების ან გადახრის შემდგომ სასურველია გამოიყენოთ „შემადგენელი → წვეროს წერტილის დამატება“"
@@ -456,6 +465,9 @@ msgstr "აჰომი"
 
 msgid "Akan"
 msgstr "აკანური"
+
+msgid "Albanian"
+msgstr "ალბანური"
 
 msgid "Alchemical Symbols"
 msgstr "ალქიმიის ნიშნები"
@@ -698,6 +710,9 @@ msgstr "არაბული მარჯვნიდან მარცხნ�
 msgid "Arabic Supplement"
 msgstr "არაბული დანართი"
 
+msgid "Aragonese"
+msgstr "არაგონული"
+
 msgid "Archives"
 msgstr "არქივები"
 
@@ -712,6 +727,9 @@ msgstr "ნამდვულად გსურთ, წაშალოთ ე�
 
 msgid "Armenian"
 msgstr "სომხური"
+
+msgid "Aromanian"
+msgstr "არომანული"
 
 msgid "Arrows"
 msgstr "ისრები"
@@ -733,6 +751,12 @@ msgstr "კითხვა"
 
 msgid "Ask the user for autotrace arguments each time autotrace is invoked"
 msgstr "არგუმენტების მითითების მოთხოვნა გამოხაზვის ყოველი წამოწყებისას"
+
+msgid "Assamese"
+msgstr "ასამური"
+
+msgid "Asturian"
+msgstr "ასტურიული"
 
 msgid "At most 31 glyphs may be specified in an insert list"
 msgstr "არაუმეტეს 31 ასონიშანი შეიძლება მიეთითოს ჩასამატებელ სიაში"
@@ -781,11 +805,20 @@ msgstr "მოთხოვნა გამოხაზვისას"
 msgid "Autotracing..."
 msgstr "თვითგამოხაზვა..."
 
+msgid "Awadhi"
+msgstr "ავადი"
+
 msgid "Axerbaijani (Arabic)"
 msgstr "აზერბაიჯანული (არაბული)"
 
 msgid "Axerbaijani (Cyrillic)"
 msgstr "აზერბაიჯანი (კირილიცა)"
+
+msgid "Aymara"
+msgstr "აიმარა"
+
+msgid "Azerbaijani"
+msgstr "აზერბაიჯანული"
 
 msgid "Azeri (Cyrillic)"
 msgstr "აზერი (კირილიცა)"
@@ -940,6 +973,12 @@ msgstr "წონასწორდება..."
 msgid "Balinese"
 msgstr "ბალიური"
 
+msgid "Baluchi"
+msgstr "ბელუჯი"
+
+msgid "Bambara"
+msgstr "ბამბარა"
+
 msgid "Bamum"
 msgstr "ბამუმი"
 
@@ -964,17 +1003,26 @@ msgstr "ძირითადი ხაზი ლათინურის, ბ�
 msgid "Bases"
 msgstr "ფუძეები"
 
+msgid "Bashkir"
+msgstr "ბაშკირული"
+
 msgid "Basic Latin"
 msgstr "ძირითადი ლათინური"
 
 msgid "Basic Multilingual Plane"
 msgstr "ძირითადი მრავალენოვანი სივრცე"
 
+msgid "Basque"
+msgstr "ბასკური"
+
 msgid "Bassa Vah"
 msgstr "ბასა-ვაჰი"
 
 msgid "Batak"
 msgstr "ბატაკი"
+
+msgid "Bemba"
+msgstr "ბემბა"
 
 msgid "Bengali"
 msgstr "ბენგალური"
@@ -984,6 +1032,12 @@ msgstr "ბეტი"
 
 msgid "Bhaiksuki"
 msgstr "ბჰაიკშუკი"
+
+msgid "Bhojpuri"
+msgstr "ბოჯპური"
+
+msgid "Bislama"
+msgstr "ბისლამა"
 
 msgid "Bitmap"
 msgstr "ბიტური"
@@ -1027,11 +1081,20 @@ msgstr "ბოპომოფო გაფართოებული"
 msgid "Border Width:"
 msgstr "ჩარჩოს სიგანე:"
 
+msgid "Bosnian"
+msgstr "ბოსნიური"
+
 msgid "Both"
 msgstr "ორივე"
 
+msgid "Braille"
+msgstr "ბრაილი"
+
 msgid "Braille Patterns"
 msgstr "ბრაილის ანბანი"
+
+msgid "Breton"
+msgstr "ბრეტონული"
 
 msgid "Buginese"
 msgstr "ბუგინური"
@@ -1044,6 +1107,12 @@ msgstr "იგება მცირე მთავრულები"
 
 msgid "Building sub/superscripts"
 msgstr "ხაზზედა/ქვედა ნიშნები იწყობა"
+
+msgid "Bulgarian"
+msgstr "ბულგარული"
+
+msgid "Burmese"
+msgstr "ბირმული"
 
 msgid "By Classes"
 msgstr "კლასებით"
@@ -1107,6 +1176,9 @@ msgstr "გასუ_ფთავება"
 
 msgid "C_orner"
 msgstr "კ_უთხე"
+
+msgid "Cajun French"
+msgstr "კაჟუნური ფრანგული"
 
 msgid "Call Script"
 msgstr "სკრიპტის გამოძახება"
@@ -1208,14 +1280,32 @@ msgstr "ვერ იხსნება ფაილი"
 msgid "Capitals to Small Capitals"
 msgstr "მთავრულიდან მცირე მთავრულში"
 
+msgid "Carian"
+msgstr "კარიული"
+
+msgid "Catalan"
+msgstr "კატალანური"
+
+msgid "Cayuga"
+msgstr "კაიუგა"
+
+msgid "Cebuano"
+msgstr "სებუანო"
+
 msgid "Center Bet_ween Control Points"
 msgstr "შუა არე მართვის წერტილებს შ_ორის"
 
 msgid "Center of Selection"
 msgstr "მონიშნულის შუაწერტილი"
 
+msgid "Chakma"
+msgstr "ჩაკმა"
+
 msgid "Cham"
 msgstr "ჩამური"
+
+msgid "Chamorro"
+msgstr "ჩამორო"
 
 msgid "Change Supplement..."
 msgstr "დანართის შეცვლა..."
@@ -1535,6 +1625,9 @@ msgstr "სიმბოლოს სახესხვაობა 99"
 msgid "Charsets"
 msgstr "ასოთა ნაკრები"
 
+msgid "Chechen"
+msgstr "ჩეჩნური"
+
 msgid "Cherokee"
 msgstr "ჩეროკე"
 
@@ -1544,14 +1637,32 @@ msgstr "ჩეროკე დანართი"
 msgid "Chess Symbols"
 msgstr "ჭადრაკის ნიშნები"
 
+msgid "Cheyenne"
+msgstr "ჩეიენი"
+
+msgid "Chiga"
+msgstr "ჩიგა"
+
 msgid "Chin"
 msgstr "ჩინ"
 
 msgid "Chinese, Phonetic"
 msgstr "ჩინური, ბგერითი"
 
+msgid "Chipewyan"
+msgstr "ჩიპევიანი"
+
+msgid "Choctaw"
+msgstr "ჩოკტო"
+
 msgid "Choose which lookups to copy"
 msgstr "აირციეთ ცნობარი ასლისთვის"
+
+msgid "Chuukese"
+msgstr "ჩუკოტკური"
+
+msgid "Chuvash"
+msgstr "ჩუვაშური"
 
 msgid "Class 0"
 msgstr "კლასი 0"
@@ -1636,6 +1747,9 @@ msgstr "შენიშვნა"
 
 msgid "Common Indic Number Forms"
 msgstr "გავრცელებული ინდური რიცხვითი ჩანაწერები"
+
+msgid "Comorian"
+msgstr "კომორული"
 
 msgid "Compact"
 msgstr "შემჭიდროება"
@@ -1728,6 +1842,12 @@ msgstr "კორი:"
 
 msgid "Corner"
 msgstr "კუთხოვანი"
+
+msgid "Cornish"
+msgstr "კორნული"
+
+msgid "Corsican"
+msgstr "კორსიკული"
 
 #, c-format
 msgid "Could not create plugin directory '%s'"
@@ -1822,6 +1942,12 @@ msgstr "შექმნის თარიღი:"
 msgid "Cree"
 msgstr "კრი"
 
+msgid "Crimean Tatar"
+msgstr "ყირიმულ-თურქული"
+
+msgid "Croatian"
+msgstr "ხორვატული"
+
 msgid "Cu_t"
 msgstr "ამო_ჭრა"
 
@@ -1894,6 +2020,12 @@ msgstr "განსა_ზღვრა ჯგუფების..."
 
 msgid "Dan"
 msgstr "დან"
+
+msgid "Danish"
+msgstr "დანიური"
+
+msgid "Dargwa"
+msgstr "დარგუული"
 
 msgid "Dari"
 msgstr "დარი"
@@ -1970,6 +2102,9 @@ msgstr "დიამეტრი:"
 msgid "Dingbats"
 msgstr "მოსართავები"
 
+msgid "Dinka"
+msgstr "დინკა"
+
 msgid "Directories Amid Files"
 msgstr "საქაღალდები შერეულად"
 
@@ -2029,6 +2164,9 @@ msgstr "სიშორე"
 msgid "Distance"
 msgstr "დაშორება"
 
+msgid "Divehi"
+msgstr "დივეჰი"
+
 msgid "Dives Akuru"
 msgstr "დივეჰი აკურუ"
 
@@ -2068,6 +2206,9 @@ msgstr "დუპლოი"
 
 msgid "Dutch"
 msgstr "ჰოლანდიური"
+
+msgid "Dzongkha"
+msgstr "ძონგკხა"
 
 msgid "EPS"
 msgstr "EPS"
@@ -2168,6 +2309,9 @@ msgstr "ასონიშნების მიმდევრობით"
 msgid "End:"
 msgstr "დასასრული:"
 
+msgid "English"
+msgstr "ინგლისური"
+
 #, c-format
 msgid "Error reading plugin configuration file '%s': %s"
 msgstr "შეცდომა მოდულის გამართვის ფაილის წაკითხვისას „%s“: %s"
@@ -2175,6 +2319,15 @@ msgstr "შეცდომა მოდულის გამართვის 
 #, c-format
 msgid "Error saving plugin configuration file '%s': %s"
 msgstr "შეცდომა მოდულის გამართვის ფაილის შენახვისას „%s“: %s"
+
+msgid "Erzya"
+msgstr "ერზია"
+
+msgid "Esperanto"
+msgstr "ესპერანტო"
+
+msgid "Estonian"
+msgstr "ესტონური"
 
 msgid "Ethiopic"
 msgstr "ეთიოპიური"
@@ -2296,6 +2449,9 @@ msgstr "კრებული"
 msgid "Fang"
 msgstr "ფანგი"
 
+msgid "Faroese"
+msgstr "ფარერული"
+
 msgid "Feature"
 msgstr "თვისება"
 
@@ -2311,6 +2467,9 @@ msgstr "თვისების ფაილი?"
 msgid "Feature tags will be removed"
 msgstr "თვისების ჭდეები მოცილდება"
 
+msgid "Fijian"
+msgstr "ფიჯი"
+
 msgid "File Exists"
 msgstr "ფაილი არსებობს"
 
@@ -2320,6 +2479,9 @@ msgstr "ფაილის სიგრძე მითითებული WOF
 #, c-format
 msgid "File, %s, exists. Replace it?"
 msgstr "ფაილი %s უკვე არსებობს. ჩანაცვლდეს?"
+
+msgid "Filipino"
+msgstr "ფილიპინური"
 
 msgid "Fill"
 msgstr "შევსება"
@@ -2367,6 +2529,9 @@ msgstr "Adobe-ის CMap-ფაილის პოვნა..."
 msgid "Find in %.100s"
 msgstr "ძიება – %.100s"
 
+msgid "Finnish"
+msgstr "ფინური"
+
 msgid "First Char"
 msgstr "პირველი სიმბოლო"
 
@@ -2378,6 +2543,9 @@ msgstr "ბრტყელი"
 
 msgid "Flate decompression failed."
 msgstr "შეკუმშულის გახსნა ვერ მოხერხდა."
+
+msgid "Flemish"
+msgstr "ფლამანდიური"
 
 msgid "Flip"
 msgstr "გადაკეცვა"
@@ -2542,8 +2710,14 @@ msgstr "სახეობა:"
 msgid "Freehand"
 msgstr "თავისუფალი"
 
+msgid "French"
+msgstr "ფრანგული"
+
 msgid "Friendly Name"
 msgstr "იოლი სახელი"
+
+msgid "Friulian"
+msgstr "ფრიულური"
 
 msgid "From the _other class"
 msgstr "ს_ხვა კლასიდან"
@@ -2575,8 +2749,17 @@ msgstr "G_4"
 msgid "Ga"
 msgstr "გა"
 
+msgid "Gagauz"
+msgstr "გაგაუზური"
+
+msgid "Galician"
+msgstr "გალისიური"
+
 msgid "Galla"
 msgstr "გალა"
+
+msgid "Ganda"
+msgstr "განდა"
 
 msgid "Garo"
 msgstr "გარო"
@@ -2640,6 +2823,9 @@ msgstr "ქართული დანართი"
 
 msgid "Gepo"
 msgstr "გეპო"
+
+msgid "German"
+msgstr "გერმანული"
 
 msgid "Gl_yph Name:"
 msgstr "ასო_ნიშნის სახელი:"
@@ -2748,6 +2934,9 @@ msgstr "ყველა _დანარჩენი"
 msgid "Gogo"
 msgstr "გოგო"
 
+msgid "Gondi"
+msgstr "გონდი"
+
 msgid "Gothic"
 msgstr "გოტიკური"
 
@@ -2759,6 +2948,9 @@ msgstr "ჩავლება"
 
 msgid "Gradient:"
 msgstr "გარდამავლობა:"
+
+msgid "Grantha"
+msgstr "გრანთა"
 
 msgid "Greek Extended"
 msgstr "ბერძნული გაფართოებული"
@@ -2785,6 +2977,9 @@ msgstr "ჯგუფის სახელი:"
 
 msgid "Groups"
 msgstr "ჯგუფები"
+
+msgid "Guarani"
+msgstr "გუარანი"
 
 msgid "Guess"
 msgstr "სავარაუდო"
@@ -2814,11 +3009,23 @@ msgstr "გუნჯალა-გონდი"
 msgid "Gurmukhi"
 msgstr "გურმუხი"
 
+msgid "Gusii"
+msgstr "გუსიი"
+
 msgid "HVCurve"
 msgstr "თარ./შვეულ. მრუდი"
 
 msgid "H_ints"
 msgstr "_მიმთითებლები"
+
+msgid "Haida"
+msgstr "ჰაიდა"
+
+msgid "Halkomelem"
+msgstr "ჰალკომელემი"
+
+msgid "Hangul"
+msgstr "ჰანგული"
 
 msgid "Hangul Jamo"
 msgstr "ჰანგილ-ჯამო"
@@ -2838,8 +3045,17 @@ msgstr "შე_ხამება"
 msgid "Harmonizing..."
 msgstr "შეეხამება..."
 
+msgid "Haryanvi"
+msgstr "ჰარიანვი"
+
 msgid "Has _Vertical Metrics"
 msgstr "_შვეული აზომვებით"
+
+msgid "Hausa"
+msgstr "ჰაუსა"
+
+msgid "Hawaiian"
+msgstr "ჰავაიური"
 
 msgid "Haya"
 msgstr "ჰაია"
@@ -2853,6 +3069,9 @@ msgstr "სიმაღლე"
 msgid "Height/Kern Data"
 msgstr "სიმაღლის/შემოკვეცის მონაცემები"
 
+msgid "Herero"
+msgstr "ჰერერო"
+
 msgid "Hidden"
 msgstr "დამალული"
 
@@ -2861,6 +3080,9 @@ msgstr "დამალვა მ_ოძრაობისას"
 
 msgid "High"
 msgstr "მაღალი"
+
+msgid "Hiligaynon"
+msgstr "ჰილიგაინონი"
 
 msgid "Hindi"
 msgstr "ჰინდი"
@@ -2913,6 +3135,9 @@ msgstr[1] "თარაზული: %d ძირითადი ხაზი"
 
 msgid "Hue:"
 msgstr "ტონი:"
+
+msgid "Hungarian"
+msgstr "უნგრული"
 
 #, c-format
 msgid "I miscalculated the size of subtable %s, this means the kerning output is wrong."
@@ -2972,6 +3197,12 @@ msgstr "ISO 8859-9  (ლათინური5)"
 
 msgid "Iban"
 msgstr "იბანური"
+
+msgid "Ibibio"
+msgstr "იბიბიო"
+
+msgid "Icelandic"
+msgstr "ისლანდიური"
 
 msgid "Identify by"
 msgstr "ამოსაცნობად გამოიყენოს"
@@ -3042,6 +3273,9 @@ msgstr "იგბო"
 msgid "Ignore Ligatures"
 msgstr "გადაბმების უგულებელყოფა"
 
+msgid "Imperial Aramaic"
+msgstr "იმპერიული არამეული"
+
 msgid "In the 'kern' table, a subtable's length does not match the number of kerning pairs."
 msgstr "შემოკვეცის „kern“ ცხრილში, ქვეცხრილების სიგრძე არ ემთხვევა შემოკვეცილი წყვილების რაოდენობას."
 
@@ -3053,6 +3287,9 @@ msgstr "უმოქმედო შრის ფერი"
 
 msgid "Inactive Thick Layer Color"
 msgstr "უმოქმედო შრის მსხვილი ფერი"
+
+msgid "Inari Sami"
+msgstr "ინარი-საამური"
 
 msgid "Include Empty Blocks"
 msgstr "ცარიელი ურჯების გათვალისწინებით"
@@ -3069,8 +3306,20 @@ msgstr "მარჯვენა საბჯენს დაემატოს:
 msgid "Indic (& Tibetan) hanging baseline"
 msgstr "ინდური (და ტიბეტური) ძირითადი კიდული ხაზით"
 
+msgid "Indonesian"
+msgstr "ინდონეზიური"
+
+msgid "Ingush"
+msgstr "ინგუშური"
+
 msgid "Inlining glyphs"
 msgstr "ასონიშნები შიდა მოხაზულობით"
+
+msgid "Inscriptional Pahlavi"
+msgstr "მონუმენტური ფალაური"
+
+msgid "Inscriptional Parthian"
+msgstr "მონუმენტური პართული"
 
 msgid "Insert Before Current Glyph"
 msgstr "მიმდინარე ასონიშნის შემდგომ ჩამატება"
@@ -3099,6 +3348,12 @@ msgstr "მითითებები ვადაგასულია"
 msgid "Interface"
 msgstr "გარსი"
 
+msgid "Interlingua"
+msgstr "ინტერლინგუალური"
+
+msgid "Interlingue"
+msgstr "ინტერლინგი"
+
 msgid "InterpolateCPsOnMotion"
 msgstr "ჩამატება მოსაჭიდის მოძრაობისას"
 
@@ -3108,6 +3363,9 @@ msgstr "ჩამატება მოსაჭიდის მოძრაო�
 #. GT:  of "Interpretation"
 msgid "Interpretation|None"
 msgstr "არა"
+
+msgid "Inuktitut"
+msgstr "ინუკტიტუტი"
 
 #, c-format
 msgid "Invalid compressed table length for '%c%c%c%c'."
@@ -3124,14 +3382,23 @@ msgstr "არასწორი ან მხარდაუჭერელი 
 msgid "Invalid or unsupported version (0x%x) for 'kern' table"
 msgstr "არასწორი ან მხარდაუჭერელი ვერსია (0x%x) „kern“ ცხრილისთვის"
 
+msgid "Irish"
+msgstr "ირლანდიური"
+
 msgid "Is this horizontal or vertical kerning data?"
 msgstr "ეს თარაზული შემოკვეცის მონაცემია თუ შვეულისა?"
+
+msgid "Italian"
+msgstr "იტალიური"
 
 msgid "Italic Angle"
 msgstr "დახრის კუთხე"
 
 msgid "Italic Angle:"
 msgstr "დახრის კუთხე:"
+
+msgid "Japanese"
+msgstr "იაპონური"
 
 msgid "Jula"
 msgstr "დიულა"
@@ -3141,6 +3408,24 @@ msgstr "KOI8-R (კირილიცა)"
 
 msgid "Kabardian"
 msgstr "ყაბარდოული"
+
+msgid "Kabuverdianu"
+msgstr "კაბუვერდიანუ"
+
+msgid "Kabyle"
+msgstr "კაბილური"
+
+msgid "Kaithi"
+msgstr "კაითი"
+
+msgid "Kalenjin"
+msgstr "კალენჯინი"
+
+msgid "Kalmyk"
+msgstr "ყალმუხური"
+
+msgid "Kamba"
+msgstr "კამბა"
 
 msgid "Kana Extended-A"
 msgstr "კანა გაფართოებული-A"
@@ -3157,6 +3442,18 @@ msgstr "კანაუჯი"
 msgid "Kannada"
 msgstr "კანადა"
 
+msgid "Kanuri"
+msgstr "კანური"
+
+msgid "Karelian"
+msgstr "კარელიური"
+
+msgid "Kashmiri"
+msgstr "ქაშმირული"
+
+msgid "Kashubian"
+msgstr "კაშუბური"
+
 msgid "Katakana"
 msgstr "კატაკანა"
 
@@ -3168,6 +3465,12 @@ msgstr "კატაკანას ბგერითი გაფართო�
 
 msgid "Kawi"
 msgstr "კავი"
+
+msgid "Kayah Li"
+msgstr "კაიაჰ-ლი"
+
+msgid "Kazakh"
+msgstr "ყაზახური"
 
 msgid "Ker_n By Classes..."
 msgstr "წანა_ცვლება კლასებით..."
@@ -3232,11 +3535,17 @@ msgstr ""
 msgid "Key"
 msgstr "გასაღები"
 
+msgid "Khasi"
+msgstr "ხასი"
+
 msgid "Khmer"
 msgstr "ქმერული"
 
 msgid "Khmer Symbols"
 msgstr "ქმერული ნიშნები"
+
+msgid "Khojki"
+msgstr "ქოჯკი"
 
 msgid "Khudawadi"
 msgstr "ხუდაბადი"
@@ -3244,17 +3553,53 @@ msgstr "ხუდაბადი"
 msgid "Khutsuri Georgian"
 msgstr "ხუცური"
 
+msgid "Kikuyu"
+msgstr "კიკუიუ"
+
+msgid "Kinyarwanda"
+msgstr "კინიარუანდა"
+
 msgid "Komi"
 msgstr "კომი"
+
+msgid "Komi-Permyak"
+msgstr "კომი-პერმიაკული"
 
 msgid "Komo"
 msgstr "კომო"
 
+msgid "Kongo"
+msgstr "კონგო"
+
+msgid "Konkani"
+msgstr "კონკანი"
+
+msgid "Korean"
+msgstr "კორეული"
+
+msgid "Kosraean"
+msgstr "კუსაიე"
+
+msgid "Kpelle"
+msgstr "კპელე"
+
 msgid "Krio"
 msgstr "კრიო"
 
+msgid "Kuanyama"
+msgstr "კუნამა"
+
 msgid "Kui"
 msgstr "კუი"
+
+msgid "Kumyk"
+msgstr "ყუმუხური"
+
+msgid "Kurdish"
+msgstr "ცენტრალური ქურთული"
+
+msgid "Kurukh"
+msgstr "კურუქი"
 
 msgid "Kuy"
 msgstr "კუი"
@@ -3270,6 +3615,9 @@ msgstr "სახელთა სიის ჩატვი_რთვა..."
 
 msgid "Label Gl_yph By"
 msgstr "ზ_ედწარწერა"
+
+msgid "Ladino"
+msgstr "ლადინო"
 
 msgid "Lak"
 msgstr "ლაკური"
@@ -3302,8 +3650,17 @@ msgstr "ამჰარული"
 msgid "Lang|Arabic"
 msgstr "არაბული"
 
+msgid "Lang|Armenian"
+msgstr "სომხური"
+
+msgid "Lang|Balinese"
+msgstr "ბალინური"
+
 msgid "Lang|Cherokee"
 msgstr "ჩეროკე"
+
+msgid "Lang|Coptic"
+msgstr "კოპტური"
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "Farsi/Persian"), ignore "Lang|"
@@ -3318,14 +3675,65 @@ msgstr "ქართული"
 msgid "Lang|Greek"
 msgstr "ბერძნული"
 
+msgid "Lang|Gujarati"
+msgstr "გუჯარათი"
+
+msgid "Lang|Hebrew"
+msgstr "ებრაული"
+
+msgid "Lang|Javanese"
+msgstr "იავური"
+
+msgid "Lang|Kannada"
+msgstr "კანადა"
+
+msgid "Lang|Khmer"
+msgstr "ქმერული"
+
+msgid "Lang|Lao"
+msgstr "ლაოსური"
+
 msgid "Lang|Latin"
 msgstr "ლათინური"
 
 msgid "Lang|Lisu"
 msgstr "ლისუ"
 
+msgid "Lang|Makasar"
+msgstr "მაკასარი"
+
+msgid "Lang|Manchu"
+msgstr "მანჯურიული"
+
+msgid "Lang|Mongolian"
+msgstr "მონღოლური"
+
+msgid "Lang|Odia"
+msgstr "ორია"
+
+msgid "Lang|Persian"
+msgstr "სპარსული"
+
+msgid "Lang|Sinhala"
+msgstr "სინჰალური"
+
+msgid "Lang|Sundanese"
+msgstr "სუნდური"
+
+msgid "Lang|Syriac"
+msgstr "სირიული"
+
 msgid "Lang|Tamil"
 msgstr "ტამილური"
+
+msgid "Lang|Telugu"
+msgstr "ტელუგუ"
+
+msgid "Lang|Thai"
+msgstr "ტაილანდური"
+
+msgid "Lang|Tibetan"
+msgstr "ტიბეტური"
 
 msgid "Lao"
 msgstr "ლაოსური"
@@ -3359,6 +3767,9 @@ msgstr "ლათინური გაფართოებული-G"
 
 msgid "Latin-1 Supplement"
 msgstr "ლათინური-1 დანართი"
+
+msgid "Latvian"
+msgstr "ლატვიური"
 
 msgid "Layer"
 msgstr "შრე"
@@ -3424,14 +3835,29 @@ msgstr "გადაბმის ნიშნის სახელი"
 msgid "Ligatures"
 msgstr "გადაბმები"
 
+msgid "Ligurian"
+msgstr "ლიგურიული"
+
 msgid "Limbu"
 msgstr "ლიმბუ"
+
+msgid "Limburgish"
+msgstr "ლიმბურგული"
 
 msgid "Line"
 msgstr "ხაზი"
 
+msgid "Linear A"
+msgstr "A-ხაზოვანი"
+
+msgid "Linear B"
+msgstr "B-ხაზოვანი"
+
 msgid "Linear B Ideograms"
 msgstr "ხაზოვანი B იდეოგრამები"
+
+msgid "Lingala"
+msgstr "ლინგალა"
 
 msgid "Lipo"
 msgstr "ლიპო"
@@ -3450,6 +3876,9 @@ msgstr "ლისუ"
 
 msgid "Lisu Supplement"
 msgstr "ლისუ, დანართი"
+
+msgid "Lithuanian"
+msgstr "ლიეტუვური"
 
 msgid "Load Bitmap Fonts"
 msgstr "ცხრილური შრიფტების ჩატვირთვა"
@@ -3485,6 +3914,12 @@ msgstr "იტვირთება..."
 msgid "Location"
 msgstr "მდებარეობა"
 
+msgid "Lojban"
+msgstr "ლოჟბანი"
+
+msgid "Lombard"
+msgstr "ლომბარდიული"
+
 msgid "Lookup Name:"
 msgstr "ცნობარის სახელი:"
 
@@ -3510,14 +3945,41 @@ msgstr "ცნობარები მოცილდება"
 msgid "Low"
 msgstr "დაბალი"
 
+msgid "Low Saxon"
+msgstr "ქვემოსაქსონური"
+
+msgid "Lower Sorbian"
+msgstr "ქვემოსორბული"
+
 msgid "Lowercase to Small Capitals"
 msgstr "ნუსხურიდან მცირე მთავრულში"
+
+msgid "Luba-Katanga"
+msgstr "ლუბა-კატანგა"
+
+msgid "Luba-Lulua"
+msgstr "ლუბა-ლულუა"
+
+msgid "Lule Sami"
+msgstr "ლულე-საამური"
 
 msgid "Luo"
 msgstr "ლუო"
 
 msgid "Luri"
 msgstr "ლურიული"
+
+msgid "Luxembourgish"
+msgstr "ლუქსემბურგული"
+
+msgid "Luyia"
+msgstr "ლუჰია"
+
+msgid "Lycian"
+msgstr "ლიკიური"
+
+msgid "Lydian"
+msgstr "ლიდიური"
 
 msgid "Lü"
 msgstr "ლი"
@@ -3559,6 +4021,9 @@ msgstr "_ახალი..."
 msgid "MacSetting|_New..."
 msgstr "_ახალი..."
 
+msgid "Macedonian"
+msgstr "მაკედონური"
+
 msgid "Macintosh Latin"
 msgstr "Macintosh ლათინური"
 
@@ -3567,11 +4032,17 @@ msgstr "Macintosh ლათინური"
 msgid "Mag:"
 msgstr "გადიდება:"
 
+msgid "Magahi"
+msgstr "მაგაჰი"
+
 msgid "Magnification:"
 msgstr "გადიდება:"
 
 msgid "Magnify (Minify with alt)"
 msgstr "მოახლოება (დაშორებისთვის Alt)"
+
+msgid "Maithili"
+msgstr "მაითილი"
 
 msgid "Makasar"
 msgstr "მაკასარი"
@@ -3585,6 +4056,18 @@ msgstr "ხაზის შექმნა"
 msgid "Make _Line"
 msgstr "ხა_ზის შექმნა"
 
+msgid "Makhuwa"
+msgstr "მაკჰუვა"
+
+msgid "Makonde"
+msgstr "მაკონდე"
+
+msgid "Malagasy"
+msgstr "მალაგასიური"
+
+msgid "Malay"
+msgstr "მალაიური"
+
 msgid "Malay (arabic)"
 msgstr "მალაიური (არაბული)"
 
@@ -3594,11 +4077,20 @@ msgstr "მალაიალამური"
 msgid "Male"
 msgstr "მალე"
 
+msgid "Maltese"
+msgstr "მალტური"
+
 msgid "Mam"
 msgstr "მამური"
 
 msgid "Mandaic"
 msgstr "მანდეური"
+
+msgid "Manichaean"
+msgstr "მანიქეური"
+
+msgid "Manipuri"
+msgstr "მანიპური"
 
 msgid "Manufacturer"
 msgstr "მწარმოებელი"
@@ -3622,6 +4114,9 @@ msgstr ""
 "ჯობია, არ მოინიშნოს Apple-ის უჯრასთან ერთად.\n"
 "გაუგებრობას წარმოქმნის სხვა პროგრამებთან."
 
+msgid "Marathi"
+msgstr "მარათჰი"
+
 msgid "Marchen"
 msgstr "მარჩენი"
 
@@ -3630,6 +4125,12 @@ msgstr "ნიშანი"
 
 msgid "Marks"
 msgstr "ნიშნები"
+
+msgid "Marshallese"
+msgstr "მარშალური"
+
+msgid "Marwari"
+msgstr "მარვარი"
 
 msgid "Masaram Gondi"
 msgstr "მასარამ-გონდი"
@@ -3661,11 +4162,17 @@ msgstr "მაქს"
 msgid "Max Bearing"
 msgstr "საბჯენი არაუმეტეს"
 
+msgid "Mazanderani"
+msgstr "მაზანდერანული"
+
 msgid "Mbo"
 msgstr "მბო"
 
 msgid "Measure distance, angle between points"
 msgstr "დაშორების ან კუთხეების გაზომვა"
+
+msgid "Mende"
+msgstr "მენდე"
 
 msgid "Mende Kikakui"
 msgstr "მენდე"
@@ -3701,6 +4208,9 @@ msgstr ""
 "გააერთიანებს ორ შერჩეულ (და თავსებად) ცნობარს,\n"
 "ან გააერთიანებს ცნობარის ორ შერჩეულ ქვეცხრილს"
 
+msgid "Meroitic Cursive"
+msgstr "მეროიტული კურსივი"
+
 msgid "Meru"
 msgstr "მერუ"
 
@@ -3731,6 +4241,12 @@ msgstr "მინ"
 
 msgid "Min Bearing"
 msgstr "საბჯენი არანაკლებ"
+
+msgid "Minangkabau"
+msgstr "მინანგკაბაუ"
+
+msgid "Mirandese"
+msgstr "მირანდული"
 
 msgid "Miscellaneous Mathematical Symbols-A"
 msgstr "სხვადასხვა მათემატიკური ნიშნები-A"
@@ -3783,6 +4299,15 @@ msgstr "ჟღერადობის შემცვლელი ნიშნ�
 msgid "Module Name:"
 msgstr "მოდულის სახელი:"
 
+msgid "Mohawk"
+msgstr "მოჰაუკური"
+
+msgid "Moksha"
+msgstr "მოქშა"
+
+msgid "Moldavian"
+msgstr "მოლდავური"
+
 msgid "Mon"
 msgstr "მონ"
 
@@ -3798,8 +4323,17 @@ msgstr "მონღოლური (კირილიცა)"
 msgid "Mongolian Supplement"
 msgstr "მონღოლური დანართი"
 
+msgid "Moose Cree"
+msgstr "მუსური კრი"
+
 msgid "More Images Than Selected Glyphs"
 msgstr "სურათების რაოდენობა აჭარბებს მონიშნულ ასონიშნებს"
+
+msgid "Morisyen"
+msgstr "მორისიენი"
+
+msgid "Mossi"
+msgstr "მოსი"
 
 msgid ""
 "Most lookups will be attached to a feature\n"
@@ -3835,6 +4369,9 @@ msgstr "რამდენიმე სახელი ენისთვის"
 msgid "MultipleEncodingIgnored"
 msgstr "რამდენიმე დაშიფვრა უგულებელყოფილია"
 
+msgid "Muscogee"
+msgstr "კრიკი"
+
 msgid "Music"
 msgstr "მუსიკა"
 
@@ -3864,6 +4401,9 @@ msgstr "ა_რასდროს ჩაემატოს"
 
 msgid "N_umber Points"
 msgstr "წერტილების გადა_ნომვრა"
+
+msgid "Nabataean"
+msgstr "ნაბატეური"
 
 msgid "Name"
 msgstr "სახელი"
@@ -3898,14 +4438,23 @@ msgstr "სახელი:"
 msgid "Nandinagari"
 msgstr "ნანდინაგარი"
 
+msgid "Navajo"
+msgstr "ნავახო"
+
 msgid "Navigation"
 msgstr "გადაადგილება"
 
 msgid "Ndau"
 msgstr "ნდაუ"
 
+msgid "Ndonga"
+msgstr "ნდონგა"
+
 msgid "Ne_xt Control Point"
 msgstr "_მომდევნო მართვის წერტილი"
+
+msgid "Neapolitan"
+msgstr "ნეაპოლიტანური"
 
 msgid "Near"
 msgstr "ახლოს"
@@ -3922,6 +4471,9 @@ msgid ""
 msgstr ""
 "უარყოფით სიგანეს სიმბოლოსთვის ვერ გამოიყენებს TrueType.\n"
 "ნამდვილად გსურთ, დარჩეს უარყოფითი?"
+
+msgid "Nepali"
+msgstr "ნეპალური"
 
 msgid "New"
 msgstr "ახალი"
@@ -3965,6 +4517,9 @@ msgstr "ასოთა ახალი ნაკრები"
 msgid "Newa"
 msgstr "ნევარული"
 
+msgid "Newari"
+msgstr "ნევარი"
+
 msgid "Next CP Angle"
 msgstr "შემდ. მოსაჭიდის დახრილობა"
 
@@ -4001,6 +4556,9 @@ msgstr "მახვი_ლი"
 
 msgid "Nisi"
 msgstr "ნიში"
+
+msgid "Niuean"
+msgstr "ნიუე"
 
 #, c-format
 msgid "No (useable) bitmap strikes in this TTF font: %s"
@@ -4097,6 +4655,9 @@ msgstr "მოდული დასახელებით „%s“ ვერ 
 msgid "No spaces allowed in class names."
 msgstr "ადგილის გამოტოვება დაუშვებელია სახელებში."
 
+msgid "Nogai"
+msgstr "ნოღაური"
+
 msgid "Non uniform scaling for horizontal counters and side bearings"
 msgstr "ზომის არაერთგვაროვანი ცვლა თარაზული არეებისა და გვერდითი საბჯენების"
 
@@ -4121,6 +4682,18 @@ msgid ""
 msgstr ""
 "როგორც წესი, გამარტივებით არ იშლება მრუდის კიდურა წერტილები\n"
 "(ორივე, PostScript და TrueType გთავაზობთ მათი შენარჩუნების საშუალებას)"
+
+msgid "Northern Sami"
+msgstr "ჩრდილოეთ საამური"
+
+msgid "Northern Sotho"
+msgstr "ჩრდილოეთ სოთო"
+
+msgid "Norwegian"
+msgstr "ნორვეგიული"
+
+msgid "Norwegian Nynorsk"
+msgstr "ნორვეგიული ნიუნორსკი"
 
 msgid "Not Guides"
 msgstr "მიმმართველის გარეშე"
@@ -4160,6 +4733,12 @@ msgstr "რიცხვი გასცდა არეს: %g Type2-გამ�
 msgid "Nushu"
 msgstr "ნუშუ"
 
+msgid "Nyamwezi"
+msgstr "ნიამვეზი"
+
+msgid "Nyankole"
+msgstr "ნიანკოლე"
+
 msgid "OEM Charset"
 msgstr "ასოთა OEM-ნაკრები"
 
@@ -4184,6 +4763,9 @@ msgstr "გამო_რთ."
 msgid "O_n"
 msgstr "ჩ_ართ."
 
+msgid "Occitan"
+msgstr "ოქსიტანური"
+
 msgid "Off"
 msgstr "გამორთული"
 
@@ -4199,17 +4781,29 @@ msgstr "Ofm ვერ შეინახა"
 msgid "Ogham"
 msgstr "ოღამი"
 
+msgid "Oji-Cree"
+msgstr "ოჯი-კრი"
+
 msgid "Ol Chiki"
 msgstr "ოლ-ჩიკი"
 
 msgid "Old Hungarian"
 msgstr "ძველუნგრული"
 
+msgid "Old Irish"
+msgstr "ძველი ირლანდიური"
+
 msgid "Old Italic"
 msgstr "ძველიტალიური"
 
+msgid "Old North Arabian"
+msgstr "ძველი ჩრდილოეთ-არაბული"
+
 msgid "Old Persian"
 msgstr "ძველსპარსული"
+
+msgid "Old South Arabian"
+msgstr "ძველი სამხრეთ-არაბული"
 
 msgid "Old Uyghur"
 msgstr "ძველუიღურული"
@@ -4295,8 +4889,14 @@ msgstr "საწყისი:"
 msgid "Oriya"
 msgstr "ორია"
 
+msgid "Oromo"
+msgstr "ორომო"
+
 msgid "Osage"
 msgstr "ოსეიჯი"
+
+msgid "Osmanya"
+msgstr "ოსმანია"
 
 msgid "Other Info"
 msgstr "სხვა მონაცემები"
@@ -4400,8 +5000,17 @@ msgstr "წყვილთა ურთიერთგანლაგება (
 msgid "Pairwise Positioning (kerning)"
 msgstr "წყვილთა ურთიერთგანლაგება (შემოკვეცა)"
 
+msgid "Palauan"
+msgstr "ფალაუანი"
+
 msgid "Pali"
 msgstr "პალი"
+
+msgid "Palmyrene"
+msgstr "პალმირული"
+
+msgid "Pangasinan"
+msgstr "პანგასინანი"
 
 msgid "PanoseWeight|Any"
 msgstr "ნებისმიერი"
@@ -4411,6 +5020,9 @@ msgstr "სხვა"
 
 msgid "Panose|_Weight"
 msgstr "სის_ქე"
+
+msgid "Pashto"
+msgstr "პუშტუ"
 
 msgid "Passed Validation"
 msgstr "შემოწმება გავლილია"
@@ -4520,11 +5132,17 @@ msgstr "მაჩვენებელი"
 msgid "Points:"
 msgstr "წერტილები:"
 
+msgid "Polish"
+msgstr "პოლონური"
+
 msgid "Polygon"
 msgstr "მრავალკუთხედი"
 
 msgid "Polygon or Star"
 msgstr "მრავალკუთხედი ან ვარსკვლავი"
+
+msgid "Portuguese"
+msgstr "პორტუგალიური"
 
 msgid "Pos"
 msgstr "მდებარეობა"
@@ -4627,6 +5245,12 @@ msgstr "ხარვეზი შეკუმშული „%c%c%c%c“ ცხ�
 msgid "Property|New..."
 msgstr "ახალი..."
 
+msgid "Psalter Pahlavi"
+msgstr "ფსალმუნური ფალაური"
+
+msgid "Punjabi"
+msgstr "პენჯაბური"
+
 msgid ""
 "Put CFF fonts into the ttc rather than TTF.\n"
 " These seem to work on the mac and linux\n"
@@ -4636,11 +5260,20 @@ msgstr ""
 " სავარაუდოდ, იმუშავებს Mac-სა და Linux-სისტემებში,\n"
 " მაგრამ დადასტურებულია, რომ არ გამოდგება Windows-ისთვის."
 
+msgid "Quechua"
+msgstr "კეჩუა"
+
 msgid "RBearing:"
 msgstr "მარჯვენა საბჯენი:"
 
 msgid "RSB"
 msgstr "მარჯვენა აპროში"
+
+msgid "Rajasthani"
+msgstr "რაჯასთანი"
+
+msgid "Rarotongan"
+msgstr "რაროტონგული"
 
 msgid "Raw"
 msgstr "დაუმუშავებელი"
@@ -4689,6 +5322,9 @@ msgstr "მიმართვები"
 
 msgid "Regenerate _Bitmap Glyphs..."
 msgstr "ახლიდან დამზადდეს _ბიტური ასონიშნები..."
+
+msgid "Rejang"
+msgstr "რეჯანგი"
 
 msgid "Remo_ve Undoes"
 msgstr "დასაბრუნებლების მო_ცილება"
@@ -4829,6 +5465,18 @@ msgstr "მარჯვენა საბჯენის ცვლილებ�
 msgid "Right Side Bearing:"
 msgstr "მარჯვენა საბჯენი:"
 
+msgid "Rohingya"
+msgstr "როჰინგა"
+
+msgid "Romanian"
+msgstr "რუმინული"
+
+msgid "Romansh"
+msgstr "რეტორომანული"
+
+msgid "Romany"
+msgstr "ბოშური"
+
 msgid "Rotate"
 msgstr "მობრუნება"
 
@@ -4885,6 +5533,9 @@ msgstr "რუნდი"
 msgid "Runic"
 msgstr "რუნული"
 
+msgid "Russian"
+msgstr "რუსული"
+
 msgid "SFNT"
 msgstr "SFNT"
 
@@ -4905,6 +5556,21 @@ msgstr "გამო_ჩნდეს თარაზ. აზომვები..
 
 msgid "Samaritan"
 msgstr "სამარიტანული"
+
+msgid "Samoan"
+msgstr "სამოა"
+
+msgid "Sango"
+msgstr "სანგო"
+
+msgid "Sanskrit"
+msgstr "სანსკრიტი"
+
+msgid "Santali"
+msgstr "სანტალი"
+
+msgid "Sardinian"
+msgstr "სარდინიული"
 
 msgid "Save"
 msgstr "შენახვა"
@@ -4990,6 +5656,12 @@ msgstr "მონიშნულის ზომის ცვლა"
 msgid "Scale..."
 msgstr "ზომის ცვლა..."
 
+msgid "Scots"
+msgstr "შოტლანდიური"
+
+msgid "Scottish Gaelic"
+msgstr "შოტლანდიური გელური"
+
 msgid "Script File"
 msgstr "სკრიპტის ფაილი"
 
@@ -5004,13 +5676,40 @@ msgstr "დამწერლობ(ებ)ა და ენ(ებ)ი"
 msgid "Script|Arabic"
 msgstr "არაბული"
 
+msgid "Script|Armenian"
+msgstr "სომხური"
+
+msgid "Script|Avestan"
+msgstr "ავესტური"
+
+msgid "Script|Balinese"
+msgstr "ბალიური"
+
+msgid "Script|Batak"
+msgstr "ბატაკი"
+
+msgid "Script|Buginese"
+msgstr "ლონტარა"
+
+msgid "Script|Buhid"
+msgstr "ბუჰიდი"
+
+msgid "Script|Cham"
+msgstr "ჩამი"
+
 msgid "Script|Cherokee"
 msgstr "ჩეროკე"
+
+msgid "Script|Coptic"
+msgstr "კოპტური"
 
 #. GT: Don't ask me what RSymbol means, I don't know either. It's in apple's
 #. GT:  docs though
 msgid "Script|Cyrillic"
 msgstr "კირილიცა"
+
+msgid "Script|Ethiopic"
+msgstr "ეთიოპიური"
 
 msgid "Script|Georgian"
 msgstr "ქართული"
@@ -5018,17 +5717,95 @@ msgstr "ქართული"
 msgid "Script|Greek"
 msgstr "ბერძნული"
 
+msgid "Script|Gujarati"
+msgstr "გუჯარათული"
+
+msgid "Script|Hebrew"
+msgstr "ებრაული"
+
+msgid "Script|Javanese"
+msgstr "იავური"
+
+msgid "Script|Kannada"
+msgstr "კანადა"
+
+msgid "Script|Khmer"
+msgstr "ქმერული"
+
+msgid "Script|Lao"
+msgstr "ლაოსური"
+
 msgid "Script|Latin"
 msgstr "ლათინური"
 
+msgid "Script|Limbu"
+msgstr "ლიმბუ"
+
+msgid "Script|Mandaean"
+msgstr "მანდეური"
+
+msgid "Script|Mongolian"
+msgstr "მონღოლური"
+
+msgid "Script|Myanmar"
+msgstr "მიანმური"
+
 msgid "Script|New"
 msgstr "ახალი"
+
+msgid "Script|Old Permic"
+msgstr "ძველი პერმული"
+
+msgid "Script|Phags-pa"
+msgstr "ფაგსპა"
+
+msgid "Script|Phoenician"
+msgstr "ფინიკიური"
+
+msgid "Script|Sinhala"
+msgstr "სინჰალური"
+
+msgid "Script|Sumero-Akkadian Cuneiform"
+msgstr "შუმერულ-აქადური ლურსმნული"
+
+msgid "Script|Sundanese"
+msgstr "სუნდანური"
+
+msgid "Script|Syloti Nagri"
+msgstr "სილოტი ნაგრი"
+
+msgid "Script|Syriac"
+msgstr "სირიული"
+
+msgid "Script|Tagalog"
+msgstr "ბაიბაინი"
+
+msgid "Script|Tagbanwa"
+msgstr "ტაგბანვა"
 
 msgid "Script|Tamil"
 msgstr "ტამილური"
 
 msgid "Script|Tamil2"
 msgstr "ტამილური2"
+
+msgid "Script|Telugu"
+msgstr "ტელუგუ"
+
+msgid "Script|Thai"
+msgstr "ტაილანდური"
+
+msgid "Script|Tibetan"
+msgstr "ტიბეტური"
+
+msgid "Script|Ugaritic"
+msgstr "უგარითული"
+
+msgid "Script|Vai"
+msgstr "ვაი"
+
+msgid "Script|Yi"
+msgstr "ი"
 
 msgid "Scroll Bar"
 msgstr "გადაადგილების რბია"
@@ -5125,11 +5902,20 @@ msgstr "შერჩეული მარცხენა საბჯენი�
 msgid "Selected Region Color"
 msgstr "მონიშნული არეალის ფერი"
 
+msgid "Selkup"
+msgstr "სელკუპური"
+
 msgid "Sena"
 msgstr "სენა"
 
+msgid "Seneca"
+msgstr "სენეკა"
+
 msgid "Separation"
 msgstr "განცალკევება"
+
+msgid "Serbian"
+msgstr "სერბული"
 
 msgid "Serbian (Cyrillic)"
 msgstr "სერბული (კირილიცა)"
@@ -5209,8 +5995,14 @@ msgstr "შან"
 msgid "Shape Type"
 msgstr "ნახაზის სახეობა"
 
+msgid "Sharada"
+msgstr "შარადა"
+
 msgid "Shavian"
 msgstr "შოუს ანბანი"
+
+msgid "Shona"
+msgstr "შონა"
 
 msgid "Show"
 msgstr "ჩვენება"
@@ -5242,6 +6034,9 @@ msgstr "მართვის წერტილის ყოველთვი�
 msgid "Sibe"
 msgstr "სიბე"
 
+msgid "Sicilian"
+msgstr "სიცილიური"
+
 msgid "Side Bearing Addition"
 msgstr "გვერდითი საბჯენის დამატება"
 
@@ -5254,6 +6049,9 @@ msgstr "გვერდითი საბჯენის გაშლის მ
 msgid "Side Bearings:"
 msgstr "გვერდითი საბჯენები:"
 
+msgid "Silesian"
+msgstr "სილესიური"
+
 msgid "Simple"
 msgstr "მარტივი"
 
@@ -5265,6 +6063,9 @@ msgstr "მეტად გამარტივება..."
 
 msgid "Simplifying..."
 msgstr "მარტივდება..."
+
+msgid "Sindhi"
+msgstr "სინდჰური"
 
 msgid "Sinhala"
 msgstr "სინჰალური"
@@ -5308,6 +6109,15 @@ msgstr "ჯგუფი %s უგულებელყოფილია იმ�
 msgid "Skipping non-existent glyph %s in group %s."
 msgstr "უგულებელყოფილია არარსებული ასონიშანი %s ჯგუფში %s."
 
+msgid "Skolt Sami"
+msgstr "სკოლტ-საამური"
+
+msgid "Slovak"
+msgstr "სლოვაკური"
+
+msgid "Slovenian"
+msgstr "სლოვენური"
+
 msgid "Small Capitals"
 msgstr "მცირე მთავრული"
 
@@ -5320,8 +6130,17 @@ msgstr "მცირე კანა, გაფართოება"
 msgid "Soga"
 msgstr "სოგა"
 
+msgid "Somali"
+msgstr "სომალიური"
+
 msgid "Some versions of Windows will refuse to install postscript fonts if the familyname is longer than 31 characters. Do you want to continue anyway?"
 msgstr "ზოგიერთი ვერსიის Windows არ იძლევა Postscript-შრიფტების დაყენების საშუალებას, თუ კრებულის სახლი აღემატება 31 სიმბოლოს. მაინც გსურთ, განაგრძოთ?"
+
+msgid "Soninke"
+msgstr "სონინკე"
+
+msgid "Sora Sompeng"
+msgstr "სორან-სომპენი"
 
 msgid "Sort By:"
 msgstr "დალაგება:"
@@ -5335,17 +6154,32 @@ msgstr "ანბანური"
 msgid "Source Glyph Names"
 msgstr "თავდაპირველი ასონიშნების სახელები"
 
+msgid "Southern Sami"
+msgstr "სამხრეთსამური"
+
+msgid "Southern Sotho"
+msgstr "სამხრეთ სოთოს ენა"
+
 msgid "Soyombo"
 msgstr "სოიომბო"
 
 msgid "Spacing Modifier Letters"
 msgstr "განცალკევებული გარდამქნელი ნიშნები"
 
+msgid "Spanish"
+msgstr "ესპანური"
+
 msgid "Standard Ligatures"
 msgstr "ჩვეულებრივი გადაბმები"
 
+msgid "Standard Moroccan Tamazight"
+msgstr "სტანდარტული მაროკოული ტამაზიგხტი"
+
 msgid "Star"
 msgstr "ვარსკვლავი"
+
+msgid "Straits Salish"
+msgstr "სტრეიტს სალიში"
 
 msgid "Style Name:"
 msgstr "სტილის სახელი:"
@@ -5370,6 +6204,9 @@ msgstr "ხაზქვედა და ხაზზედა ნიშნებ
 
 msgid "Subscripts/Superscripts"
 msgstr "ხაზზედა/ხაზქვედა ნიშნები"
+
+msgid "Sukuma"
+msgstr "სუკუმა"
 
 msgid "Sundanese"
 msgstr "სუნდური"
@@ -5434,6 +6271,15 @@ msgstr "სოტო"
 msgid "Svan"
 msgstr "სვანური"
 
+msgid "Swahili"
+msgstr "სუაჰილი"
+
+msgid "Swati"
+msgstr "სუატი"
+
+msgid "Swedish"
+msgstr "შვედური"
+
 msgid "Symbol Charset"
 msgstr "ასონიშანთა ნაკრები"
 
@@ -5485,6 +6331,9 @@ msgstr "TTF-სახელები"
 msgid "Table length stretches beyond end of file for '%c%c%c%c'."
 msgstr "ცხრილის სიგრძე სცდება ზღვარს ფაილისთვის „%c%c%c%c“."
 
+msgid "Tachelhit"
+msgstr "შილჰა"
+
 msgid "Tag must be 4 characters long"
 msgstr "ჭდე უნდა იყოს 4 სიმბოლოიანი"
 
@@ -5500,11 +6349,17 @@ msgstr "ტაგბანვა"
 msgid "Tags"
 msgstr "ჭდეები"
 
+msgid "Tahitian"
+msgstr "ტაიტური"
+
 msgid "Tai Le"
 msgstr "ტაის ლი"
 
 msgid "Tai Tham"
 msgstr "ლანა"
+
+msgid "Tai Viet"
+msgstr "ტაი-ვიეტი"
 
 msgid "Takri"
 msgstr "ტაკრი"
@@ -5521,6 +6376,9 @@ msgstr "მხები"
 msgid "Tangsa"
 msgstr "ტასე-ნაგა"
 
+msgid "Tangut"
+msgstr "ტანღუტური"
+
 msgid "Tatar"
 msgstr "თათრული"
 
@@ -5532,6 +6390,9 @@ msgstr "TeX-ცხრილი"
 
 msgid "Telugu"
 msgstr "ტელუგუ"
+
+msgid "Tetum"
+msgstr "ტეტუმი"
 
 msgid "Text Width:    0"
 msgstr "ტექსტის სიგანე:    0"
@@ -5915,6 +6776,12 @@ msgstr "ტიბეტური"
 msgid "Tifinagh"
 msgstr "ტიფინაღი"
 
+msgid "Tigre"
+msgstr "თიგრე"
+
+msgid "Tigrinya"
+msgstr "ტიგრინია"
+
 msgid "Time (in milliseconds) before scrolling starts"
 msgstr "დრო (მილიწამებში) გადაადგილების დაწყებამდე"
 
@@ -5926,6 +6793,9 @@ msgstr "ტირჰუტა"
 
 msgid "Tiv"
 msgstr "ტივ"
+
+msgid "Tlingit"
+msgstr "ტლინგიტი"
 
 msgid "To P_DF File"
 msgstr "PDF-ფა_ილში"
@@ -5939,8 +6809,14 @@ msgstr "სადამდე:"
 msgid "Todo"
 msgstr "ტოდო"
 
+msgid "Tok Pisin"
+msgstr "ტოკ-პისინი"
+
 msgid "Toma"
 msgstr "ტომა"
+
+msgid "Tongan"
+msgstr "ტონგანური"
 
 msgid "Too Complex or Bad"
 msgstr "ზედმეტა რთული ან გაუმართავია"
@@ -6014,8 +6890,26 @@ msgstr "საგზაო და რუკის ნიშნები"
 msgid "TrueTypeName|New"
 msgstr "ახალი"
 
+msgid "Tsonga"
+msgstr "ტსონგა"
+
+msgid "Tswana"
+msgstr "ტსვანა"
+
 msgid "Tulu"
 msgstr "ტულუ"
+
+msgid "Tumbuka"
+msgstr "ტუმბუკა"
+
+msgid "Turkish"
+msgstr "თურქული"
+
+msgid "Turkmen"
+msgstr "თურქმენული"
+
+msgid "Tuvalu"
+msgstr "ტუვალუ"
 
 msgid "Twi"
 msgstr "ტვი"
@@ -6032,8 +6926,17 @@ msgstr "სახეობა:"
 msgid "Tày"
 msgstr "ტაი"
 
+msgid "Udmurt"
+msgstr "უდმურტული"
+
 msgid "Ugaritic"
 msgstr "უგარითული"
+
+msgid "Ukrainian"
+msgstr "უკრაინული"
+
+msgid "Umbundu"
+msgstr "უმბუნდუ"
 
 #, c-format
 msgid "Unable to parse the pdf objects that make up %s"
@@ -6137,6 +7040,9 @@ msgstr "მხარდაუჭერელი MIME-სახეობა მ�
 msgid "UntitledGroup"
 msgstr "უსათაურო ჯგუფი"
 
+msgid "Upper Sorbian"
+msgstr "ზემოსორბული"
+
 msgid "Urdu"
 msgstr "ურდუ"
 
@@ -6164,6 +7070,9 @@ msgstr ""
 
 msgid "Used for point numbers, hints, etc."
 msgstr "გამოიყენება წერტილთა გადასანომრად, მიმთითებლებისა და სხვ."
+
+msgid "Uyghur"
+msgstr "უიღურული"
 
 msgid "Uzbek"
 msgstr "უზბეკური"
@@ -6203,11 +7112,17 @@ msgstr "მოწმდება..."
 msgid "Validation of %.100s"
 msgstr "მოწმდება %.100s"
 
+msgid "Venda"
+msgstr "ვენდა"
+
 msgid "Vendor ID:"
 msgstr "მწარმოებლის ID"
 
 msgid "Vendor URL"
 msgstr "მწარმოებლის ბმული"
+
+msgid "Venetian"
+msgstr "ვენეციური"
 
 msgid "Version"
 msgstr "ვერსია"
@@ -6255,6 +7170,9 @@ msgstr "ვიეტნამური"
 msgid "View"
 msgstr "ხედი"
 
+msgid "Volapük"
+msgstr "ვოლაპუკი"
+
 msgid "Võro"
 msgstr "ვორო"
 
@@ -6275,6 +7193,9 @@ msgstr "მა_რთკუთხედში"
 
 msgid "Wa"
 msgstr "ვა"
+
+msgid "Walloon"
+msgstr "ვალონური"
 
 msgid "Warang Citi"
 msgstr "ვარანგ-კშიტი"
@@ -6312,6 +7233,9 @@ msgstr "გაფრთხილებების.შრიფტი"
 
 msgid "Welsh"
 msgstr "უელსური"
+
+msgid "Western Panjabi"
+msgstr "ლანდა"
 
 msgid "When Saving, keep this number of previous versions of the file. file.sfd-01 will be the last saved file, file.sfd-02 will be the file saved before that, and so on. If you set this to 0 then no revisions will be retained."
 msgstr "შენახვისას დაიტოვებს მითითებული რაოდენობის გადამუშავებულ ვერსიებს. file.sfd-01 იქნება ბოლოს შენახული ფაილი, file.sfd-02 იქნება წინა და ა.შ. თუ მიუთითებთ 0-ს, მაშინ წინა ვერსიები არ შენარჩუნდება."
@@ -6397,6 +7321,9 @@ msgstr "Woff ძირითადი ვერსია:"
 msgid "Woff Minor Version:"
 msgstr "Woff დამატებითი ვერსია:"
 
+msgid "Wolof"
+msgstr "ვოლოფური"
+
 #. GT: X is a coordinate
 msgid "X"
 msgstr "X"
@@ -6406,6 +7333,9 @@ msgstr "X:"
 
 msgid "XFig"
 msgstr "XFig"
+
+msgid "Xhosa"
+msgstr "ქჰოსა"
 
 #. GT: Y is a coordinate
 #. GT: Y is a coordinate, the leading spaces help to align it
@@ -6426,6 +7356,12 @@ msgstr "დიახ _ყველას"
 
 msgid "Yes, and don't _remind me again"
 msgstr "დიახ, მომავალში _კითხვის გარეშე"
+
+msgid "Yiddish"
+msgstr "იდიში"
+
+msgid "Yoruba"
+msgstr "იორუბა"
 
 #, c-format
 msgid ""
@@ -6508,6 +7444,12 @@ msgstr "და_შორება"
 
 msgid "Zanabazar Square"
 msgstr "ძანაბაძარის კვადრატული"
+
+msgid "Zarma"
+msgstr "ზარმა"
+
+msgid "Zhuang"
+msgstr "ზჰუანგი"
 
 msgid "Znamenny Musical Notation"
 msgstr "ზნამენნი, სანოტო დამწერლობა"
