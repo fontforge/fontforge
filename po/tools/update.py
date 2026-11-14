@@ -5,6 +5,11 @@ import subprocess
 import sys
 
 
+SCRIPT_DIR = pathlib.Path(__file__).resolve().parent
+PO_DIR = SCRIPT_DIR.parent
+UPDATES_DIR = PO_DIR / "updates"
+
+
 def update(potfile, pofile):
     header = []
     with open(pofile, encoding="utf-8") as fp:
@@ -15,7 +20,7 @@ def update(potfile, pofile):
             else:
                 break
 
-    updated_trans = pathlib.Path("updates") / pathlib.Path(pofile).name
+    updated_trans = UPDATES_DIR / pathlib.Path(pofile).name
 
     print(f"Updating {pofile} with {potfile}...")
 
@@ -39,7 +44,7 @@ def update(potfile, pofile):
 
 
 def update_all(potfile):
-    for f in pathlib.Path().glob("*.po"):
+    for f in PO_DIR.glob("*.po"):
         update(potfile, str(f))
 
 
