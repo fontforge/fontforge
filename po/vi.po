@@ -3,8 +3,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Language: vi_VN\n"
@@ -1048,6 +1048,9 @@ msgstr ""
 "Chỉ lệnh cũ\n"
 "Đẩy một giá trị"
 
+msgid "Adlam"
+msgstr "Chữ Adlam"
+
 msgid "Adobe Glyph List"
 msgstr "Danh sách Hình tượng Adobe"
 
@@ -1110,6 +1113,9 @@ msgstr "Tiếng A-gỏa"
 
 msgid "Ahead Classes"
 msgstr "Hạng tới"
+
+msgid "Akan"
+msgstr "Tiếng Akan"
 
 msgid "Akhand"
 msgstr "Ac-hand"
@@ -1389,6 +1395,9 @@ msgstr "Một tập tin sfnt phải chứa bảng: cái này không phải."
 msgid "An unsigned byte to be pushed on the stack"
 msgstr "Một byte không lý cần đẩy vào đống"
 
+msgid "Anatolian Hieroglyphs"
+msgstr "Chữ tượng hình Anatolia"
+
 msgid "Anchor Class Name"
 msgstr "Tên hạng neo"
 
@@ -1624,6 +1633,9 @@ msgstr "Bên Phải qua Trái ngôn ngữ A Rập"
 msgid "Arabic Supplement"
 msgstr "Phần bổ sung tiếng A Rập"
 
+msgid "Aragonese"
+msgstr "Tiếng Aragon"
+
 msgid "Archives"
 msgstr "Kho"
 
@@ -1677,6 +1689,12 @@ msgstr "Bạn có chắc muốn gỡ bỏ các hình tượng này không? Khôn
 msgid "Armenian"
 msgstr "Tiếng Ác-mê-ni"
 
+msgid "Aromanian"
+msgstr "Tiếng Aromania"
+
+msgid "Arpitan"
+msgstr "Tiếng Arpitan"
+
 msgid "ArrowAccelFactor"
 msgstr "Tăng Tốc Mũi Tên"
 
@@ -1715,6 +1733,9 @@ msgstr "Tỷ lệ Hình thể trùng với Xếp lát Hình tượng"
 
 msgid "Assamese"
 msgstr "Tiếng A-xa-mi"
+
+msgid "Asturian"
+msgstr "Tiếng Asturias"
 
 msgid "At End"
 msgstr "Ở cuối"
@@ -1962,6 +1983,9 @@ msgstr "Tiếng Ay-ma-ra"
 
 msgid "Azebaijani (roman)"
 msgstr "Tiếng A-xơ-bai-gianh (La-tinh)"
+
+msgid "Azerbaijani"
+msgstr "Tiếng Azerbaijan"
 
 msgid "Azeri (Cyrillic)"
 msgstr "Tiếng A-xê-ri (Ki-rin)"
@@ -2641,11 +2665,17 @@ msgstr "Tiếng Ban-khă"
 msgid "Balti"
 msgstr "Tiếng Ban-thi"
 
+msgid "Baluchi"
+msgstr "Tiếng Baloch"
+
 msgid "Bambara"
 msgstr "Tiếng Bam-ba-ra"
 
 msgid "Bamileke"
 msgstr "Tiếng Ba-mi-le-ke"
+
+msgid "Bamum"
+msgstr "Chữ Bamum"
 
 msgid "Bar Width:"
 msgstr "Rộng thanh:"
@@ -2706,6 +2736,15 @@ msgstr "Mặt Phẳng Đa Ngôn Ngữ Cơ Bản"
 
 msgid "Basque"
 msgstr "Tiếng Bax-quợ"
+
+msgid "Bassa Vah"
+msgstr "Chữ Bassa Vah"
+
+msgid "Batak Toba"
+msgstr "Tiếng Batak Toba"
+
+msgid "Bavarian"
+msgstr "Tiếng Bavaria"
 
 msgid "Be_vel"
 msgstr "Cạnh _xiên"
@@ -2802,6 +2841,9 @@ msgstr "Tiếng Bi-len"
 msgid "Bind to Path"
 msgstr "Đóng kết tới đường dẫn"
 
+msgid "Bislama"
+msgstr "Tiếng Bislama"
+
 msgid "Bitm_ap Strikes Available..."
 msgstr "Gạch mảng ảnh _sẵn sàng..."
 
@@ -2862,8 +2904,8 @@ msgstr "Giá trị màu Xanh"
 msgid "BlueValues come in pairs. Select another."
 msgstr "Cần thiết một cặp giá trị màu xanh. Chọn giá trị thêm nhé."
 
-msgid "Blues"
-msgstr "Xanh"
+msgid "Bodo"
+msgstr "Tiếng Bodo"
 
 msgid "Bold"
 msgstr "Đậm"
@@ -3167,6 +3209,9 @@ msgstr "_Góc"
 msgid "C_ustom"
 msgstr "Tự _chọn"
 
+msgid "Cajun French"
+msgstr "Tiếng Pháp Cajun"
+
 msgid "Call Script"
 msgstr "Gọi văn lệnh"
 
@@ -3320,6 +3365,9 @@ msgstr "Hình phân biệt chữ hoa/thường"
 msgid "Catalan"
 msgstr "Tiếng Ca-ta-lan"
 
+msgid "Cayuga"
+msgstr "Tiếng Cayuga"
+
 msgid "Cebuano"
 msgstr "Tiếng Xe-bu-a-nô"
 
@@ -3338,6 +3386,9 @@ msgstr "Ở giữa"
 msgid "Centered CJK Punctuation"
 msgstr "Dấu chấm câu ở giữa CJK"
 
+msgid "Central Yupik"
+msgstr "Tiếng Yupik Miền Trung"
+
 msgid "Chaha Gurage"
 msgstr "Tiếng Cha-ha Gu-ra-ge"
 
@@ -3352,6 +3403,12 @@ msgstr "Vị trí tạo dãy"
 
 msgid "Chaining substitution"
 msgstr "Thay thế tạo dãy"
+
+msgid "Chakma"
+msgstr "Chữ Chakma"
+
+msgid "Chamorro"
+msgstr "Tiếng Chamorro"
 
 msgid "Change"
 msgstr "Đổi"
@@ -3564,8 +3621,14 @@ msgstr "Kiểm tra tìm sự thay thế, hạng định chỗ v.v. dùng một t
 msgid "Cherokee"
 msgstr "Tiếng Che-rô-khi"
 
+msgid "Cheyenne"
+msgstr "Tiếng Cheyenne"
+
 msgid "Chichewa"
 msgstr "Tiếng Chi-che-ouă"
+
+msgid "Chiga"
+msgstr "Tiếng Chiga"
 
 msgid "Chin"
 msgstr "Tiếng Chin"
@@ -3588,6 +3651,9 @@ msgstr "Tiếng Trung (Đài-loan)"
 msgid "Chipewyan"
 msgstr "Tiếng Chi-pe-ouianh"
 
+msgid "Choctaw"
+msgstr "Tiếng Choctaw"
+
 msgid "Choose a file format..."
 msgstr "Chọn định dạng tập tin..."
 
@@ -3602,6 +3668,9 @@ msgstr "Tiếng Chúc-chi"
 
 msgid "Church Slavonic"
 msgstr "Tiếng Xla-vơ nhà thơ"
+
+msgid "Chuukese"
+msgstr "Tiếng Chuuk"
 
 msgid "Chuvash"
 msgstr "Tiếng Chu-vas"
@@ -4034,6 +4103,9 @@ msgstr "Sửa:"
 
 msgid "Corner"
 msgstr "Đỉnh"
+
+msgid "Cornish"
+msgstr "Tiếng Cornwall"
 
 msgid "Correct Direction"
 msgstr "Sửa hướng"
@@ -5932,6 +6004,12 @@ msgstr "Màu nhóm màu xanh"
 msgid "FamilyBl_ues"
 msgstr "Nhóm mà_u xanh"
 
+msgid "Fang"
+msgstr "Tiếng Fang"
+
+msgid "Fanti"
+msgstr "Tiếng Fanti"
+
 msgid "Faroese"
 msgstr "Tiếng Pha-rô"
 
@@ -6547,6 +6625,9 @@ msgstr "Tiếng Ga-li-xi"
 msgid "Galla"
 msgstr "Tiếng Ga-la"
 
+msgid "Ganda"
+msgstr "Tiếng Ganda"
+
 msgid "Garhwali"
 msgstr "Tiếng Ga-ouă-li"
 
@@ -6696,6 +6777,9 @@ msgid ""
 msgstr ""
 "Ghostview (và co lẽ một số phần mềm giải thích khác)\n"
 "gặp khó khăn khi gặp một lời gợi ý không có điểm ở trên."
+
+msgid "Gilaki"
+msgstr "Tiếng Gilaki"
 
 msgid "Gilyak"
 msgstr "Tiếng Ghin-iac"
@@ -7028,6 +7112,9 @@ msgstr "Dần dần/Chuyển tiếp"
 msgid "Gradual/Vertical"
 msgstr "Dần dần/Dọc"
 
+msgid "Grantha"
+msgstr "Chữ Grantha"
+
 msgid "Graphical"
 msgstr "Đồ họa"
 
@@ -7142,6 +7229,9 @@ msgstr "Tiếng Gổ-mu-khi"
 msgid "Gurmukhi2"
 msgstr "Tiếng Gổ-mu-khi 2"
 
+msgid "Gusii"
+msgstr "Tiếng Gusii"
+
 msgid "HFlex Hint Color"
 msgstr "Màu mẹo HFlex"
 
@@ -7175,6 +7265,9 @@ msgstr "Hộp nhóm HV"
 msgid "H_ints"
 msgstr "Gợ_i ý"
 
+msgid "Haida"
+msgstr "Tiếng Haida"
+
 msgid "Haitian"
 msgstr "Tiếng Ha-i-ti"
 
@@ -7193,8 +7286,14 @@ msgstr "Nửa rộng"
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "Hình nửa/toàn rộng"
 
+msgid "Halkomelem"
+msgstr "Tiếng Halkomelem"
+
 msgid "Hammer-Banna"
 msgstr "Tiếng Ha-mơ-Ba-na"
+
+msgid "Hangul"
+msgstr "Chữ Hàn"
 
 msgid "Hangul Compatibility Jamo"
 msgstr "Hangul tương thích với Jamo"
@@ -7207,6 +7306,9 @@ msgstr "Tiếng Ha-ra-ri"
 
 msgid "Harauti"
 msgstr "Tiếng Ha-rau-ti"
+
+msgid "Haryanvi"
+msgstr "Tiếng Haryana"
 
 msgid "Has _Vertical Metrics"
 msgstr "Có đơn vị đo _dọc"
@@ -7248,6 +7350,9 @@ msgstr "Dữ liệu bề cao/định chỗ"
 
 msgid "Height:"
 msgstr "Cao :"
+
+msgid "Herero"
+msgstr "Tiếng Herero"
 
 msgid "Hidden"
 msgstr "Ẩn"
@@ -7315,6 +7420,9 @@ msgstr "Hình tượng « %s » có các lời gợi ý khác nhau\n"
 msgid "Hiragana & Katakana"
 msgstr "Hiragana và Katakana"
 
+msgid "Hiri Motu"
+msgstr "Tiếng Hiri Motu"
+
 msgid "Histogram Dialog"
 msgstr "Hộp thoại biểu đồ tần xuất"
 
@@ -7376,6 +7484,9 @@ msgid ""
 msgstr ""
 "Trong bảng 'gvar' có xác định quá nhiều đối tượng nhiều thành phần toàn cục.\n"
 "Trình FontForge chỉ hỗ trợ %d điều.\n"
+
+msgid "Hmong"
+msgstr "Tiếng H’Mông"
 
 msgid "Ho"
 msgstr "Tiếng Hô"
@@ -7523,6 +7634,9 @@ msgstr "ISO 8859-7 (Hy Lạp)"
 msgid "ISO 8859-8 (Hebrew)"
 msgstr "ISO 8859-8 (Do Thái)"
 
+msgid "Iban"
+msgstr "Tiếng Iban"
+
 msgid "Ibibio"
 msgstr "Tiếng I-bi-biô"
 
@@ -7546,6 +7660,9 @@ msgstr "Đường cơ bản kiểu hộp « em-box » chữ viết ghi ý ở c�
 
 msgid "Ideographic em-box top edge baseline"
 msgstr "Đường cơ bản kiểu hộp « em-box » chữ viết ghi ý ở cạnh trên"
+
+msgid "Ido"
+msgstr "Tiếng Ido"
 
 msgid ""
 "If a glyph has been edited so that it has a different\n"
@@ -7790,6 +7907,9 @@ msgstr "Ảnh dùng thay cho Dấu Hộp Chọn Một đã bật"
 msgid "Image used instead of the Radio On Mark (when the radio is disabled)"
 msgstr "Ảnh dùng thay cho Dấu Hộp Chọn Một đã bật (khi nút chọn một bị tắt)"
 
+msgid "Imperial Aramaic"
+msgstr "Chữ Imperial Aramaic"
+
 msgid "Import"
 msgstr "Nhập"
 
@@ -8007,6 +8127,12 @@ msgstr "Đặt mọi ham chiếu đã lật trực tiếp"
 msgid "Inlining glyphs"
 msgstr "Đang vẽ nét trong các hình tượng..."
 
+msgid "Inscriptional Pahlavi"
+msgstr "Chữ Pahlavi Văn bia"
+
+msgid "Inscriptional Parthian"
+msgstr "Chữ Parthia Văn bia"
+
 msgid "Inse_rt Point On Spline At..."
 msgstr "Chèn điểm vào chốt t_rục ở..."
 
@@ -8076,6 +8202,12 @@ msgstr "Chỉ dẫn quá cũ"
 
 msgid "Instructions were changed"
 msgstr "Chỉ dẫn bị thay đổi"
+
+msgid "Interlingua"
+msgstr "Tiếng Khoa Học Quốc Tế"
+
+msgid "Interlingue"
+msgstr "Tiếng Interlingue"
 
 msgid "Intermediate Points:"
 msgstr "Điểm trung gian:"
@@ -8404,8 +8536,17 @@ msgstr "KSC 5601-1987 (Hàn)"
 msgid "Kabardian"
 msgstr "Tiếng Ka-ba-đi-a"
 
+msgid "Kabuverdianu"
+msgstr "Tiếng Kabuverdianu"
+
+msgid "Kabyle"
+msgstr "Tiếng Kabyle"
+
 msgid "Kachchi"
 msgstr "Tiếng Kát-chi"
+
+msgid "Kaithi"
+msgstr "Chữ Kaithi"
 
 msgid "Kalenjin"
 msgstr "Tiếng Ka-len-chinh"
@@ -8443,8 +8584,17 @@ msgstr "Tiếng Ka-ren"
 msgid "Kashmiri"
 msgstr "Tiếng Kha-s-mi-ri"
 
+msgid "Kashubian"
+msgstr "Tiếng Kashubia"
+
 msgid "Katakana Phonetic Extensions"
 msgstr "Phần mở rộng ngữ âm Katakana"
+
+msgid "Kawi"
+msgstr "Tiếng Kawi"
+
+msgid "Kayah Li"
+msgstr "Chữ Kayah Li"
 
 msgid "Kazakh"
 msgstr "Tiếng Ka-xa-kh"
@@ -8568,8 +8718,14 @@ msgstr "Tiếng Khơ-me"
 msgid "Khmer Symbols"
 msgstr "Ký hiệu Khơ-me"
 
+msgid "Khojki"
+msgstr "Chữ Khojki"
+
 msgid "Khowar"
 msgstr "Tiếng Khô-ouă"
+
+msgid "Khudawadi"
+msgstr "Chữ Khudawadi"
 
 msgid "Khutsuri Georgian"
 msgstr "Tiếng Gi-oa-gi-a Khut-xu-ri"
@@ -8582,6 +8738,9 @@ msgstr "Tiếng Ki-ku-yu"
 
 msgid "Kildin Sami"
 msgstr "Tiếng Khin-đin Xa-mi"
+
+msgid "Kinyarwanda"
+msgstr "Tiếng Kinyarwanda"
 
 msgid "Kinyarwanda/Ruanda"
 msgstr "Tiếng Kin-ia-ouanh-đa"
@@ -8598,6 +8757,9 @@ msgstr "Tiếng Ko-đa-gu"
 msgid "Kokni"
 msgstr "Tiếng Koc-ni"
 
+msgid "Komi"
+msgstr "Tiếng Komi"
+
 msgid "Komi-Permyak"
 msgstr "Tiếng Ko-mi-Pơ-mi-ac"
 
@@ -8609,6 +8771,9 @@ msgstr "Tiếng Kô-mô"
 
 msgid "Komso"
 msgstr "Tiếng Kom-xô"
+
+msgid "Kongo"
+msgstr "Tiếng Kongo"
 
 msgid "Konkani"
 msgstr "Tiếng Kon-ka-ni"
@@ -8625,11 +8790,17 @@ msgstr "Hangul Cũ tiếng Triều Tiên"
 msgid "Koryak"
 msgstr "Tiếng Khoa-ri-ac"
 
+msgid "Kosraean"
+msgstr "Tiếng Kosrae"
+
 msgid "Kpelle"
 msgstr "Tiếng K-pe-li"
 
 msgid "Krio"
 msgstr "Tiếng Cợ-ri-ô"
+
+msgid "Kuanyama"
+msgstr "Tiếng Kuanyama"
 
 msgid "Kui"
 msgstr "Tiếng Kun"
@@ -8688,6 +8859,9 @@ msgstr "Tiếng La-đa-khi"
 msgid "Ladin"
 msgstr "Tiếng La-đin"
 
+msgid "Ladino"
+msgstr "Tiếng Ladino"
+
 msgid "Lahuli"
 msgstr "Tiếng La-hu-li"
 
@@ -8727,6 +8901,9 @@ msgstr "Tiếng Ác-mê-ni"
 
 msgid "Lang|Avar"
 msgstr "Tiếng A-vă"
+
+msgid "Lang|Balinese"
+msgstr "Tiếng Bali"
 
 msgid "Lang|Bengali"
 msgstr "Tiếng Ben-ga-ni"
@@ -8783,6 +8960,9 @@ msgstr "Tiếng La-tinh"
 msgid "Lang|Limbu"
 msgstr "Tiếng Lim-bu"
 
+msgid "Lang|Makasar"
+msgstr "Tiếng Makasar"
+
 msgid "Lang|Malayalam"
 msgstr "Tiếng Ma-lay-am"
 
@@ -8792,11 +8972,23 @@ msgstr "Tiếng Mãn Châu"
 msgid "Lang|Mongolian"
 msgstr "Tiếng Mông Cổ"
 
+msgid "Lang|Odia"
+msgstr "Tiếng Odia"
+
 msgid "Lang|Oriya"
 msgstr "Tiếng O-ri-ya"
 
+msgid "Lang|Persian"
+msgstr "Tiếng Ba Tư"
+
+msgid "Lang|Sinhala"
+msgstr "Tiếng Sinhala"
+
 msgid "Lang|Sinhalese"
 msgstr "Tiếng Xin-ha-la"
+
+msgid "Lang|Sundanese"
+msgstr "Tiếng Sunda"
 
 msgid "Lang|Syriac"
 msgstr "Tiếng Xi-ri-ác"
@@ -9011,8 +9203,14 @@ msgstr "Nhẹ"
 msgid "Light Angle:"
 msgstr "Góc ánh sáng:"
 
+msgid "Ligurian"
+msgstr "Tiếng Liguria"
+
 msgid "Limbu"
 msgstr "Tiếng Lim-bu"
+
+msgid "Limburgish"
+msgstr "Tiếng Limburg"
 
 msgid ""
 "Limit the font so that only the glyphs referenced in the first 256 encodings\n"
@@ -9120,6 +9318,12 @@ msgstr "Địa điểm"
 
 msgid "Logical And with Selection"
 msgstr "VÀ lôgic dùng vùng chọn"
+
+msgid "Lojban"
+msgstr "Tiếng Lojban"
+
+msgid "Lombard"
+msgstr "Tiếng Lombard"
 
 msgid "Lomwe"
 msgstr "Tiếng Lom-oue"
@@ -9285,6 +9489,9 @@ msgstr "Các sự tra tìm sẽ bị gỡ bỏ"
 msgid "Low Mari"
 msgstr "Tiếng Ma-ri thấp"
 
+msgid "Low Saxon"
+msgstr "Tiếng Hạ Saxon"
+
 msgid "Lower Case"
 msgstr "Chữ thường"
 
@@ -9303,6 +9510,12 @@ msgstr "Chữ thường sang chữ hoa rất nhỏ"
 msgid "Lowercase to Small Capitals"
 msgstr "Chữ thường sang chữ hoa nhỏ"
 
+msgid "Luba-Katanga"
+msgstr "Tiếng Luba-Katanga"
+
+msgid "Luba-Lulua"
+msgstr "Tiếng Luba-Lulua"
+
 msgid "Lule Sami"
 msgstr "Tiếng Lu-le Xa-mi"
 
@@ -9311,6 +9524,9 @@ msgstr "Tiếng Luo"
 
 msgid "Luxembourgish"
 msgstr "Tiếng Lục-xâm-bảo"
+
+msgid "Luyia"
+msgstr "Tiếng Luyia"
 
 msgid "Lycian"
 msgstr "Ly-xi"
@@ -9482,6 +9698,9 @@ msgstr "La-tinh Macintosh"
 msgid "Mag:"
 msgstr "To :"
 
+msgid "Magahi"
+msgstr "Tiếng Magahi"
+
 msgid "Magnification:"
 msgstr "Phóng to :"
 
@@ -9525,6 +9744,12 @@ msgstr ""
 msgid "Make the counters narrower"
 msgstr "Làm cho bộ đếm hẹp hơn"
 
+msgid "Makhuwa"
+msgstr "Tiếng Makhuwa"
+
+msgid "Makonde"
+msgstr "Tiếng Makonde"
+
 msgid "Malagasy"
 msgstr "Tiếng Ma-la-ga-xi"
 
@@ -9561,8 +9786,14 @@ msgstr "Tiếng Mantơ"
 msgid "Mandaic"
 msgstr "Tiếng Man-đa"
 
+msgid "Mandar"
+msgstr "Tiếng Mandar"
+
 msgid "Mandinka"
 msgstr "Tiếng Man-đin-ka"
+
+msgid "Manichaean"
+msgstr "Chữ Manichaean"
 
 msgid "Maninka"
 msgstr "Tiếng Ma-nin-ka"
@@ -9575,6 +9806,9 @@ msgstr "Tiếng Man-xi"
 
 msgid "Manufacturer"
 msgstr "Hãng chế tạo"
+
+msgid "Manx"
+msgstr "Tiếng Manx"
 
 msgid "Manx Gaelic"
 msgstr "Tiếng Xen-tơ (Mankh-x)"
@@ -9702,6 +9936,9 @@ msgid ""
 msgstr ""
 "Các dấu ở trong chữ ghép nên được sắp xếp theo hướng viết.\n"
 "Dấu này và %d không theo thứ tự đúng."
+
+msgid "Marshallese"
+msgstr "Tiếng Marshall"
 
 msgid "Marwari"
 msgstr "Tiếng Mă-ouă-ri"
@@ -9831,6 +10068,9 @@ msgstr ""
 "Bề cao tối đa (mực) của đầu của chữ thấp\n"
 "mà không cần thiết hạ thấp chữ thấp xuống nữa."
 
+msgid "Mazanderani"
+msgstr "Tiếng Mazanderani"
+
 msgid "Mbundu"
 msgstr "Tiếng M-bun-đu"
 
@@ -9881,6 +10121,9 @@ msgstr "Vừa"
 msgid "Medium (100%)"
 msgstr "Vừa (100%)"
 
+msgid "Medumba"
+msgstr "Tiếng Medumba"
+
 msgid "Mende"
 msgstr "Tiếng Men-đe"
 
@@ -9918,6 +10161,12 @@ msgstr "Lỗi trộn"
 
 msgid "Merging a font with itself achieves nothing"
 msgstr "Trộn phông với chính nó thì vô ích"
+
+msgid "Meroitic Cursive"
+msgstr "Chữ Meroitic Nét thảo"
+
+msgid "Meru"
+msgstr "Tiếng Meru"
 
 msgid ""
 "MetaFont (mf) generates lots of verbiage to stdout.\n"
@@ -9961,6 +10210,9 @@ msgstr "Tiểu (giảm)"
 
 msgid "MinConnectorOverlap:"
 msgstr "Tiểu chồng chéo kết nối:"
+
+msgid "Minangkabau"
+msgstr "Tiếng Minangkabau"
 
 msgid ""
 "Minimum allowed height of the bottom\n"
@@ -10086,6 +10338,9 @@ msgstr ""
 
 msgid "Minor A_xis:"
 msgstr "Trục _phụ :"
+
+msgid "Mirandese"
+msgstr "Tiếng Miranda"
 
 msgid "Misc."
 msgstr "Linh tinh"
@@ -10277,8 +10532,14 @@ msgstr "Xác định nhiều sự đẩy hơn số cần thiết"
 msgid "More than 256 entries in subfont %s"
 msgstr "Trong phông con %s có hơn 256 mục nhập."
 
+msgid "Morisyen"
+msgstr "Tiếng Morisyen"
+
 msgid "Moroccan"
 msgstr "Tiếng Ma-rốc"
+
+msgid "Mossi"
+msgstr "Tiếng Mossi"
 
 msgid ""
 "Most font formats cannot specify adjacent points (or control points)\n"
@@ -10456,6 +10717,9 @@ msgstr ""
 "Ha thấp sự tra tìm được chọn hiện thời xuống kết thúc dãy tra tìm\n"
 "hoặc hạ thấp bảng phụ được chọn hiện thời xuống kết thúc tiến trình tra tìm."
 
+msgid "Mro"
+msgstr "Chữ Mro"
+
 msgid "Mult Subs"
 msgstr "Đa thay thế"
 
@@ -10508,6 +10772,9 @@ msgstr "Đa bảng mã bị bỏ qua"
 
 msgid "Mundari"
 msgstr "Tiếng Mun-đa-ri"
+
+msgid "Muscogee"
+msgstr "Tiếng Creek"
 
 msgid "Musical"
 msgstr "Âm nhạc"
@@ -10568,6 +10835,9 @@ msgstr "Không _bao giờ nội suy"
 
 msgid "N_umber Points"
 msgstr "Đánh _số điểm"
+
+msgid "Nabataean"
+msgstr "Chữ Nabataean"
 
 msgid "Naga-Assamese"
 msgstr "Tiếng Na-ga-At-xa-mi"
@@ -10652,6 +10922,9 @@ msgstr "Tiếng Na-nai"
 msgid "Naskapi"
 msgstr "Tiếng Nat-ka-pi"
 
+msgid "Navajo"
+msgstr "Tiếng Navajo"
+
 msgid "Navigation"
 msgstr "Duyệt qua"
 
@@ -10663,6 +10936,9 @@ msgstr "Tiếng N-đon-ga"
 
 msgid "Ne_xt Control Point"
 msgstr "Điểm đ_iều khiển kế"
+
+msgid "Neapolitan"
+msgstr "Tiếng Napoli"
 
 msgid "Near"
 msgstr "Gần"
@@ -11266,6 +11542,9 @@ msgstr ""
 msgid "Northern Sami"
 msgstr "Tiếng Bắc Xă-mi"
 
+msgid "Northern Sotho"
+msgstr "Tiếng Bắc Sotho"
+
 msgid "Northern Tai"
 msgstr "Tiếng Bắc Tai"
 
@@ -11280,6 +11559,9 @@ msgstr "Tiếng Na Uy (Bokh-man)"
 
 msgid "Norwegian (Nynorsk)"
 msgstr "Tiếng Na Uy (Ny-noa-x-kh)"
+
+msgid "Norwegian Nynorsk"
+msgstr "Tiếng Na Uy (Nynorsk)"
 
 msgid "Not ASCII"
 msgstr "Không ASCII"
@@ -11435,8 +11717,14 @@ msgstr "Ký hiệu trường thuộc số"
 msgid "Numeric Forms"
 msgstr "Dạng số"
 
+msgid "Nyamwezi"
+msgstr "Tiếng Nyamwezi"
+
 msgid "Nyanja/Chewa"
 msgstr "Tiếng Nai-an-gia"
+
+msgid "Nyankole"
+msgstr "Tiếng Nyankole"
 
 msgid "O Black Letter"
 msgstr "TH Chữ đen"
@@ -11600,11 +11888,20 @@ msgstr "Tiếng Ô-gip-ouê"
 msgid "Ol Chiki"
 msgstr "On Chi-khi"
 
+msgid "Old Hungarian"
+msgstr "Chữ Hungary cổ"
+
+msgid "Old Irish"
+msgstr "Tiếng Ai-len cổ"
+
 msgid "Old Italic"
 msgstr "Nghiêng cũ"
 
 msgid "Old Italic (Etruscan, Oscan, etc.)"
 msgstr "Nghiêng cũ (Etrusca, Osca v.v.)"
+
+msgid "Old North Arabian"
+msgstr "Chữ Bắc Ả Rập cổ"
 
 msgid "Old Outline Color"
 msgstr "Màu nét ngoài cũ"
@@ -11614,6 +11911,9 @@ msgstr "Tiếng Ba Tư cũ"
 
 msgid "Old Persian cuneiform"
 msgstr "Chữ hình nêm Ba Tư cũ"
+
+msgid "Old South Arabian"
+msgstr "Chữ Nam Ả Rập cổ"
 
 msgid "Old Style"
 msgstr "Kiểu cũ"
@@ -12026,6 +12326,9 @@ msgstr "Thiết lập trang"
 msgid "Page_Size:"
 msgstr "_Cỡ trang:"
 
+msgid "Pahawh Hmong"
+msgstr "Chữ Pahawh Hmong"
+
 msgid "Pair Position (kerning)"
 msgstr "Vị trí cặp (định chỗ)"
 
@@ -12034,6 +12337,9 @@ msgstr "Vị trí theo cặp"
 
 msgid "Pairwise Positioning (kerning)"
 msgstr "Định vị theo cặp (định chỗ)"
+
+msgid "Palauan"
+msgstr "Tiếng Palauan"
 
 msgid "Palaung"
 msgstr "Tiếng Pa-laung"
@@ -12050,8 +12356,14 @@ msgstr "Tiếng Pa-li"
 msgid "Palm OS Bitmap"
 msgstr "Mảng ảnh Palm OS"
 
+msgid "Palmyrene"
+msgstr "Chữ Palmyrene"
+
 msgid "Palpa"
 msgstr "Tiếng Pan-pa"
+
+msgid "Pangasinan"
+msgstr "Tiếng Pangasinan"
 
 msgid "PanoseArmStyle|Any"
 msgstr "Bất kỳ"
@@ -12388,6 +12700,9 @@ msgstr "Hãy xác định một phần bổ sung mới cho %.20s-%.20s."
 
 msgid "Please specify a script"
 msgstr "Hãy ghi rõ một chữ viết"
+
+msgid "Pohnpeian"
+msgstr "Tiếng Pohnpeian"
 
 msgid "Poin_ts too close"
 msgstr "Điểm _quá gần"
@@ -12737,6 +13052,9 @@ msgstr "Độ gần"
 msgid "Proximity:"
 msgstr "Độ gần:"
 
+msgid "Psalter Pahlavi"
+msgstr "Chữ Pahlavi Thánh ca"
+
 msgid "Punjabi"
 msgstr "Tiếng Pun-gia-bi"
 
@@ -12871,6 +13189,9 @@ msgstr "Nhanh/Ngang"
 
 msgid "Rapid/Vertical"
 msgstr "Nhanh/Dọc"
+
+msgid "Rarotongan"
+msgstr "Tiếng Rarotongan"
 
 msgid "Raster"
 msgstr "Mành"
@@ -13419,8 +13740,14 @@ msgstr "Đồ xen kẽ bên phải sang trái"
 msgid "Ro_und"
 msgstr "_Tròn"
 
+msgid "Rohingya"
+msgstr "Tiếng Rohingya"
+
 msgid "Romanian"
 msgstr "Tiếng Rô-ma-ni"
+
+msgid "Romansh"
+msgstr "Tiếng Romansh"
 
 msgid "Romany"
 msgstr "Tiếng Rô-ma-ny"
@@ -13786,6 +14113,12 @@ msgstr "Tiếng Xan-ta-li"
 msgid "Saraiki"
 msgstr "Tiếng Xa-rai-khi"
 
+msgid "Sardinian"
+msgstr "Tiếng Sardinia"
+
+msgid "Sasak"
+msgstr "Tiếng Sasak"
+
 msgid "Saturation and Value, and the three colors must be between 0 and 1"
 msgstr "Độ bão hoà và Giá trị, và ba màu phải nằm giữa 0 và 1"
 
@@ -13960,6 +14293,9 @@ msgstr "Mảng ảnh co giãn"
 
 msgid "Scientific Inferiors"
 msgstr "Ký hiệu khoa học in thấp"
+
+msgid "Scots"
+msgstr "Tiếng Scots"
 
 msgid "Scottish Gaelic"
 msgstr "Tiếng Xen-tơ (Ê-cốt)"
@@ -14424,6 +14760,9 @@ msgstr "Nửa dãn ra (112.5%)"
 msgid "Sena"
 msgstr "Tiếng Xe-na"
 
+msgid "Seneca"
+msgstr "Tiếng Seneca"
+
 msgid "Sepedi"
 msgstr "Tiếng Xe-pe-đi"
 
@@ -14846,6 +15185,9 @@ msgstr "Tiếng San"
 msgid "Shape Type"
 msgstr "Kiểu hình"
 
+msgid "Sharada"
+msgstr "Chữ Sharada"
+
 msgid "Shavian"
 msgstr "Tiếng Sa-vi-a"
 
@@ -14857,6 +15199,9 @@ msgstr "Dịch khi bấm"
 
 msgid "Sho_w"
 msgstr "_Hiện"
+
+msgid "Shona"
+msgstr "Tiếng Shona"
 
 #, c-format
 msgid "Shouldn't be in addinfo \"%s"
@@ -14913,6 +15258,9 @@ msgstr "Co lại:"
 msgid "Sibe"
 msgstr "Tiếng Xi-be"
 
+msgid "Sicilian"
+msgstr "Tiếng Sicilia"
+
 msgid "Sidamo"
 msgstr "Tiếng Xi-đa-mô"
 
@@ -14927,6 +15275,9 @@ msgstr "Hệ số mở rộng vị trí phương hướng bên"
 
 msgid "Side Bearings:"
 msgstr "Vị trí phương hướng bên:"
+
+msgid "Silesian"
+msgstr "Tiếng Silesia"
 
 msgid "Silte Gurage"
 msgstr "Tiếng Gu-ra-ge Xin-te"
@@ -15115,6 +15466,9 @@ msgstr ""
 msgid "Sodo Gurage"
 msgstr "Tiếng Gu-ra-ge Xô-đô"
 
+msgid "Soga"
+msgstr "Tiếng Soga"
+
 msgid "Somali"
 msgstr "Tiếng Xô-ma-li"
 
@@ -15155,6 +15509,9 @@ msgstr "Gặp lỗi"
 
 msgid "Soninke"
 msgstr "Tiếng Xo-nin-ke"
+
+msgid "Sora Sompeng"
+msgstr "Chữ Sora Sompeng"
 
 msgid "Sorbian"
 msgstr "Tiếng Xoa-bi"
@@ -15207,6 +15564,9 @@ msgstr "Tiếng Nam Xla-vê"
 
 msgid "Southern Sami"
 msgstr "Tiếng Nam Xă-mi"
+
+msgid "Southern Sotho"
+msgstr "Tiếng Nam Sotho"
 
 msgid "Space Regions"
 msgstr "Vùng khoảng cách"
@@ -15481,6 +15841,9 @@ msgstr "Đống"
 msgid "Standard Ligatures"
 msgstr "Chữ ghép tiêu chuẩn"
 
+msgid "Standard Moroccan Tamazight"
+msgstr "Tiếng Tamazight Chuẩn của Ma-rốc"
+
 msgid ""
 "Standard shift down applied to the\n"
 "denominator in display style.\n"
@@ -15660,6 +16023,9 @@ msgstr "Tay thẳng/Dọc"
 
 msgid "Straight Arms/Wedge"
 msgstr "Tay thẳng/Nêm"
+
+msgid "Straits Salish"
+msgstr "Tiếng Straits Salish"
 
 msgid "Stretch:"
 msgstr "Kéo giãn:"
@@ -15866,6 +16232,9 @@ msgstr "Bảng phụ kéo dài qua kết thúc của bảng GPOS"
 msgid "Subtable extends beyond end of GSUB table"
 msgstr "Bảng phụ kéo dài qua kết thúc của bảng GSUB"
 
+msgid "Sukuma"
+msgstr "Tiếng Sukuma"
+
 msgid "Sum Around:"
 msgstr "Tổng quanh:"
 
@@ -15956,6 +16325,9 @@ msgstr "Tiếng Xouă-hi-li (Ken-ya)"
 
 msgid "Swash"
 msgstr "Đuôi tu từ"
+
+msgid "Swati"
+msgstr "Tiếng Swati"
 
 msgid "Swedish"
 msgstr "Tiếng Thuỵ Điển"
@@ -16098,6 +16470,9 @@ msgstr "Hai bảng '%c%c%c%c' và '%c%c%c%c' chồng chéo lên nhau"
 msgid "Tabular Numbers"
 msgstr "Chữ số kiểu bảng"
 
+msgid "Tachelhit"
+msgstr "Tiếng Tachelhit"
+
 msgid "Tag must be 4 characters long"
 msgstr "Thẻ phải có chiều dài 4 ký tự"
 
@@ -16119,6 +16494,9 @@ msgstr "Tiếng Ta-hi-ti"
 msgid "Tai Le"
 msgstr "Tiếng Tai Le"
 
+msgid "Tai Viet"
+msgstr "Chữ Thái Việt"
+
 msgid "Tai Xuan Jing Symbols"
 msgstr "Ký hiệu Tai Xuan Jing"
 
@@ -16128,11 +16506,20 @@ msgstr "Tiếng Tha-gikh"
 msgid "Tajiki"
 msgstr "Tiếng Tha-gíc"
 
+msgid "Takri"
+msgstr "Chữ Takri"
+
+msgid "Tamashek"
+msgstr "Tiếng Tamashek"
+
 msgid "Tamazight (Latin)"
 msgstr "Tiếng Ta-ma-xaith (La-tinh)"
 
 msgid "Tamil"
 msgstr "Tiếng Ta-min"
+
+msgid "Tangut"
+msgstr "Chữ Tangut"
 
 msgid "Tatar"
 msgstr "Tiếng Tác-tă"
@@ -16160,6 +16547,9 @@ msgstr "Hình cuối 2"
 
 msgid "Terminal Forms #3"
 msgstr "Hình cuối 3"
+
+msgid "Tetum"
+msgstr "Tiếng Tetum"
 
 msgid "Text Field"
 msgstr "Trường văn bản"
@@ -18279,6 +18669,9 @@ msgstr "Khoảng thời gian (theo mili-giây) trong đó cửa sổ tự mở v
 msgid "Tiny Selection"
 msgstr "Vùng chọn rất nhỏ"
 
+msgid "Tirhuta"
+msgstr "Chữ Tirhuta"
+
 msgid "Title Background"
 msgstr "Nền tiêu đề"
 
@@ -18293,6 +18686,12 @@ msgstr "Màu chuỗi chữ tiêu đề"
 
 msgid "Titling"
 msgstr "Đặt tựa đề"
+
+msgid "Tiv"
+msgstr "Tiếng Tiv"
+
+msgid "Tlingit"
+msgstr "Tiếng Tlingit"
 
 msgid "To P_DF File"
 msgstr "Vào tập tin P_DF"
@@ -18323,6 +18722,9 @@ msgstr "Đến:"
 
 msgid "Todo"
 msgstr "Tiếng To-đo"
+
+msgid "Tok Pisin"
+msgstr "Tiếng Tok Pisin"
 
 msgid "Tonga"
 msgstr "Tiếng Tông-ga"
@@ -18634,6 +19036,9 @@ msgstr "Tiếng T-xouă-na"
 msgid "Tulu"
 msgstr "Tiếng Tu-lu"
 
+msgid "Tumbuka"
+msgstr "Tiếng Tumbuka"
+
 msgid "Turkish"
 msgstr "Tiếng Thổ Nhĩ Kỳ"
 
@@ -18642,6 +19047,9 @@ msgstr "Tiếng Tuốc-mê-ni"
 
 msgid "Turoyo Aramaic"
 msgstr "Tiếng Xy-ri Tu-rôi-ô"
+
+msgid "Tuvalu"
+msgstr "Tiếng Tuvalu"
 
 msgid "Tuvin"
 msgstr "Tiếng Tu-vin"
@@ -18753,6 +19161,9 @@ msgstr "Cô đặc cực (50%)"
 
 msgid "Ultra-Expanded (200%)"
 msgstr "Dãn ra cực (200%)"
+
+msgid "Umbundu"
+msgstr "Tiếng Umbundu"
 
 msgid ""
 "UnTouch Point\n"
@@ -19402,6 +19813,9 @@ msgstr "Mã số nhà sản xuất:"
 msgid "Vendor URL"
 msgstr "URL nhà sản xuất"
 
+msgid "Venetian"
+msgstr "Tiếng Veneto"
+
 msgid "Version"
 msgstr "Phiên bản"
 
@@ -19511,6 +19925,9 @@ msgstr "Xem"
 msgid "View Point"
 msgstr "Điểm nhìn"
 
+msgid "Volapük"
+msgstr "Tiếng Volapük"
+
 msgid "Vowel Jamo Forms"
 msgstr "Hình Ja-mô nguyên âm"
 
@@ -19531,6 +19948,9 @@ msgstr "Tiếng Ouă"
 
 msgid "Wagdi"
 msgstr "Tiếng Ouăc-đi"
+
+msgid "Walloon"
+msgstr "Tiếng Walloon"
 
 msgid "Wansung (Korean)"
 msgstr "Wansung (Hàn)"
@@ -19734,6 +20154,9 @@ msgstr "Tiếng Ouen-s"
 
 msgid "West-Cree"
 msgstr "Tiếng Tây Cợ-ri"
+
+msgid "Western Panjabi"
+msgstr "Tiếng Lahnda"
 
 msgid "What is the pixel size of the font in this file?"
 msgstr "Trong tập tin này, phông có kích cỡ điểm ảnh nào?"
@@ -20118,6 +20541,12 @@ msgstr "Y gần¹ bề c_ao chuẩn"
 msgid "Y-Cree"
 msgstr "Tiếng Cợ-ri Y"
 
+msgid "Yao"
+msgstr "Tiếng Yao"
+
+msgid "Yapese"
+msgstr "Tiếng Yap"
+
 msgid "Yes"
 msgstr "Có"
 
@@ -20419,6 +20848,12 @@ msgstr "Th_u nhỏ"
 
 msgid "Zande"
 msgstr "Tiếng Xan-đe"
+
+msgid "Zarma"
+msgstr "Tiếng Zarma"
+
+msgid "Zhuang"
+msgstr "Tiếng Choang"
 
 msgid "Zone:"
 msgstr "Vùng:"

@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -1273,6 +1273,9 @@ msgstr "Dickte nicht"
 msgid "Advance width of glyph %.30s must be less than 127"
 msgstr "Die Dickte der Glyphe %.30s muss kleiner sein als 127"
 
+msgid "Adyghe"
+msgstr "Adygeisch"
+
 msgid "Afm Save Failed"
 msgstr "Speichern von AFM fehlgeschlagen"
 
@@ -1800,6 +1803,9 @@ msgstr "Arabisch rechts nach links"
 msgid "Arabic Supplement"
 msgstr "Arabisch Ergänzung"
 
+msgid "Aragonese"
+msgstr "Aragonesisch"
+
 msgid "Archives"
 msgstr "Archive"
 
@@ -1843,6 +1849,12 @@ msgstr "Bist du sicher, dass du diese Glyphen löschen möchtest? Dieser Vorgang
 msgid "Armenian"
 msgstr "Armenisch"
 
+msgid "Aromanian"
+msgstr "Aromunisch"
+
+msgid "Arpitan"
+msgstr "Frankoprovenzalisch"
+
 msgid "Arrow Options"
 msgstr "Pfeil Optionen"
 
@@ -1878,6 +1890,9 @@ msgstr "Seitenverhältnis wie bei Kachel-Glyphe"
 
 msgid "Assamese"
 msgstr "Assamesisch"
+
+msgid "Asturian"
+msgstr "Asturisch"
 
 msgid "At End"
 msgstr "Am Ende"
@@ -2092,6 +2107,9 @@ msgstr "Achsenhöhe:"
 
 msgid "AxisValue|Default"
 msgstr "Standard"
+
+msgid "Azerbaijani"
+msgstr "Aserbaidschanisch"
 
 msgid "BB"
 msgstr "Begrenzungsrahmen"
@@ -2668,6 +2686,12 @@ msgstr "Balinesisch"
 msgid "Ball (Round Cap)"
 msgstr "Kugelschriber (runde Spitze)"
 
+msgid "Baluchi"
+msgstr "Belutschisch"
+
+msgid "Bamum"
+msgstr "Bamun"
+
 msgid "Bamum Supplement"
 msgstr "Bamum Ergänzung"
 
@@ -2719,6 +2743,9 @@ msgstr "Grundlinie für latinischen, griechischen, kyrillischen Text."
 msgid "Bases"
 msgstr "Grundzeichen"
 
+msgid "Bashkir"
+msgstr "Baschkirisch"
+
 msgid "Basic Latin"
 msgstr "Lateinische Grundzeichen"
 
@@ -2727,6 +2754,12 @@ msgstr "Mehrsprachige Grund-Tafel"
 
 msgid "Basque"
 msgstr "Baskisch"
+
+msgid "Bassa Vah"
+msgstr "Bassa"
+
+msgid "Bavarian"
+msgstr "Bairisch"
 
 msgid "Be_vel"
 msgstr "_Stumpf"
@@ -2742,6 +2775,9 @@ msgstr "Akzent unter dem Grundzeichen"
 
 msgid "Below Base Substitutions"
 msgstr "Substitutionen unter dem Grundzeichen"
+
+msgid "Bhojpuri"
+msgstr "Bhodschpuri"
 
 #. GT: I don't really understand these "Big Op Space" things. They have
 #. GT: something to do with TeX and are roughly defined a few strings down
@@ -2837,9 +2873,6 @@ msgstr "BlueValues"
 
 msgid "BlueValues come in pairs. Select another."
 msgstr "BlueValues kommen in Paaren. Wähle einen anderen Wert."
-
-msgid "Blues"
-msgstr "Blue Werte"
 
 msgid "Bold"
 msgstr "Fett"
@@ -2987,6 +3020,9 @@ msgstr "Bulgarisch"
 
 msgid "Bump Size"
 msgstr "Größe der Beule"
+
+msgid "Burmese"
+msgstr "Birmanisch"
 
 msgid "Button"
 msgstr "Schaltfläche"
@@ -3148,6 +3184,9 @@ msgstr "_Angepasst"
 msgid "Ca_pital Height:"
 msgstr "_Versal-Höhe:"
 
+msgid "Cajun French"
+msgstr "Cajun"
+
 msgid "Call Script"
 msgstr "Skript aufrufen"
 
@@ -3277,6 +3316,9 @@ msgstr "Versalien in kleine Kapitälchen"
 msgid "Capitals to Small Capitals"
 msgstr "Versalien in Kapitälchen"
 
+msgid "Carian"
+msgstr "Karisch"
+
 msgid "Cartoon"
 msgstr "Gezeichnet"
 
@@ -3285,6 +3327,9 @@ msgstr "Formen abhängig von Groß-/Kleinschreibung"
 
 msgid "Catalan"
 msgstr "Katalanisch"
+
+msgid "Caucasian Albanian"
+msgstr "Kaukasisch-Albanisch"
 
 msgid "Center Bet_ween Control Points"
 msgstr "Zwischen Kontrollpunkten zentrieren"
@@ -3300,6 +3345,9 @@ msgstr "Zentriert"
 
 msgid "Centered CJK Punctuation"
 msgstr "Zentrierte CJK-Satzzeichen"
+
+msgid "Central Yupik"
+msgstr "Zentral-Alaska-Yupik"
 
 msgid "Chaining Positioning"
 msgstr "Ketten-Positionierung"
@@ -3684,6 +3732,9 @@ msgstr "Zeichenvariante 99"
 msgid "Charsets"
 msgstr "Zeichensätze"
 
+msgid "Chechen"
+msgstr "Tschetschenisch"
+
 msgid "Check Advance:"
 msgstr "Dickten prüfen:"
 
@@ -3754,6 +3805,9 @@ msgstr ""
 msgid "Chess Symbols"
 msgstr "Schach-Symbole"
 
+msgid "Chiga"
+msgstr "Rukiga"
+
 msgid "Chinese (Hong Kong)"
 msgstr "Chinesisch (Hong Kong)"
 
@@ -3777,6 +3831,12 @@ msgstr "Wähle die entsprechende Methode aus, je nach Schriftsystem der Glyphe"
 
 msgid "Choose which lookups to copy"
 msgstr "Wählen welche Nachschlagetabellen kopiert werden sollen"
+
+msgid "Chuukese"
+msgstr "Chuukesisch"
+
+msgid "Chuvash"
+msgstr "Tschuwaschisch"
 
 msgid "Clarendon Serifs"
 msgstr "4 – Clarendon Serifen"
@@ -4003,6 +4063,9 @@ msgstr "Gewöhnliche indische Nummernformen"
 
 msgid "Common Number Separator"
 msgstr "Gewöhnliche Nummer Trennzeichen"
+
+msgid "Comorian"
+msgstr "Komorisch"
 
 msgid "Compact"
 msgstr "Kompakt"
@@ -4263,6 +4326,9 @@ msgstr "Korr.:"
 msgid "Corner"
 msgstr "Ecke"
 
+msgid "Cornish"
+msgstr "Kornisch"
+
 msgid "Correct Direction"
 msgstr "Richtung korrigieren"
 
@@ -4289,6 +4355,9 @@ msgstr ""
 "Korrektur der horizontalen Positionierung dieses Ankerpunkts in Pixeln\n"
 "bei der Rasterisierung in der angegebenen Pixelgröße.\n"
 "(Wird in einer Gerätetabelle eingetragen)"
+
+msgid "Corsican"
+msgstr "Korsisch"
 
 msgid "Cou_nter Clockwise"
 msgstr "_linksherum"
@@ -4484,6 +4553,9 @@ msgstr "Erstelle Kapitälche-Varianten sowohl für Buchstaben, als auch für Sym
 msgid "Creation Date:"
 msgstr "Erstellungsdatum:"
 
+msgid "Crimean Tatar"
+msgstr "Krimtatarisch"
+
 msgid "Croatian"
 msgstr "Kroatisch"
 
@@ -4600,6 +4672,9 @@ msgstr "Zypriotische Silbenschrift"
 msgid "Cypriot syllabary"
 msgstr "Zypriotische Silbenschrift"
 
+msgid "Cypro-Minoan"
+msgstr "Minoisch"
+
 msgid "Cyrillic"
 msgstr "Kyrillisch"
 
@@ -4632,6 +4707,9 @@ msgstr "Gruppen def_inieren …"
 
 msgid "Danish"
 msgstr "Dänisch"
+
+msgid "Dargwa"
+msgstr "Darginisch"
 
 msgid "Darker Border:"
 msgstr "Dunklerer Rahmen:"
@@ -5026,6 +5104,9 @@ msgstr "Abstand zur Zeichnungsebene:"
 msgid "Distance to projection plane:"
 msgstr "Abstand zur Projektionsebene:"
 
+msgid "Divehi"
+msgstr "Dhivehi"
+
 msgid "Diverse Arms"
 msgstr "Verschiedene Arme"
 
@@ -5269,6 +5350,9 @@ msgstr ""
 "Zusätzlicher Raum, der nach einem Satz hinzugefügt werden soll\n"
 "oder der Raum, der in Mathematikformeln verwendet werden soll"
 
+msgid "Elbasan"
+msgstr "Elbasanisch"
+
 msgid "Elements in BlueValues/OtherBlues array are disordered."
 msgstr "Elemente in der BlueValues/OtherBlues Reihe sind nicht in der richtigen Reihenfolge."
 
@@ -5289,6 +5373,9 @@ msgstr "Elemente in der FamilyBlues/FamilyOtherBlues Reihe sind zu nah (ändere 
 
 msgid "Ellipse"
 msgstr "Ellipse"
+
+msgid "Elymaic"
+msgstr "Elymäisch"
 
 msgid "Em Units"
 msgstr "Geviert-Einheiten"
@@ -5497,6 +5584,9 @@ msgstr "Fehler: falsches Format"
 
 msgid "Errors detected"
 msgstr "Fehler gefunden"
+
+msgid "Erzya"
+msgstr "Ersja-Mordwinisch"
 
 msgid "Estonian"
 msgstr "Estnisch"
@@ -5882,6 +5972,12 @@ msgstr "Family Blue Farbe"
 msgid "FamilyBl_ues"
 msgstr "FamilyBl_ues"
 
+msgid "Fang"
+msgstr "Pangwe"
+
+msgid "Faroese"
+msgstr "Färöisch"
+
 msgid "Faroese (Icelandic)"
 msgstr "Färöisch (Isländisch)"
 
@@ -5927,6 +6023,9 @@ msgstr "Fü_llen"
 
 msgid "Figure out flex hints after every change"
 msgstr "Finde Flex Hints nach jeder Änderung"
+
+msgid "Fijian"
+msgstr "Fidschi"
 
 msgid "File Exists"
 msgstr "Datei existiert"
@@ -6355,6 +6454,9 @@ msgstr "Französisch Schweiz"
 msgid "Friendly Name"
 msgstr "Freundlicher Name"
 
+msgid "Friulian"
+msgstr "Friaulisch"
+
 msgid "From the _other class"
 msgstr "V_on der anderen Klasse"
 
@@ -6432,6 +6534,9 @@ msgstr "G_2"
 
 msgid "G_4"
 msgstr "G_4"
+
+msgid "Gagauz"
+msgstr "Gagausisch"
 
 msgid "Galician"
 msgstr "Galicisch"
@@ -6934,6 +7039,9 @@ msgstr "Gruppenname:"
 msgid "Groups"
 msgstr "Gruppen"
 
+msgid "Guarani"
+msgstr "Guaraní"
+
 msgid "Guess"
 msgstr "Schätzen"
 
@@ -7004,8 +7112,17 @@ msgstr "Krümmungen werden harmonisiert …"
 msgid "Has _Vertical Metrics"
 msgstr "Enthält _vertikale Metriken"
 
+msgid "Hatran"
+msgstr "Hatranisch"
+
+msgid "Hausa"
+msgstr "Haussa"
+
 msgid "Have the measure tool show horizontal and vertical distances on the canvas."
 msgstr "Das Messwerkzeug zeigt horizontale und vertikale Entfernungen auf der Leinwand."
+
+msgid "Hawaiian"
+msgstr "Hawaiisch"
 
 msgid "Heavy"
 msgstr "Kräftig"
@@ -7100,6 +7217,9 @@ msgstr "Hiragana"
 msgid "Hiragana & Katakana"
 msgstr "Hiragana & Katakana"
 
+msgid "Hiri Motu"
+msgstr "Hiri-Motu"
+
 msgid "Histogram Dialog"
 msgstr "Histogramm Dialog"
 
@@ -7141,6 +7261,9 @@ msgstr "Hmm, diese 'fvar' Tabelle enthällt zu wenige Paare für Anzahl/Größe,
 
 msgid "Hmm, this 'fvar' table is too short"
 msgstr "Hmm, diese 'fvar' Tabelle ist zu kurz"
+
+msgid "Hmong"
+msgstr "Miao"
 
 msgid "Hojo (JIS X 0212-1990) Kanji Forms"
 msgstr "Hojo (JIS X 0212-1990) Kanji Formen"
@@ -7473,6 +7596,9 @@ msgstr "Bild anstatt Optionsfeld An"
 msgid "Image used instead of the Radio On Mark (when the radio is disabled)"
 msgstr "Bild anstatt Optionsfeld An (wenn das Feld deaktiviert ist)"
 
+msgid "Imperial Aramaic"
+msgstr "Aramäisch"
+
 msgid "Implied Topology"
 msgstr "Implizierte Topologie"
 
@@ -7554,6 +7680,9 @@ msgstr ""
 msgid "In_line..."
 msgstr "_Innenkontur …"
 
+msgid "Inari Sami"
+msgstr "Inari-Samisch"
+
 msgid "Include Empty Blocks"
 msgstr "Leere Blöcke einschließen"
 
@@ -7612,6 +7741,9 @@ msgstr "Indonesisch"
 msgid "Industry Specific"
 msgstr "Industriespezifisch"
 
+msgid "Ingush"
+msgstr "Inguschisch"
+
 msgid "Inherit"
 msgstr "Erben"
 
@@ -7644,6 +7776,12 @@ msgstr "Erstelle Glyphen mit Innenkonturen"
 
 msgid "Inner Border:"
 msgstr "Innerer Rahmen:"
+
+msgid "Inscriptional Pahlavi"
+msgstr "Buch-Pahlavi"
+
+msgid "Inscriptional Parthian"
+msgstr "Parthisch"
 
 msgid "Inse_rt Point On Spline At..."
 msgstr "Punkt auf Ku_rve einfügen bei …"
@@ -7926,6 +8064,15 @@ msgstr "KOI8-R (Kyrillisch)"
 msgid "KSC 5601-1987 (Korean)"
 msgstr "KSC 5601-1987 (Koreanisch)"
 
+msgid "Kabardian"
+msgstr "Kabardinisch"
+
+msgid "Kabyle"
+msgstr "Kabylisch"
+
+msgid "Kalmyk"
+msgstr "Kalmückisch"
+
 msgid "Kana Extended-A"
 msgstr "Kana Erweiterung-A"
 
@@ -7934,6 +8081,15 @@ msgstr "Kana Ergänzung"
 
 msgid "Kangxi Radicals"
 msgstr "Kangxi Radikale"
+
+msgid "Karelian"
+msgstr "Karelisch"
+
+msgid "Kashmiri"
+msgstr "Kaschmiri"
+
+msgid "Kashubian"
+msgstr "Kaschubisch"
 
 msgid "Katakana"
 msgstr "Katakana"
@@ -8035,11 +8191,29 @@ msgstr "Khutsuri Georgisch"
 msgid "Kirghiz"
 msgstr "Kirgisisch"
 
+msgid "Komi-Permyak"
+msgstr "Komi-Permjakisch"
+
+msgid "Kongo"
+msgstr "Kongolesisch"
+
 msgid "Korean"
 msgstr "Koreanisch"
 
+msgid "Kosraean"
+msgstr "Kosraeanisch"
+
+msgid "Kuanyama"
+msgstr "Kwanyama"
+
+msgid "Kumyk"
+msgstr "Kumükisch"
+
 msgid "Kurdish"
 msgstr "Kurdisch"
+
+msgid "Kurukh"
+msgstr "Oraon"
 
 msgid "LBearing:"
 msgstr "Vorbreite:"
@@ -8062,6 +8236,9 @@ msgstr "Beschriftung"
 msgid "Label Gl_yph By"
 msgstr "Gl_yphen-Beschriftung mit"
 
+msgid "Ladin"
+msgstr "Ladinisch"
+
 msgid "Language"
 msgstr "Sprache"
 
@@ -8077,14 +8254,27 @@ msgstr "Sprache(n)"
 msgid "Language|New"
 msgstr "Neu"
 
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Malayalam", ignore "Lang|"
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Amharic", ignore "Lang|"
+msgid "Lang|Amharic"
+msgstr "Amharisch"
+
 msgid "Lang|Arabic"
 msgstr "Arabisch"
 
 msgid "Lang|Armenian"
 msgstr "Armenisch"
 
+msgid "Lang|Balinese"
+msgstr "Balinesisch"
+
 msgid "Lang|Bengali"
 msgstr "Bengalisch"
+
+msgid "Lang|Cherokee"
+msgstr "Cherokee"
 
 msgid "Lang|Coptic"
 msgstr "Koptisch"
@@ -8105,11 +8295,65 @@ msgstr "Georgisch"
 msgid "Lang|Greek"
 msgstr "Griechisch"
 
+msgid "Lang|Gujarati"
+msgstr "Gujarati"
+
 msgid "Lang|Hebrew"
 msgstr "Hebräisch"
 
+msgid "Lang|Javanese"
+msgstr "Javanisch"
+
+msgid "Lang|Kannada"
+msgstr "Kannada"
+
+msgid "Lang|Khmer"
+msgstr "Khmer"
+
+msgid "Lang|Lao"
+msgstr "Laotisch"
+
+msgid "Lang|Latin"
+msgstr "Latein"
+
+msgid "Lang|Makasar"
+msgstr "Makassarisch"
+
+msgid "Lang|Manchu"
+msgstr "Mandschurisch"
+
+msgid "Lang|Mongolian"
+msgstr "Mongolisch"
+
+msgid "Lang|Odia"
+msgstr "Oriya"
+
+msgid "Lang|Persian"
+msgstr "Persisch"
+
+msgid "Lang|Sinhala"
+msgstr "Singhalesisch"
+
+msgid "Lang|Sundanese"
+msgstr "Sundanesisch"
+
+msgid "Lang|Syriac"
+msgstr "Syrisch"
+
+msgid "Lang|Tagalog"
+msgstr "Tagalog"
+
+msgid "Lang|Tamil"
+msgstr "Tamil"
+
+msgid "Lang|Telugu"
+msgstr "Telugu"
+
 msgid "Lang|Thai"
 msgstr "Thailändisch"
+
+msgid "Lang|Tibetan"
+msgstr "Tibetisch"
 
 msgid "Last Anchor Point"
 msgstr "Letzter Ankerpunkt"
@@ -8171,6 +8415,9 @@ msgstr "Hintere Ebene"
 
 msgid "Layer|Foreground"
 msgstr "Vordere Ebene"
+
+msgid "Laz"
+msgstr "Lasisch"
 
 msgid "Leading Jamo Forms"
 msgstr "Führende Jamo-Formen"
@@ -8297,6 +8544,12 @@ msgstr "Leicht"
 msgid "Light Angle:"
 msgstr "Lichtwinkel:"
 
+msgid "Ligurian"
+msgstr "Ligurisch"
+
+msgid "Limburgish"
+msgstr "Limburgisch"
+
 msgid ""
 "Limit the font so that only the glyphs referenced in the first 256 encodings\n"
 "will be included in the file"
@@ -8404,6 +8657,9 @@ msgstr "Logisches „und“ mit Auswahl"
 
 msgid "Logos"
 msgstr "Logos"
+
+msgid "Lombard"
+msgstr "Lombardisch"
 
 msgid "Lombardic Forms"
 msgstr "Lombardische Formen"
@@ -8528,6 +8784,9 @@ msgstr "Schleifenanzahl"
 msgid "Low"
 msgstr "Niedrig"
 
+msgid "Low Saxon"
+msgstr "Niedersächsisch"
+
 msgid "Lower Case"
 msgstr "Kleinbuchstaben"
 
@@ -8546,8 +8805,20 @@ msgstr "Gemeine in kleine Kapitälchen"
 msgid "Lowercase to Small Capitals"
 msgstr "Gemeine in Kapitälchen"
 
+msgid "Lule Sami"
+msgstr "Lule-Samisch"
+
 msgid "Luxembourgish"
 msgstr "Luxemburgisch"
+
+msgid "Luyia"
+msgstr "Luhya"
+
+msgid "Lycian"
+msgstr "Lykisch"
+
+msgid "Lydian"
+msgstr "Lydisch"
 
 msgid "MATH table"
 msgstr "MATH Tabelle"
@@ -8682,6 +8953,9 @@ msgstr "Macintosh Lateinisch"
 msgid "Mag:"
 msgstr "Vergr.:"
 
+msgid "Magahi"
+msgstr "Khotta"
+
 msgid "Magnification:"
 msgstr "Vergrößerung:"
 
@@ -8733,8 +9007,23 @@ msgstr ""
 msgid "Make the counters narrower"
 msgstr "Verengere die Punzen"
 
+msgid "Makhuwa"
+msgstr "Makua"
+
+msgid "Malay"
+msgstr "Malaiisch"
+
 msgid "Maltese"
 msgstr "Maltesisch"
+
+msgid "Mandar"
+msgstr "Mandaresisch"
+
+msgid "Manichaean"
+msgstr "Manichäisch"
+
+msgid "Manipuri"
+msgstr "Meithei"
 
 msgid "Manufacturer"
 msgstr "Hersteller"
@@ -8866,6 +9155,12 @@ msgstr ""
 "Akzente innerhalb einer Ligatur sollten in der Reihenfolge der Schreibrichtung sein.\n"
 "Dieser und %d sind es nicht."
 
+msgid "Marshallese"
+msgstr "Marschallesisch"
+
+msgid "Masaram Gondi"
+msgstr "Masaram-Gondi"
+
 msgid "Mass Glyph Rename"
 msgstr "Massen-Umbenennung von Glyphen"
 
@@ -8976,6 +9271,9 @@ msgstr ""
 "Maximale Höhe der tiefgestellten Elemente, bei denen\n"
 "es nicht erforderlich ist, sie tiefer zu stellen."
 
+msgid "Mazanderani"
+msgstr "Masanderanisch"
+
 msgid "Measure Tool Windows Background Color"
 msgstr "Messwerkzeug Fenster Hintergrundfarbe"
 
@@ -9051,6 +9349,9 @@ msgstr "Problem beim Zusammenführen"
 
 msgid "Merging a font with itself achieves nothing"
 msgstr "Eine Schrift mit sich selbst zusammenzuführen, bringt nichts"
+
+msgid "Meroitic Cursive"
+msgstr "Meroitisch kursiv"
 
 msgid "MetaFont exited with an error"
 msgstr "MetaFont wurde mit einem Fehler beendet"
@@ -9228,6 +9529,9 @@ msgstr "Nebena_chse:"
 msgid "Minor:"
 msgstr "Unterversion:"
 
+msgid "Mirandese"
+msgstr "Mirandesisch"
+
 msgid "Misc."
 msgstr "Verschiedenes"
 
@@ -9352,6 +9656,9 @@ msgstr "Fehlender Suffix"
 msgid "Mixed contours and references"
 msgstr "Gemischte Konturen und Referenzen"
 
+msgid "Mizo"
+msgstr "Lushai"
+
 msgid "Modern"
 msgstr "Klassizistische Antiqua"
 
@@ -9364,6 +9671,9 @@ msgstr "Modi: "
 
 msgid "Modification Date:"
 msgstr "Änderungsdatum:"
+
+msgid "Moksha"
+msgstr "Mokschanisch"
 
 msgid "Moldavian"
 msgstr "Moldauisch"
@@ -9474,6 +9784,9 @@ msgstr "Schriftart mit mehrfacher Dichte"
 msgid "MultipleEncodingIgnored"
 msgstr "Mehrfache Kodierung ignoriert"
 
+msgid "Muscogee"
+msgstr "Muskogee"
+
 msgid "Music"
 msgstr "Musik"
 
@@ -9512,6 +9825,9 @@ msgstr "Int_erpoliere nie"
 
 msgid "N_umber Points"
 msgstr "Punkte n_ummerieren"
+
+msgid "Nabataean"
+msgstr "Nabatäisch"
 
 msgid "Name"
 msgstr "Name"
@@ -9601,6 +9917,9 @@ msgstr "Navigation"
 
 msgid "Ne_xt Control Point"
 msgstr "Nä_chster Kontrollpunkt"
+
+msgid "Neapolitan"
+msgstr "Neapolitanisch"
 
 msgid "Near"
 msgstr "Nahe"
@@ -9715,6 +10034,9 @@ msgstr "Neue Untergruppe"
 msgid "New Substitution Variant"
 msgstr "Neue Substitutions-Variante"
 
+msgid "New Tai Lue"
+msgstr "Tai Lue"
+
 msgid "New _Bitmap Window"
 msgstr "Neues _Bitmapfenster"
 
@@ -9769,6 +10091,9 @@ msgstr "Nächstes _definiertes Zeichen"
 
 msgid "Next _Line in Word List"
 msgstr "Nächste Zeile in Wort-_Liste"
+
+msgid "Niuean"
+msgstr "Niue"
 
 #, c-format
 msgid "No (useable) bitmap strikes in this TTF font: %s"
@@ -10182,6 +10507,12 @@ msgstr ""
 "direkt berühren. Wenn du einen Weißraum zwischen\n"
 "den Kacheln möchtest, setze dieses Zeichen"
 
+msgid "Northern Sami"
+msgstr "Nordsamisch"
+
+msgid "Northern Sotho"
+msgstr "Nord-Sotho"
+
 msgid "Norwegian"
 msgstr "Norwegisch"
 
@@ -10189,6 +10520,9 @@ msgid "Norwegian (Bokmal)"
 msgstr "Norwegisch (Bokmal)"
 
 msgid "Norwegian (Nynorsk)"
+msgstr "Norwegisch (Nynorsk)"
+
+msgid "Norwegian Nynorsk"
 msgstr "Norwegisch (Nynorsk)"
 
 msgid "Not ASCII"
@@ -10473,6 +10807,9 @@ msgstr "Angeschrägt serifenlos"
 msgid "Obtuse Square Cove"
 msgstr "Schräg eckig rund"
 
+msgid "Occitan"
+msgstr "Okzitanisch"
+
 msgid "Odd number of elements in BlueValues/OtherBlues array."
 msgstr "Ungerade Elementenanzahl in der BlueValues/OtherBlues Reihe."
 
@@ -10501,11 +10838,17 @@ msgstr "Speichern von OFM fehlgeschlagen"
 msgid "Old Hungarian"
 msgstr "Alt-Ungarisch"
 
+msgid "Old Irish"
+msgstr "Altirisch"
+
 msgid "Old North Arabian"
 msgstr "Altes Nordarabisch"
 
 msgid "Old Persian cuneiform"
 msgstr "Altpersische Keilschrift"
+
+msgid "Old Sogdian"
+msgstr "Alt-Sogdisch"
 
 msgid "Old South Arabian"
 msgstr "Altes Südarabisch"
@@ -10518,6 +10861,9 @@ msgstr "1 – Renaissance-Antiqua Serifen"
 
 msgid "Old Turkic"
 msgstr "Alttürkisch"
+
+msgid "Old Uyghur"
+msgstr "Altuigurisch"
 
 msgid "Old sfd file"
 msgstr "Alte sfd-Datei"
@@ -10744,6 +11090,9 @@ msgstr "Verziert"
 msgid "Ornaments"
 msgstr "Ornamente"
 
+msgid "Osmanya"
+msgstr "Osmanisch"
+
 msgid "Other ..."
 msgstr "Andere …"
 
@@ -10936,11 +11285,17 @@ msgstr "Paarweise Positionierung"
 msgid "Pairwise Positioning (kerning)"
 msgstr "Paarweise Positionierung (Unterschneidung)"
 
+msgid "Palauan"
+msgstr "Palau"
+
 msgid "Pale_ttes"
 msgstr "Pale_tten"
 
 msgid "Palm OS Bitmap"
 msgstr "Palm OS Bitmap"
+
+msgid "Palmyrene"
+msgstr "Palmyrenisch"
 
 msgid "Panose"
 msgstr "Panose"
@@ -11276,6 +11631,9 @@ msgstr "Geneigte Feder"
 msgid "Pen _Angle:"
 msgstr "Feder-_Winkel:"
 
+msgid "Pennsylvania German"
+msgstr "Pennsylvaniadeutsch"
+
 msgid "Per glyph baseline data"
 msgstr "Grundlinien-Daten pro Glyphe"
 
@@ -11308,6 +11666,9 @@ msgstr "Phonetische Erweiterungen"
 
 msgid "Phonetic Extensions Supplement"
 msgstr "Phonetische Erweiterungen, Ergänzung"
+
+msgid "Picard"
+msgstr "Picardisch"
 
 msgid "Pick a CMap subtable"
 msgstr "Wähle eine CMap Subtabelle"
@@ -11398,6 +11759,9 @@ msgstr "Gib eine neue Ergänzung an, für %.20s-%.20s"
 
 msgid "Please specify a script"
 msgstr "Gebe ein Schriftsystem an"
+
+msgid "Pohnpeian"
+msgstr "Ponapeanisch"
 
 msgid "Poin_ts too close"
 msgstr "Punk_te zu nah"
@@ -11758,6 +12122,9 @@ msgstr "Nähe"
 msgid "Proximity:"
 msgstr "Nähe:"
 
+msgid "Psalter Pahlavi"
+msgstr "Psalter-Pahlavi"
+
 msgid "Push Current Glyph"
 msgstr "Aktuelle Glyphe schieben"
 
@@ -11853,6 +12220,9 @@ msgstr "Schnell/Horizontal"
 
 msgid "Rapid/Vertical"
 msgstr "Schnell/Vertikal"
+
+msgid "Rarotongan"
+msgstr "Rarotonganisch"
 
 msgid "Raster"
 msgstr "Raster"
@@ -12423,6 +12793,9 @@ msgstr "Rechts nach links gespiegelte Formen"
 msgid "Ro_und"
 msgstr "Abger_undet"
 
+msgid "Rohingya"
+msgstr "Rohingyalisch"
+
 msgid "Roman Connected"
 msgstr "Aufrechter Stil verbunden"
 
@@ -12434,6 +12807,12 @@ msgstr "Aufrechter Stil mit Verbindungsstrich"
 
 msgid "Romanian"
 msgstr "Rumänisch"
+
+msgid "Romansh"
+msgstr "Rätoromanisch"
+
+msgid "Romany"
+msgstr "Romani"
 
 msgid "Rotate"
 msgstr "Drehen"
@@ -12485,6 +12864,9 @@ msgstr "Drehung um X-Axis"
 msgid "Rotation about Y Axis"
 msgstr "Drehung um Y-Axis"
 
+msgid "Rotuman"
+msgstr "Rotumanisch"
+
 msgid "Rough"
 msgstr "Grob"
 
@@ -12528,8 +12910,14 @@ msgstr "Regelfarbe"
 msgid "Ruler Options"
 msgstr "Lineal Optionen"
 
+msgid "Runic"
+msgstr "Runenschrift"
+
 msgid "Russian"
 msgstr "Russisch"
+
+msgid "Rusyn"
+msgstr "Russinisch"
 
 msgid "S Brush Joined"
 msgstr "10.2 – Pinsel verbunden"
@@ -12621,6 +13009,12 @@ msgstr "Gelich wie Übereinstimmungs-Klassen"
 msgid "Same as PostScript Names"
 msgstr "Wie PostScript-Name"
 
+msgid "Samoan"
+msgstr "Samoanisch"
+
+msgid "Samogitian"
+msgstr "Samogitisch"
+
 msgid "Sample Text"
 msgstr "Beispieltext"
 
@@ -12656,6 +13050,12 @@ msgstr "8.9 – Schreibmaschine linear"
 
 msgid "Sanskrit"
 msgstr "Sanskrit"
+
+msgid "Sardinian"
+msgstr "Sardisch"
+
+msgid "Saterland Frisian"
+msgstr "Saterfriesisch"
 
 msgid "Saturation:"
 msgstr "Sättigung:"
@@ -12832,6 +13232,12 @@ msgstr "Wissenschaftlich"
 msgid "Scientific Inferiors"
 msgstr "Wissenschaftliche Indices"
 
+msgid "Scots"
+msgstr "Schottisch"
+
+msgid "Scottish Gaelic"
+msgstr "Gälisch (Schottland)"
+
 #, c-format
 msgid "Script '%c%c%c%c' "
 msgstr "Schriftsystem '%c%c%c%c' "
@@ -12913,6 +13319,9 @@ msgstr "Cham"
 
 msgid "Script|Cherokee"
 msgstr "Cherokee"
+
+msgid "Script|Chorasmian"
+msgstr "Choresmisch"
 
 msgid "Script|Coptic"
 msgstr "Koptisch"
@@ -13071,6 +13480,12 @@ msgstr "Ugaritisch"
 
 msgid "Script|Vai"
 msgstr "Vai"
+
+msgid "Script|Wancho"
+msgstr "Wancho"
+
+msgid "Script|Yezidi"
+msgstr "Jesidisch"
 
 msgid "Script|Yi"
 msgstr "Yi"
@@ -13320,6 +13735,9 @@ msgstr "Selbstverweisendes Zeichen"
 msgid "Self-referential glyph"
 msgstr "Selbstverweisende Glyphe"
 
+msgid "Selkup"
+msgstr "Selkupisch"
+
 msgid "Semi-Condensed (87.5%)"
 msgstr "Halb-Schmal (87.5%)"
 
@@ -13527,6 +13945,9 @@ msgstr "Schattenlänge:"
 msgid "Shadowing glyphs"
 msgstr "Erstelle Glyphen mit Schatten"
 
+msgid "Shan"
+msgstr "Schan"
+
 msgid "Shape Type"
 msgstr "Form-Art"
 
@@ -13544,6 +13965,9 @@ msgstr "Spitz/keine Schleifen"
 
 msgid "Sharp/Open Loops"
 msgstr "Spitz/offene Schleifen"
+
+msgid "Shavian"
+msgstr "Shaw-Alphabet"
 
 msgid "Shift Contents To _First"
 msgstr "Verschiebe Inhalt auf _erste"
@@ -13633,6 +14057,9 @@ msgstr "Zusammenklappen Max Nachschlagetabelle"
 msgid "Shrink:"
 msgstr "Verringert:"
 
+msgid "Sicilian"
+msgstr "Sizilianisch"
+
 msgid "Side Bearing Addition"
 msgstr "Vor- und Nachbreite vergrößern"
 
@@ -13644,6 +14071,9 @@ msgstr "Vor- und Nachbreite Erweiterungsfaktor"
 
 msgid "Side Bearings:"
 msgstr "Vor- und Nachbreiten:"
+
+msgid "Silesian"
+msgstr "Schlesisch (Wasserpolnisch)"
 
 msgid "Simple"
 msgstr "Einfach"
@@ -13764,6 +14194,9 @@ msgstr "Überspringen der Gruppe %s mit dem selben Namen wie eine Glyphe."
 msgid "Skipping non-existent glyph %s in group %s."
 msgstr "Überspringen nicht-vorhandener Glyphe %s in Gruppe %s."
 
+msgid "Skolt Sami"
+msgstr "Skolt-Samisch"
+
 msgid "Slab Serifs"
 msgstr "5 – Serifenbetont"
 
@@ -13829,6 +14262,9 @@ msgid ""
 "The second \"B.suffix\", and so on."
 msgstr "Wenn du hier „A“ eingibst, dann bekommt die erste ausgewählte Glyphe den Namen „A.suffix“. Die zweite „B.suffix“ und so weiter."
 
+msgid "Sogdian"
+msgstr "Sogdisch"
+
 msgid "Some versions of Windows will refuse to install postscript fonts if the familyname is longer than 31 characters. Do you want to continue anyway?"
 msgstr "Einige Versionen von Windows werden es ablehnen, Postscript-Schriften zu installieren, wenn der Familienname länger als 31 Zeichen ist. Möchtest du trotzdem fortfahren?"
 
@@ -13878,6 +14314,15 @@ msgstr "Quelle Glyphen Namen"
 
 msgid "Source from which this design is to be taken"
 msgstr "Quelle, aus der dieses Design übernommen werden soll"
+
+msgid "Southern Sami"
+msgstr "Südsamisch"
+
+msgid "Southern Sotho"
+msgstr "Süd-Sotho"
+
+msgid "Soyombo"
+msgstr "Sojombo"
 
 msgid "Space Regions"
 msgstr "Regionen verteilen"
@@ -14077,6 +14522,9 @@ msgstr "Standard"
 
 msgid "Standard Ligatures"
 msgstr "Standard-Ligaturen"
+
+msgid "Standard Moroccan Tamazight"
+msgstr "Tamazight"
 
 msgid "Standard Solid Fill"
 msgstr "Standard Gefüllt"
@@ -14517,11 +14965,17 @@ msgstr "Ergänzender Bereich für private Nutzung-B"
 msgid "Supplementary Special-purpose Plane"
 msgstr "Ergänzende Spezial-Anwendung Tafel"
 
+msgid "Swahili"
+msgstr "Suaheli"
+
 msgid "Swash"
 msgstr "Schwungformen"
 
 msgid "Swash Variance"
 msgstr "Schwungformen Varianz"
+
+msgid "Swati"
+msgstr "Swazi"
 
 msgid "Swedish"
 msgstr "Schwedisch"
@@ -14659,6 +15113,9 @@ msgstr "Tabellen '%c%c%c%c' und '%c%c%c%c' überlappen sich"
 msgid "Tabular Numbers"
 msgstr "Tabellenziffern"
 
+msgid "Tachelhit"
+msgstr "Taschelhit"
+
 msgid "Tag must be 4 characters long"
 msgstr "Markierungselement muss 4 Buchstaben lang sein"
 
@@ -14671,14 +15128,29 @@ msgstr "Tagbanuwa"
 msgid "Tags"
 msgstr "Markierungselemente"
 
+msgid "Tahitian"
+msgstr "Tahitisch"
+
+msgid "Tai Viet"
+msgstr "Tai-Viet"
+
 msgid "Tajiki"
 msgstr "Tadschikisch"
+
+msgid "Talysh"
+msgstr "Talisch"
+
+msgid "Tamashek"
+msgstr "Tamaseq"
 
 msgid "Tamil"
 msgstr "Tamilisch"
 
 msgid "Tangent"
 msgstr "Tangente"
+
+msgid "Tangut"
+msgstr "Xixia"
 
 msgid "Tapered/Closed Loops"
 msgstr "Ausgedünnt/geschlossene Schleifen"
@@ -16347,6 +16819,12 @@ msgstr "Zu ihren eigenen Namen"
 msgid "To:"
 msgstr "Nach:"
 
+msgid "Tok Pisin"
+msgstr "Neumelanesisch"
+
+msgid "Tongan"
+msgstr "Tongaisch"
+
 msgid "Too Big"
 msgstr "Zu groß"
 
@@ -16616,6 +17094,9 @@ msgstr "Türkisch"
 msgid "Turkmen"
 msgstr "Turkmenisch"
 
+msgid "Tuvalu"
+msgstr "Tuvaluisch"
+
 msgid "Two cursive anchor classes"
 msgstr "Zwei kursive Ankerklassen"
 
@@ -16701,6 +17182,9 @@ msgstr "U+%04x"
 
 msgid "U_nlink Reference"
 msgstr "Referen_z trennen"
+
+msgid "Udmurt"
+msgstr "Udmurtisch"
 
 msgid "Ugaritic"
 msgstr "Ugaritisch"
@@ -17083,6 +17567,9 @@ msgstr "Großbuchstaben"
 msgid "Upper Case in Lower Case"
 msgstr "Großbuchstaben in Kleinbuchstaben"
 
+msgid "Upper Sorbian"
+msgstr "Obersorbisch"
+
 msgid "UpperLimitBaselineRiseMin:"
 msgstr "Obere Grenze Grundlinie anheben:"
 
@@ -17208,6 +17695,9 @@ msgstr "Benutzer steuert das Verfetten mit den nächsten beiden Feldern"
 msgid "Using the OFL for your open fonts"
 msgstr "Benutzt wird die OFL Lizenz für deine offenen Schriften"
 
+msgid "Uyghur"
+msgstr "Uigurisch"
+
 msgid "Uzbek"
 msgstr "Usbekisch"
 
@@ -17319,6 +17809,9 @@ msgstr "Lieferant-ID:"
 
 msgid "Vendor URL"
 msgstr "Lieferant URL"
+
+msgid "Venetian"
+msgstr "Venetisch"
 
 msgid "Version"
 msgstr "Version"
@@ -17477,6 +17970,9 @@ msgstr "_Weißraum-Glyphen"
 msgid "W_ithin Rectangle"
 msgstr "_Innerhalb des Rechtecks"
 
+msgid "Walloon"
+msgstr "Wallonisch"
+
 msgid "Wansung (Korean)"
 msgstr "Wansung (Koreanisch)"
 
@@ -17586,6 +18082,9 @@ msgstr ""
 "Alle ausgewählten Punkte beobachten\n"
 "(stoppe, wenn sich ein Punkt bewegt)"
 
+msgid "Wayuu"
+msgstr "Wayúu"
+
 msgid "We don't understand this font"
 msgstr "Wir verstehen diese Schriftart nicht"
 
@@ -17594,6 +18093,9 @@ msgstr "Nur Strichstärke, Laufweite, Neigung"
 
 msgid "Welsh"
 msgstr "Walisisch"
+
+msgid "Western Panjabi"
+msgstr "Lahnda"
 
 msgid "What is the pixel size of the font in this file?"
 msgstr "Welche Pixelgröße hat diese Schrift in dieser Datei?"
@@ -17977,6 +18479,9 @@ msgstr "Y nahe¹ _Standardhöhen"
 msgid "Y:"
 msgstr "Y:"
 
+msgid "Yapese"
+msgstr "Yapesisch"
+
 msgid "Yes"
 msgstr "Ja"
 
@@ -18196,6 +18701,9 @@ msgstr "Deine Version der Freetype-Bibliothek enthält nicht den Bytecode-Interp
 
 msgid "Z_oom out"
 msgstr "Herausz_oomen"
+
+msgid "Zanabazar Square"
+msgstr "Dsanabadsar-Quadratschrift"
 
 msgid "Zone:"
 msgstr "Zone:"

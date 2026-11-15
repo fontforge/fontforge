@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Thai\n"
 "Language: th_TH\n"
@@ -66,8 +66,26 @@ msgstr "<ระนาบไม่ได้กำหนดรหัส 8>"
 msgid "<Unassigned Plane 9>"
 msgstr "<ระนาบไม่ได้กำหนดรหัส 9>"
 
+msgid "Abkhazian"
+msgstr "อับฮาเซีย"
+
 msgid "Additional arguments for autotrace program:"
 msgstr "อาร์กิวเมนต์เพิ่มเติมสำหรับโปรแกรม autotrace:"
+
+msgid "Adlam"
+msgstr "อัดลัม"
+
+msgid "Adyghe"
+msgstr "อะดืยเก"
+
+msgid "Afar"
+msgstr "อะฟาร์"
+
+msgid "Afrikaans"
+msgstr "แอฟริกานส์"
+
+msgid "Akan"
+msgstr "อาคาน"
 
 msgid "Albanian"
 msgstr "แอลเบเนีย"
@@ -117,6 +135,9 @@ msgstr "รูปแบบการนำเสนอของอักษรอ
 msgid "Arabic Supplement"
 msgstr "อาหรับส่วนเสริม"
 
+msgid "Aragonese"
+msgstr "อารากอน"
+
 msgid "Archives"
 msgstr "การเก็บถาวร"
 
@@ -126,8 +147,20 @@ msgstr "คุณแน่ใจหรือไม่ว่าไม่ต้อ
 msgid "Armenian"
 msgstr "อาร์เมเนีย"
 
+msgid "Aromanian"
+msgstr "อาโรมาเนีย"
+
+msgid "Arpitan"
+msgstr "อาร์พิตา"
+
 msgid "Arrows"
 msgstr "ลูกศร"
+
+msgid "Assamese"
+msgstr "อัสสัม"
+
+msgid "Asturian"
+msgstr "อัสตูเรียส"
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
@@ -139,6 +172,15 @@ msgstr "ความล้มเหลวของ AutoWidth บน %s"
 
 msgid "Autotracing..."
 msgstr "กำลังออโต้เทรซ..."
+
+msgid "Awadhi"
+msgstr "อวธี"
+
+msgid "Aymara"
+msgstr "ไอย์มารา"
+
+msgid "Azerbaijani"
+msgstr "อาเซอร์ไบจาน"
 
 msgid "Backup SFD"
 msgstr "ไฟล์สำรอง SFD"
@@ -177,14 +219,53 @@ msgstr "เทมเพลตไม่ถูกต้อง มีรูปแ�
 msgid "Bad xfig file"
 msgstr "ไฟล์ xfig ไม่ถูกต้อง"
 
+msgid "Badaga"
+msgstr "พทคะ"
+
+msgid "Baluchi"
+msgstr "บาลูชิ"
+
+msgid "Bambara"
+msgstr "บัมบารา"
+
+msgid "Bamum"
+msgstr "บามุม"
+
+msgid "Bashkir"
+msgstr "บัชคีร์"
+
 msgid "Basic Latin"
 msgstr "ละตินพื้นฐาน"
 
 msgid "Basic Multilingual Plane"
 msgstr "ระนาบภาษาพื้นฐาน"
 
+msgid "Basque"
+msgstr "บาสก์"
+
+msgid "Bassa Vah"
+msgstr "บัสซา"
+
+msgid "Batak Toba"
+msgstr "บาตักโทบา"
+
+msgid "Bavarian"
+msgstr "บาวาเรีย"
+
+msgid "Bemba"
+msgstr "เบมบา"
+
 msgid "Bengali"
 msgstr "เบงกอล"
+
+msgid "Bhojpuri"
+msgstr "โภชปุรี"
+
+msgid "Bikol"
+msgstr "บิกอล"
+
+msgid "Bislama"
+msgstr "บิสลามา"
 
 msgid "Bitmap Fonts"
 msgstr "แบบอักษรบิตแมป"
@@ -192,14 +273,35 @@ msgstr "แบบอักษรบิตแมป"
 msgid "Block Elements"
 msgstr "องค์ประกอบของบล็อก"
 
+msgid "Bodo"
+msgstr "โพโฑ"
+
+msgid "Bopomofo"
+msgstr "ปอพอมอฟอ"
+
+msgid "Bosnian"
+msgstr "บอสเนีย"
+
 msgid "Box Drawing"
 msgstr "เส้นวาดกล่อง"
+
+msgid "Brahui"
+msgstr "บราฮุย"
+
+msgid "Braille"
+msgstr "เบรลล์"
+
+msgid "Breton"
+msgstr "เบรตัน"
 
 msgid "Buginese"
 msgstr "บูกิซ"
 
 msgid "Bulgarian"
 msgstr "บัลแกเรีย"
+
+msgid "Burmese"
+msgstr "พม่า"
 
 msgid "Byelorussian"
 msgstr "เบลารุส"
@@ -249,6 +351,9 @@ msgstr "อักษรภาพรวมของ CJK ส่วนขยาย 
 msgid "CJK Unified Ideographs Extension J"
 msgstr "อักษรภาพรวมของ CJK ส่วนขยาย J"
 
+msgid "Cajun French"
+msgstr "ฝรั่งเศสเคจัน"
+
 msgid "Can't create temporary directory"
 msgstr "ไม่สามารถสร้างไดเรกทอรีชั่วคราวได้"
 
@@ -289,8 +394,53 @@ msgstr "ไม่สามารถเรียกใช้ mf ได้"
 msgid "Cannot open file"
 msgstr "ไม่สามารถเปิดไฟล์ได้"
 
+msgid "Carian"
+msgstr "คาเรีย"
+
+msgid "Catalan"
+msgstr "คาตาลัน"
+
+msgid "Caucasian Albanian"
+msgstr "แอลเบเนีย คอเคเซีย"
+
+msgid "Cayuga"
+msgstr "คายูกา"
+
+msgid "Cebuano"
+msgstr "เซบู"
+
+msgid "Central Yupik"
+msgstr "ยูพิกกลาง"
+
+msgid "Chakma"
+msgstr "จักม่า"
+
+msgid "Chamorro"
+msgstr "ชามอร์โร"
+
+msgid "Chechen"
+msgstr "เชเชน"
+
 msgid "Chess Symbols"
 msgstr "สัญลักษณ์หมากรุก"
+
+msgid "Cheyenne"
+msgstr "เชเยนเน"
+
+msgid "Chiga"
+msgstr "คีกา"
+
+msgid "Chipewyan"
+msgstr "ชิพิวยัน"
+
+msgid "Choctaw"
+msgstr "ช็อกทอว์"
+
+msgid "Chuukese"
+msgstr "ชูก"
+
+msgid "Chuvash"
+msgstr "ชูวัช"
 
 msgid "Combining Diacritical Marks"
 msgstr "เครื่องหมายกำกับเสียงแบบประกอบ"
@@ -307,8 +457,17 @@ msgstr "เครื่องหมายกำกับเสียงแบบ
 msgid "Combining Half Marks"
 msgstr "เครื่องหมายรวมอักขระแบบครึ่ง"
 
+msgid "Comorian"
+msgstr "โคเมอเรีย"
+
 msgid "Coptic"
 msgstr "คอปติก"
+
+msgid "Cornish"
+msgstr "คอร์นิช"
+
+msgid "Corsican"
+msgstr "คอร์ซิกา"
 
 msgid "Could not read (or perhaps find) mf output file"
 msgstr "ไม่สามารถอ่าน (หรืออาจค้นหา) ไฟล์เอาต์พุต mf ได้"
@@ -323,6 +482,12 @@ msgstr "ไม่สามารถเปิดไฟล์"
 #, c-format
 msgid "Couldn't open file %.200s"
 msgstr "ไม่สามารถเปิดไฟล์ %.200s"
+
+msgid "Cree"
+msgstr "ครี"
+
+msgid "Crimean Tatar"
+msgstr "ตุรกีไครเมีย"
 
 msgid "Croatian"
 msgstr "โครเอเชีย"
@@ -360,6 +525,12 @@ msgstr "เช็ก"
 msgid "Danish"
 msgstr "เดนมาร์ก"
 
+msgid "Dargwa"
+msgstr "ดาร์กิน"
+
+msgid "Dari"
+msgstr "ดารี"
+
 msgid "Devanagari"
 msgstr "เทวนาครี"
 
@@ -372,8 +543,14 @@ msgstr "เทวนาครีส่วนขยาย A"
 msgid "Dingbats"
 msgstr "ดิงแบตส์"
 
+msgid "Dinka"
+msgstr "ดิงกา"
+
 msgid "Display files of this type"
 msgstr "แสดงไฟล์ชนิดนี้"
+
+msgid "Divehi"
+msgstr "ธิเวหิ"
 
 msgid "Domino Tiles"
 msgstr "กระเบื้องโดมิโน"
@@ -384,6 +561,9 @@ msgstr "ขนาดพิกเซลซ้ำกัน"
 msgid "Dutch"
 msgstr "ดัตช์"
 
+msgid "Dzongkha"
+msgstr "ซองคา"
+
 msgid "Early Dynastic Cuneiform"
 msgstr "อักษรรูปลิ่มสมัยราชวงศ์แรก"
 
@@ -393,11 +573,17 @@ msgstr "แก้ไขรายชื่อตัวกรอง"
 msgid "Edit Font Filters"
 msgstr "แก้ไขตัวกรองแบบอักษร"
 
+msgid "Efik"
+msgstr "อีฟิก"
+
 msgid "Egyptian Hieroglyphs"
 msgstr "ไฮโรกลิฟอียิปต์"
 
 msgid "Egyptian Hieroglyphs Extended-A"
 msgstr "ไฮโรกลิฟอียิปต์ส่วนขยาย A"
+
+msgid "Elbasan"
+msgstr "เอลบ์ซาน"
 
 msgid "Emoticons"
 msgstr "อีโมติคอน"
@@ -417,6 +603,12 @@ msgstr "ชื่อรหัสอักขระ"
 msgid "English"
 msgstr "อังกฤษ"
 
+msgid "Erzya"
+msgstr "เอียร์ซยา"
+
+msgid "Esperanto"
+msgstr "เอสเปรันโต"
+
 msgid "Estonian"
 msgstr "เอสโตเนีย"
 
@@ -435,8 +627,26 @@ msgstr "เอธิโอเปียส่วนขยาย B"
 msgid "Ethiopic Supplement"
 msgstr "เอธิโอเปียส่วนเสริม"
 
+msgid "Ewe"
+msgstr "เอเว"
+
 msgid "Extract from PDF"
 msgstr "ดึงจาก PDF"
+
+msgid "Fang"
+msgstr "ฟอง"
+
+msgid "Fanti"
+msgstr "ฟันติ"
+
+msgid "Faroese"
+msgstr "แฟโร"
+
+msgid "Fijian"
+msgstr "ฟิจิ"
+
+msgid "Filipino"
+msgstr "ฟิลิปปินส์"
 
 msgid "Filter"
 msgstr "ตัวกรอง"
@@ -452,6 +662,12 @@ msgstr "หาไฟล์ cidmap..."
 
 msgid "Finnish"
 msgstr "ฟินแลนด์"
+
+msgid "Flemish"
+msgstr "เฟลมิช"
+
+msgid "Fon"
+msgstr "ฟอน"
 
 msgid "Font Editor"
 msgstr "ตัวแก้ไขแบบอักษร"
@@ -483,8 +699,20 @@ msgstr "บังคับชื่อภาพสัญลักษณ์เป
 msgid "French"
 msgstr "ฝรั่งเศส"
 
+msgid "Friulian"
+msgstr "ฟรูลี"
+
+msgid "Ga"
+msgstr "กา"
+
+msgid "Gagauz"
+msgstr "กากาอุซ"
+
 msgid "Galician"
 msgstr "กาลิเซีย"
+
+msgid "Ganda"
+msgstr "ยูกันดา"
 
 msgid "General Punctuation"
 msgstr "เครื่องหมายวรรคตอนทั่วไป"
@@ -507,6 +735,9 @@ msgstr "จอร์เจียส่วนเสริม"
 msgid "German"
 msgstr "เยอรมัน"
 
+msgid "Gilaki"
+msgstr "กิลากี"
+
 msgid "Glagolitic"
 msgstr "กลาโกลิติก"
 
@@ -519,17 +750,41 @@ msgstr "ชื่อภาพสัญลักษณ์ควรถูกจำ
 msgid "Glyph too big"
 msgstr "ภาพสัญลักษณ์ใหญ่เกินไป"
 
+msgid "Gondi"
+msgstr "กอนดิ"
+
+msgid "Gothic"
+msgstr "โกธิก"
+
+msgid "Grantha"
+msgstr "คฤณห์"
+
 msgid "Greek Extended"
 msgstr "กรีกส่วนขยาย"
 
 msgid "Greek and Coptic"
 msgstr "กรีกและคอปติก"
 
+msgid "Guarani"
+msgstr "กัวรานี"
+
 msgid "Gujarati"
 msgstr "คุชราต"
 
 msgid "Gurmukhi"
 msgstr "คุรุมุขี"
+
+msgid "Gusii"
+msgstr "กุซซี"
+
+msgid "Haida"
+msgstr "ไฮดา"
+
+msgid "Halkomelem"
+msgstr "ฮัลโกเมเลม"
+
+msgid "Hangul"
+msgstr "ฮันกึล"
 
 msgid "Hangul Compatibility Jamo"
 msgstr "อักษรจาโมที่เข้ากันได้กับฮันกุล"
@@ -546,8 +801,20 @@ msgstr "อักษรจาโมของฮันกุล ส่วนข�
 msgid "Hangul Syllables"
 msgstr "พยางค์ฮันกุล"
 
+msgid "Haryanvi"
+msgstr "หริยนวี"
+
+msgid "Hausa"
+msgstr "เฮาซา"
+
+msgid "Hawaiian"
+msgstr "ฮาวาย"
+
 msgid "Hebrew"
 msgstr "ฮีบรู"
+
+msgid "Herero"
+msgstr "เฮเรโร"
 
 msgid "High Private Use Surrogates"
 msgstr "รหัสตัวแทนใช้งานส่วนตัวระดับสูง"
@@ -555,8 +822,20 @@ msgstr "รหัสตัวแทนใช้งานส่วนตัวร
 msgid "High Surrogates"
 msgstr "รหัสตัวแทนระดับสูง"
 
+msgid "Hiligaynon"
+msgstr "ฮีลีกัยนน"
+
+msgid "Hindi"
+msgstr "ฮินดี"
+
 msgid "Hiragana"
 msgstr "ฮิระงะนะ"
+
+msgid "Hiri Motu"
+msgstr "ฮีรีโมตู"
+
+msgid "Hmong"
+msgstr "ม้ง"
 
 msgid "Hungarian"
 msgstr "ฮังการี"
@@ -570,14 +849,56 @@ msgstr "ขออภัย ไฟล์นี้ซับซ้อนเกิ�
 msgid "IPA Extensions"
 msgstr "ส่วนขยาย IPA"
 
+msgid "Iban"
+msgstr "อิบาน"
+
+msgid "Ibibio"
+msgstr "อิบิบิโอ"
+
 msgid "Icelandic"
 msgstr "ไอซ์แลนด์"
+
+msgid "Ido"
+msgstr "อีโด"
+
+msgid "Igbo"
+msgstr "อิกโบ"
+
+msgid "Imperial Aramaic"
+msgstr "อิมพีเรียล อราเมอิก"
 
 msgid "In the saved font, force all glyph names to match those in the specified namelist"
 msgstr "ในแบบอักษรที่บันทึก บังคับให้ชื่อภาพสัญลักษณ์ทั้งหมดเข้าคู่กับชื่อภายในรายชื่อตัวอักษรที่กำหนดไว้"
 
+msgid "Inari Sami"
+msgstr "ซามิอีนารี"
+
+msgid "Indonesian"
+msgstr "อินโดนีเซีย"
+
+msgid "Ingush"
+msgstr "อินกุช"
+
+msgid "Inscriptional Pahlavi"
+msgstr "ปะห์ลาวีอินสคริปชันแนล"
+
+msgid "Inscriptional Parthian"
+msgstr "พาร์เทียอินสคริปชันแนล"
+
+msgid "Interlingua"
+msgstr "อินเตอร์ลิงกัว"
+
+msgid "Interlingue"
+msgstr "อินเตอร์ลิงกิว"
+
 msgid "Interpolating a font with itself achieves nothing"
 msgstr "การแทรกแบบอักษรด้วยตัวมันเองไม่ได้ทำให้เกิดผลใดๆ"
+
+msgid "Inuktitut"
+msgstr "อินุกติตุต"
+
+msgid "Irish"
+msgstr "ไอริช"
 
 msgid "Italian"
 msgstr "อิตาลี"
@@ -587,6 +908,27 @@ msgstr "ญี่ปุ่น"
 
 msgid "Javanese"
 msgstr "จาวา"
+
+msgid "Kabardian"
+msgstr "คาบาร์เดีย"
+
+msgid "Kabuverdianu"
+msgstr "คาบูเวอร์เดียนู"
+
+msgid "Kabyle"
+msgstr "กาไบล"
+
+msgid "Kaithi"
+msgstr "กายติ"
+
+msgid "Kalenjin"
+msgstr "คาเลนจิน"
+
+msgid "Kalmyk"
+msgstr "คัลมืยค์"
+
+msgid "Kamba"
+msgstr "คัมบา"
 
 msgid "Kana Extended-A"
 msgstr "คะนะส่วนขยาย A"
@@ -600,26 +942,183 @@ msgstr "คะนะส่วนเสริม"
 msgid "Kannada"
 msgstr "กันนาดา"
 
+msgid "Kanuri"
+msgstr "คานูรี"
+
+msgid "Karelian"
+msgstr "คารีเลียน"
+
+msgid "Kashmiri"
+msgstr "แคชเมียร์"
+
+msgid "Kashubian"
+msgstr "คาซูเบียน"
+
 msgid "Katakana"
 msgstr "คะทะคะนะ"
 
 msgid "Katakana Phonetic Extensions"
 msgstr "ส่วนขยายทางสัทศาสตร์คะทะคะนะ"
 
+msgid "Kawi"
+msgstr "กวี"
+
+msgid "Kayah Li"
+msgstr "คยาห์"
+
 msgid "Kazakh"
 msgstr "คาซัค"
+
+msgid "Khasi"
+msgstr "กาสี"
 
 msgid "Khmer"
 msgstr "เขมร"
 
+msgid "Khojki"
+msgstr "คอจคี"
+
+msgid "Khowar"
+msgstr "โควาร์"
+
+msgid "Khudawadi"
+msgstr "คุดาวาดี"
+
+msgid "Kikuyu"
+msgstr "กีกูยู"
+
+msgid "Kinyarwanda"
+msgstr "รวันดา"
+
+msgid "Kirmanjki"
+msgstr "เคอร์มานิกิ"
+
+msgid "Komi"
+msgstr "โกมิ"
+
+msgid "Komi-Permyak"
+msgstr "โคมิ-เปียร์เมียค"
+
+msgid "Kongo"
+msgstr "คองโก"
+
+msgid "Konkani"
+msgstr "กอนกานี"
+
 msgid "Korean"
 msgstr "เกาหลี"
+
+msgid "Kosraean"
+msgstr "คูสไร"
+
+msgid "Kpelle"
+msgstr "กาแปล"
+
+msgid "Krio"
+msgstr "คริโอ"
+
+msgid "Kuanyama"
+msgstr "กวนยามา"
+
+msgid "Kumyk"
+msgstr "คูมืยค์"
+
+msgid "Kurdish"
+msgstr "เคิร์ดตอนกลาง"
+
+msgid "Kurukh"
+msgstr "กุรุข"
+
+msgid "Ladino"
+msgstr "ลาดิโน"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Malayalam", ignore "Lang|"
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Amharic", ignore "Lang|"
+msgid "Lang|Amharic"
+msgstr "อัมฮารา"
 
 msgid "Lang|Arabic"
 msgstr "อาหรับ"
 
+msgid "Lang|Armenian"
+msgstr "อาร์เมเนีย"
+
+msgid "Lang|Balinese"
+msgstr "บาหลี"
+
+msgid "Lang|Cherokee"
+msgstr "เชอโรกี"
+
+msgid "Lang|Coptic"
+msgstr "คอปติก"
+
+msgid "Lang|Georgian"
+msgstr "จอร์เจีย"
+
+msgid "Lang|Greek"
+msgstr "กรีก"
+
+msgid "Lang|Gujarati"
+msgstr "คุชราต"
+
+msgid "Lang|Hebrew"
+msgstr "ฮิบรู"
+
+msgid "Lang|Javanese"
+msgstr "ชวา"
+
+msgid "Lang|Kannada"
+msgstr "กันนาดา"
+
+msgid "Lang|Khmer"
+msgstr "เขมร"
+
+msgid "Lang|Lao"
+msgstr "ลาว"
+
+msgid "Lang|Latin"
+msgstr "ละติน"
+
+msgid "Lang|Makasar"
+msgstr "มากาซาร์"
+
+msgid "Lang|Manchu"
+msgstr "แมนจู"
+
+msgid "Lang|Mongolian"
+msgstr "มองโกเลีย"
+
+msgid "Lang|Odia"
+msgstr "โอดิยา"
+
+msgid "Lang|Persian"
+msgstr "เปอร์เซีย"
+
+msgid "Lang|Sinhala"
+msgstr "สิงหล"
+
+msgid "Lang|Sundanese"
+msgstr "ซุนดา"
+
+msgid "Lang|Syriac"
+msgstr "ซีเรีย"
+
+msgid "Lang|Tagalog"
+msgstr "ตากาล็อก"
+
+msgid "Lang|Tamil"
+msgstr "ทมิฬ"
+
+msgid "Lang|Telugu"
+msgstr "เตลูกู"
+
 msgid "Lang|Thai"
 msgstr "ไทย"
+
+msgid "Lang|Tibetan"
+msgstr "ทิเบต"
 
 msgid "Lao"
 msgstr "ลาว"
@@ -654,11 +1153,29 @@ msgstr "ละติน 1 ส่วนเสริม"
 msgid "Latvian"
 msgstr "ลัตเวีย"
 
+msgid "Laz"
+msgstr "แลซ"
+
 msgid "Learning to use FontForge is easy, and there are various tutorials available beginning with the basics up to more advanced features such as making and using scripts."
 msgstr "การเรียนรู้การใช้ FontForge นั้นง่ายมาก และมีบทช่วยสอนต่างๆ มากมายให้เลือกใช้ตั้งแต่ขั้นพื้นฐานไปจนถึงฟีเจอร์ขั้นสูง เช่น การสร้างและการใช้สคริปต์"
 
 msgid "Letterlike Symbols"
 msgstr "สัญลักษณ์ที่เหมือนตัวอักษร"
+
+msgid "Ligurian"
+msgstr "ลิกูเรีย"
+
+msgid "Limburgish"
+msgstr "ลิมเบิร์ก"
+
+msgid "Linear A"
+msgstr "ลีเนียร์เอ"
+
+msgid "Linear B"
+msgstr "ลีเนียร์บี"
+
+msgid "Lingala"
+msgstr "ลิงกาลา"
 
 msgid "Lisu"
 msgstr "ลีซู"
@@ -669,14 +1186,71 @@ msgstr "ลีซูส่วนเสริม"
 msgid "Lithuanian"
 msgstr "ลิทัวเนีย"
 
+msgid "Lojban"
+msgstr "โลชบัน"
+
+msgid "Lombard"
+msgstr "ลอมบาร์ด"
+
+msgid "Low Saxon"
+msgstr "แซกซอนใต้"
+
 msgid "Low Surrogates"
 msgstr "รหัสตัวแทนระดับต่ำ"
+
+msgid "Lower Sorbian"
+msgstr "ซอร์เบียตอนล่าง"
+
+msgid "Luba-Katanga"
+msgstr "ลูบา-กาตองกา"
+
+msgid "Luba-Lulua"
+msgstr "ลูบา-ลูลัว"
+
+msgid "Lule Sami"
+msgstr "ซามิลูเล"
+
+msgid "Luo"
+msgstr "ลัว"
+
+msgid "Luxembourgish"
+msgstr "ลักเซมเบิร์ก"
+
+msgid "Luyia"
+msgstr "ลูเยีย"
+
+msgid "Lycian"
+msgstr "ไลเซีย"
+
+msgid "Lydian"
+msgstr "ลีเดีย"
 
 msgid "Macedonian"
 msgstr "มาซิโดเนีย"
 
+msgid "Magahi"
+msgstr "มคหี"
+
+msgid "Mahajani"
+msgstr "มหาชนี"
+
 msgid "Mahjong Tiles"
 msgstr "ไพ่นกกระจอก"
+
+msgid "Maithili"
+msgstr "ไมถิลี"
+
+msgid "Makhuwa"
+msgstr "มากัววา"
+
+msgid "Makonde"
+msgstr "มาคอนเด"
+
+msgid "Malagasy"
+msgstr "มาลากาซี"
+
+msgid "Malay"
+msgstr "มาเลย์"
 
 msgid "Malayalam"
 msgstr "มาลายาลัม"
@@ -684,14 +1258,56 @@ msgstr "มาลายาลัม"
 msgid "Maltese"
 msgstr "มอลตา"
 
+msgid "Mandar"
+msgstr "มานดาร์"
+
+msgid "Manichaean"
+msgstr "มานิแชน"
+
+msgid "Manipuri"
+msgstr "มณีปุระ"
+
+msgid "Manx"
+msgstr "มานซ์"
+
+msgid "Marathi"
+msgstr "มราฐี"
+
+msgid "Marshallese"
+msgstr "มาร์แชลล์"
+
+msgid "Marwari"
+msgstr "มารวาฑี"
+
 msgid "Mathematical Alphanumeric Symbols"
 msgstr "สัญลักษณ์ตัวเลขพยัญชนะทางคณิตศาสตร์"
 
 msgid "Mathematical Operators"
 msgstr "ตัวดำเนินการทางคณิตศาสตร์"
 
+msgid "Mazanderani"
+msgstr "มาซันดารานี"
+
+msgid "Medumba"
+msgstr "เมดุมบา"
+
+msgid "Mende"
+msgstr "เมนเด"
+
+msgid "Meroitic Cursive"
+msgstr "เคอร์ซีฟ-เมโรอิติก"
+
+msgid "Meru"
+msgstr "เมรู"
+
 msgid "MetaFont exited with an error"
 msgstr "MetaFont ออกโดยมีข้อผิดพลาด"
+
+msgid "Minangkabau"
+msgstr "มีนังกาเบา"
+
+msgid "Mirandese"
+msgstr "มีรันดา"
 
 msgid "Miscellaneous Mathematical Symbols-A"
 msgstr "สัญลักษณทางคณิตศาสตร์เบ็ดเตล็ด A"
@@ -724,8 +1340,23 @@ msgstr "ไฟล์ cidmap ขาดหายไป"
 msgid "Missing number on line %d of %s"
 msgstr "ตัวเลขหายไปในบรรทัด %d จาก %s"
 
+msgid "Mizo"
+msgstr "มิโซ"
+
+msgid "Modi"
+msgstr "โมฑี"
+
 msgid "Modifier Tone Letters"
 msgstr "อักษรกำกับเสียง"
+
+msgid "Mohawk"
+msgstr "โมฮอว์ก"
+
+msgid "Moksha"
+msgstr "มอคชา"
+
+msgid "Moldavian"
+msgstr "มอลโดวา"
 
 msgid "Mongolian"
 msgstr "มองโกล"
@@ -733,8 +1364,23 @@ msgstr "มองโกล"
 msgid "Mongolian Supplement"
 msgstr "มองโกลส่วนเสริม"
 
+msgid "Moose Cree"
+msgstr "มูสครี"
+
 msgid "More Images Than Selected Glyphs"
 msgstr "มีรูปภาพมากกว่าภาพสัญลักษณ์ที่เลือก"
+
+msgid "Morisyen"
+msgstr "มอริสเยน"
+
+msgid "Mossi"
+msgstr "โมซี"
+
+msgid "Mro"
+msgstr "มโร"
+
+msgid "Muscogee"
+msgstr "มัสคีกี"
 
 msgid "Myanmar"
 msgstr "เมียนมา"
@@ -751,17 +1397,35 @@ msgstr "เมียนมาส่วนขยาย C"
 msgid "NKo"
 msgstr "เอ็นโก"
 
+msgid "Nabataean"
+msgstr "นาบาทาเอียน"
+
 msgid "Name"
 msgstr "ชื่อ"
 
 msgid "Namelist contains non-ASCII names"
 msgstr "รายชื่อตัวอักษรมีชื่อที่ไม่อยู่ใน ASCII"
 
+msgid "Navajo"
+msgstr "นาวาโฮ"
+
+msgid "Ndonga"
+msgstr "ดองกา"
+
+msgid "Neapolitan"
+msgstr "นาโปลี"
+
 msgid "Nepali"
 msgstr "เนปาล"
 
 msgid "New Tai Lue"
 msgstr "ไทลื้อใหม่"
+
+msgid "Newari"
+msgstr "เนวาร์"
+
+msgid "Niuean"
+msgstr "นีวเว"
 
 #, c-format
 msgid "No CID named %s"
@@ -787,8 +1451,20 @@ msgstr "ไม่มีภาพสัญลักษณ์ชื่อ %s"
 msgid "No kerning pairs found in %.200s"
 msgstr "ไม่พบคู่เคิร์นนิ่งใน %.200s"
 
+msgid "Nogai"
+msgstr "โนไก"
+
+msgid "Northern Sami"
+msgstr "ซามิเหนือ"
+
+msgid "Northern Sotho"
+msgstr "โซโทเหนือ"
+
 msgid "Norwegian"
 msgstr "นอร์เวย์"
+
+msgid "Norwegian Nynorsk"
+msgstr "นอร์เวย์นีนอสก์"
 
 msgid "Nothing Loaded"
 msgstr "ไม่ได้โหลดสิ่งใด"
@@ -799,12 +1475,45 @@ msgstr "ไม่ได้เลือกสิ่งใด"
 msgid "Nothing to trace"
 msgstr "ไม่มีอะไรให้เทรซ"
 
+msgid "Novial"
+msgstr "โนเวียล"
+
 msgid "Number Forms"
 msgstr "รูปแบบตัวเลข"
 
 #, c-format
 msgid "Number too long on line %d of %s"
 msgstr "ตัวเลขยาวเกินไปในบรรทัด %d จาก %s"
+
+msgid "Nyamwezi"
+msgstr "เนียมเวซี"
+
+msgid "Nyankole"
+msgstr "เนียนโกเล"
+
+msgid "Occitan"
+msgstr "อ็อกซิตัน"
+
+msgid "Ogham"
+msgstr "โอคัม"
+
+msgid "Oji-Cree"
+msgstr "ออจิ-ครี"
+
+msgid "Ol Chiki"
+msgstr "โอลชิกิ"
+
+msgid "Old Hungarian"
+msgstr "ฮังการีโบราณ"
+
+msgid "Old Irish"
+msgstr "ไอริชโบราณ"
+
+msgid "Old North Arabian"
+msgstr "อาระเบียเหนือโบราณ"
+
+msgid "Old South Arabian"
+msgstr "อาระเบียใต้โบราณ"
 
 msgid "Open Font"
 msgstr "เปิดแบบอักษร"
@@ -818,11 +1527,41 @@ msgstr "โอริยา"
 msgid "Ornamental Dingbats"
 msgstr "ดิงแบตสำหรับตกแต่ง"
 
+msgid "Oromo"
+msgstr "โอโรโม"
+
+msgid "Osmanya"
+msgstr "ออสมันยา"
+
 msgid "Outline Fonts"
 msgstr "แบบอักษรเส้นขอบ"
 
+msgid "Pahawh Hmong"
+msgstr "ปาเฮาห์ม้ง"
+
+msgid "Palauan"
+msgstr "ปาเลา"
+
+msgid "Pali"
+msgstr "บาลี"
+
+msgid "Palmyrene"
+msgstr "พาลไมรีน"
+
+msgid "Pangasinan"
+msgstr "ปังกาซีนัน"
+
+msgid "Pashto"
+msgstr "พัชโต"
+
 msgid "Pasting..."
 msgstr "กำลังวาง..."
+
+msgid "Pau Cin Hau"
+msgstr "ป่อจิ้งฮอ"
+
+msgid "Pennsylvania German"
+msgstr "เยอรมันเพนซิลเวเนีย"
 
 msgid "Phags-pa"
 msgstr "ผัคสปะ"
@@ -832,6 +1571,9 @@ msgstr "ส่วนขยายทางสัทศาสตร์"
 
 msgid "Phonetic Extensions Supplement"
 msgstr "ส่วนขยายทางสัทศาสตร์ส่วนเสริม"
+
+msgid "Picard"
+msgstr "ปิการ์"
 
 msgid "Plane 15 (Supplementary Private Use Area-A)"
 msgstr "ระนาบ 15 (พื้นที่ใช้งานส่วนตัวเสริม A)"
@@ -849,6 +1591,9 @@ msgstr "โปรดตั้งชื่อให้กับรหัสอั
 msgid "Please name this encoding"
 msgstr "โปรดตั้งชื่อให้กับรหัสอักขระนี้"
 
+msgid "Pohnpeian"
+msgstr "พอห์นเพ"
+
 msgid "Polish"
 msgstr "โปแลนด์"
 
@@ -861,17 +1606,77 @@ msgstr "PostScript"
 msgid "Private Use Area"
 msgstr "พื้นที่ใช้งานส่วนตัว"
 
+msgid "Psalter Pahlavi"
+msgstr "ปะห์ลาวีซอลเตอร์"
+
+msgid "Punjabi"
+msgstr "ปัญจาบ"
+
+msgid "Quechua"
+msgstr "เคชวา"
+
+msgid "Rajasthani"
+msgstr "ราชสถาน"
+
+msgid "Rarotongan"
+msgstr "ราโรทองกา"
+
+msgid "Rejang"
+msgstr "เรจัง"
+
+msgid "Rohingya"
+msgstr "โรฮิงญา"
+
 msgid "Romanian"
 msgstr "โรมาเนีย"
+
+msgid "Romansh"
+msgstr "โรแมนซ์"
+
+msgid "Romany"
+msgstr "โรมานี"
+
+msgid "Rotuman"
+msgstr "โรทูมัน"
+
+msgid "Rundi"
+msgstr "บุรุนดี"
+
+msgid "Runic"
+msgstr "รูนิก"
 
 msgid "Russian"
 msgstr "รัสเซีย"
 
+msgid "Rusyn"
+msgstr "รูซิน"
+
 msgid "SVG"
 msgstr "SVG"
 
+msgid "Samoan"
+msgstr "ซามัว"
+
+msgid "Samogitian"
+msgstr "ซาโมจิเตียน"
+
+msgid "Sango"
+msgstr "ซันโก"
+
 msgid "Sanskrit"
 msgstr "สันสกฤต"
+
+msgid "Santali"
+msgstr "สันตาลี"
+
+msgid "Sardinian"
+msgstr "ซาร์เดญา"
+
+msgid "Sasak"
+msgstr "ซาซัก"
+
+msgid "Saterland Frisian"
+msgstr "ฟรีเซียนซัทเธอร์แลนด์"
 
 msgid "Save Failed"
 msgstr "การบันทึกล้มเหลว"
@@ -879,14 +1684,187 @@ msgstr "การบันทึกล้มเหลว"
 msgid "Scaling Bitmaps"
 msgstr "กำลังปรับสเกลบิตแมป"
 
+msgid "Scots"
+msgstr "สกอตส์"
+
+msgid "Scottish Gaelic"
+msgstr "เกลิกสกอต"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Arabic", ignore "Script|"
+msgid "Script|Arabic"
+msgstr "อาหรับ"
+
+msgid "Script|Armenian"
+msgstr "อาร์เมเนีย"
+
+msgid "Script|Avestan"
+msgstr "อเวสตะ"
+
+msgid "Script|Balinese"
+msgstr "บาหลี"
+
+msgid "Script|Batak"
+msgstr "บาตัก"
+
+msgid "Script|Buginese"
+msgstr "บูกิส"
+
+msgid "Script|Buhid"
+msgstr "บูฮิด"
+
+msgid "Script|Cham"
+msgstr "จาม"
+
+msgid "Script|Cherokee"
+msgstr "เชอโรกี"
+
+msgid "Script|Coptic"
+msgstr "คอปติก"
+
+msgid "Script|Ethiopic"
+msgstr "เอธิโอปิก"
+
+msgid "Script|Georgian"
+msgstr "จอร์เจีย"
+
+msgid "Script|Greek"
+msgstr "กรีก"
+
+msgid "Script|Gujarati"
+msgstr "คุชราต"
+
+msgid "Script|Hebrew"
+msgstr "ฮีบรู"
+
+msgid "Script|Javanese"
+msgstr "ชวา"
+
+msgid "Script|Kannada"
+msgstr "กันนาดา"
+
+msgid "Script|Khmer"
+msgstr "เขมร"
+
+msgid "Script|Lao"
+msgstr "ลาว"
+
+msgid "Script|Latin"
+msgstr "ละติน"
+
+msgid "Script|Limbu"
+msgstr "ลิมบู"
+
+msgid "Script|Mandaean"
+msgstr "แมนเดียน"
+
+msgid "Script|Mongolian"
+msgstr "มองโกเลีย"
+
+msgid "Script|Myanmar"
+msgstr "พม่า"
+
+msgid "Script|Old Permic"
+msgstr "เปอร์มิกโบราณ"
+
+msgid "Script|Phags-pa"
+msgstr "ฟากส์-ปา"
+
+msgid "Script|Phoenician"
+msgstr "ฟินิเชีย"
+
+msgid "Script|Sinhala"
+msgstr "สิงหล"
+
+msgid "Script|Sumero-Akkadian Cuneiform"
+msgstr "อักษรรูปลิ่มสุเมเรีย-อัคคาเดีย"
+
+msgid "Script|Sundanese"
+msgstr "ซุนดา"
+
+msgid "Script|Syloti Nagri"
+msgstr "ซิโลตินากรี"
+
+msgid "Script|Syriac"
+msgstr "ซีเรีย"
+
+msgid "Script|Tagalog"
+msgstr "ตากาล็อก"
+
+msgid "Script|Tagbanwa"
+msgstr "ตักบันวา"
+
+msgid "Script|Tamil"
+msgstr "ทมิฬ"
+
+msgid "Script|Telugu"
+msgstr "เตลูกู"
+
+msgid "Script|Thai"
+msgstr "ไทย"
+
+msgid "Script|Tibetan"
+msgstr "ทิเบต"
+
+msgid "Script|Ugaritic"
+msgstr "ยูการิต"
+
+msgid "Script|Vai"
+msgstr "ไว"
+
+msgid "Script|Yi"
+msgstr "ยิ"
+
+msgid "Selkup"
+msgstr "เซลคุป"
+
+msgid "Sena"
+msgstr "เซนา"
+
+msgid "Seneca"
+msgstr "เซนิกา"
+
 msgid "Serbian"
 msgstr "เซอร์เบีย"
+
+msgid "Serer"
+msgstr "เซแรร์"
+
+msgid "Shan"
+msgstr "ไทใหญ่"
+
+msgid "Sharada"
+msgstr "ชาราดา"
+
+msgid "Shavian"
+msgstr "ซอเวียน"
+
+msgid "Shona"
+msgstr "โชนา"
+
+msgid "Sicilian"
+msgstr "ซิซิลี"
+
+msgid "Sidamo"
+msgstr "ซิดาโม"
+
+msgid "Siddham"
+msgstr "สิทธัม"
+
+msgid "Silesian"
+msgstr "ไซลีเซีย"
 
 msgid "Simplified Chinese"
 msgstr "จีนตัวย่อ"
 
+msgid "Sindhi"
+msgstr "สินธิ"
+
 msgid "Sinhala"
 msgstr "สิงหล"
+
+msgid "Skolt Sami"
+msgstr "ซามิสคอลต์"
 
 msgid "Slovak"
 msgstr "สโลวัก"
@@ -900,6 +1878,24 @@ msgstr "แวเรียนต์รูปแบบเล็ก"
 msgid "Small Kana Extension"
 msgstr "ส่วนขยายคะนะเล็ก"
 
+msgid "Soga"
+msgstr "โซกา"
+
+msgid "Somali"
+msgstr "โซมาลี"
+
+msgid "Soninke"
+msgstr "โซนีนเก"
+
+msgid "Sora Sompeng"
+msgstr "โสราสมเป็ง"
+
+msgid "Southern Sami"
+msgstr "ซามิใต้"
+
+msgid "Southern Sotho"
+msgstr "โซโทใต้"
+
 msgid "Spacing Modifier Letters"
 msgstr "ตัวอักษรเปลี่ยนเสียงแบบใช้เนื้อที่"
 
@@ -908,6 +1904,15 @@ msgstr "สเปน"
 
 msgid "Specials"
 msgstr "พิเศษ"
+
+msgid "Standard Moroccan Tamazight"
+msgstr "ทามาไซต์โมร็อกโกมาตรฐาน"
+
+msgid "Straits Salish"
+msgstr "สเตรตส์ซาลิช"
+
+msgid "Sukuma"
+msgstr "ซูคูมา"
 
 msgid "Sundanese"
 msgstr "ซุนดา"
@@ -939,6 +1944,12 @@ msgstr "พื้นที่ใช้งานส่วนตัวเสริ
 msgid "Supplementary Private Use Area-B"
 msgstr "พื้นที่ใช้งานส่วนตัวเสริม B"
 
+msgid "Swahili"
+msgstr "สวาฮีลี"
+
+msgid "Swati"
+msgstr "สวาติ"
+
 msgid "Swedish"
 msgstr "สวีเดน"
 
@@ -948,11 +1959,32 @@ msgstr "สัญลักษณ์และตัวหนังสือภา
 msgid "Symbols for Legacy Computing"
 msgstr "สัญลักษณ์สำหรับระบบคอมพิวเตอร์ยุคเก่า"
 
+msgid "Tachelhit"
+msgstr "ทาเชลีห์ท"
+
 msgid "Tagalog"
 msgstr "ตากาล็อก"
 
 msgid "Tags"
 msgstr "แท็ก"
+
+msgid "Tahitian"
+msgstr "ตาฮิตี"
+
+msgid "Tai Le"
+msgstr "ไทเล"
+
+msgid "Tai Viet"
+msgstr "ไทเวียต"
+
+msgid "Takri"
+msgstr "ทาครี"
+
+msgid "Talysh"
+msgstr "ทาลิช"
+
+msgid "Tamashek"
+msgstr "ทามาเชก"
 
 msgid "Tamil"
 msgstr "ทมิฬ"
@@ -960,11 +1992,23 @@ msgstr "ทมิฬ"
 msgid "Tamil Supplement"
 msgstr "ทมิฬส่วนเสริม"
 
+msgid "Tangut"
+msgstr "ตันกัท"
+
+msgid "Tatar"
+msgstr "ตาตาร์"
+
 msgid "Telugu"
 msgstr "เตลูกู"
 
 msgid "Tertiary Ideographic Plane"
 msgstr "ระนาบอักษรภาพระดับสาม"
+
+msgid "Tetum"
+msgstr "เตตุม"
+
+msgid "Thaana"
+msgstr "ทานา"
 
 msgid "Thai"
 msgstr "ไทย"
@@ -980,6 +2024,27 @@ msgstr ""
 msgid "Tibetan"
 msgstr "ทิเบต"
 
+msgid "Tigre"
+msgstr "ตีเกร"
+
+msgid "Tigrinya"
+msgstr "ติกริญญา"
+
+msgid "Tirhuta"
+msgstr "เทอฮุทา"
+
+msgid "Tiv"
+msgstr "ทิฟ"
+
+msgid "Tlingit"
+msgstr "ทลิงกิต"
+
+msgid "Tok Pisin"
+msgstr "ท็อกพิซิน"
+
+msgid "Tongan"
+msgstr "ตองกา"
+
 msgid "Too Complex or Bad"
 msgstr "ซับซ้อนเกินไปหรือไม่ถูกต้อง"
 
@@ -992,8 +2057,29 @@ msgstr "สัญลักษณ์ขนส่งและแผนที่"
 msgid "TrueType"
 msgstr "TrueType"
 
+msgid "Tsonga"
+msgstr "ซองกา"
+
+msgid "Tswana"
+msgstr "สวานา"
+
+msgid "Tulu"
+msgstr "ตูลู"
+
+msgid "Tumbuka"
+msgstr "ทุมบูกา"
+
 msgid "Turkish"
 msgstr "ตุรกี"
+
+msgid "Turkmen"
+msgstr "เติร์กเมน"
+
+msgid "Tuvalu"
+msgstr "ตูวาลู"
+
+msgid "Twi"
+msgstr "ทวิ"
 
 msgid "Type1"
 msgstr "Type1"
@@ -1004,8 +2090,14 @@ msgstr "Type2"
 msgid "Type3"
 msgstr "Type3"
 
+msgid "Udmurt"
+msgstr "อุดมูร์ต"
+
 msgid "Ukrainian"
 msgstr "ยูเครน"
+
+msgid "Umbundu"
+msgstr "อุมบุนดู"
 
 msgid "Unified Font Object"
 msgstr "Unified Font Object"
@@ -1013,8 +2105,17 @@ msgstr "Unified Font Object"
 msgid "Unknown Language"
 msgstr "ไม่ทราบภาษา"
 
+msgid "Upper Sorbian"
+msgstr "ซอร์เบียตอนบน"
+
+msgid "Urdu"
+msgstr "อูรดู"
+
 msgid "Use CID Map"
 msgstr "ใช้ CID Map"
+
+msgid "Uyghur"
+msgstr "อุยกูร์"
 
 msgid "Uzbek"
 msgstr "อุซเบก"
@@ -1022,14 +2123,56 @@ msgstr "อุซเบก"
 msgid "Vai"
 msgstr "ไว"
 
+msgid "Venda"
+msgstr "เวนดา"
+
+msgid "Venetian"
+msgstr "เวเนโต้"
+
 msgid "Vertical Forms"
 msgstr "รูปแบบแนวตั้ง"
+
+msgid "Vietnamese"
+msgstr "เวียดนาม"
+
+msgid "Volapük"
+msgstr "โวลาพึค"
+
+msgid "Võro"
+msgstr "โวโร"
+
+msgid "Walloon"
+msgstr "วอลลูน"
+
+msgid "Wayuu"
+msgstr "วายู"
 
 msgid "Welsh"
 msgstr "เวลส์"
 
+msgid "Western Panjabi"
+msgstr "ลาฮ์นดา"
+
+msgid "Wolof"
+msgstr "โวลอฟ"
+
+msgid "Xhosa"
+msgstr "คะห์โอซา"
+
+msgid "Yao"
+msgstr "เย้า"
+
+msgid "Yapese"
+msgstr "ยัป"
+
 msgid "Yes to _All"
 msgstr "ใช่_ทั้งหมด"
+
+msgid "Yiddish"
+msgstr "ยิดดิช"
+
+msgid "Yoruba"
+msgstr "โยรูบา"
 
 #, c-format
 msgid ""
@@ -1051,6 +2194,15 @@ msgstr ""
 
 msgid "You must select a glyph before you can import an image into it"
 msgstr "คุณต้องเลือกภาพสัญลักษณ์ก่อนจึงจะนำเข้ารูปภาพเข้าไปได้"
+
+msgid "Zarma"
+msgstr "ซาร์มา"
+
+msgid "Zhuang"
+msgstr "จ้วง"
+
+msgid "Zulu"
+msgstr "ซูลู"
 
 msgid "_Add"
 msgstr "เ_พิ่ม"

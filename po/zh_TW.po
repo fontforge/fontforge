@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
@@ -1051,6 +1051,12 @@ msgstr "旋轉或歪斜一個字圖之後，您大概需要套用「元件→加
 msgid "Ahead Classes"
 msgstr "前方類別"
 
+msgid "Ahom"
+msgstr "阿洪姆文"
+
+msgid "Akan"
+msgstr "阿坎文"
+
 msgid "Albanian"
 msgstr "阿爾巴尼亞語"
 
@@ -1480,6 +1486,9 @@ msgstr "阿拉伯語從右到左"
 msgid "Arabic Supplement"
 msgstr "阿拉伯語補充"
 
+msgid "Aragonese"
+msgstr "阿拉貢文"
+
 msgid "Archives"
 msgstr "檔案"
 
@@ -1515,6 +1524,12 @@ msgstr "確定希望移除這些字圖？此作業將無法復原。"
 msgid "Armenian"
 msgstr "亞美尼亞語"
 
+msgid "Aromanian"
+msgstr "羅馬尼亞語系"
+
+msgid "Arpitan"
+msgstr "法蘭克-普羅旺斯文"
+
 msgid "Arrows"
 msgstr "箭頭"
 
@@ -1544,6 +1559,9 @@ msgstr "外觀比例如同並排字圖"
 
 msgid "Assamese"
 msgstr "阿薩姆語"
+
+msgid "Asturian"
+msgstr "阿斯圖里亞文"
 
 msgid "At End"
 msgstr "結尾"
@@ -1774,6 +1792,9 @@ msgstr "預設"
 
 msgid "Aymara"
 msgstr "亞摩拉語"
+
+msgid "Azerbaijani"
+msgstr "亞塞拜然文"
 
 msgid "Azeri (Cyrillic)"
 msgstr "阿澤里語(斯拉夫語)"
@@ -2440,6 +2461,9 @@ msgstr "巴爾卡爾語"
 msgid "Ball (Round Cap)"
 msgstr "球 (圓角頂端)"
 
+msgid "Baluchi"
+msgstr "俾路支文"
+
 msgid "Bambara"
 msgstr "班巴拉語"
 
@@ -2515,6 +2539,12 @@ msgstr "巴薩文"
 msgid "Batak"
 msgstr "巴塔克語"
 
+msgid "Batak Toba"
+msgstr "巴塔克托巴文"
+
+msgid "Bavarian"
+msgstr "巴伐利亞文"
+
 msgid "Be_vel"
 msgstr "斜面(_V)"
 
@@ -2563,6 +2593,9 @@ msgstr ""
 "於終點之後，梯度將會取代終點上的顏色\n"
 "這不會作用於 PostScript 線性梯度"
 
+msgid "Bhaiksuki"
+msgstr "梵文"
+
 msgid "Bhili"
 msgstr "比爾語"
 
@@ -2600,6 +2633,9 @@ msgstr "比科爾語"
 
 msgid "Bind to Path"
 msgstr "連結到路徑"
+
+msgid "Bislama"
+msgstr "比斯拉馬文"
 
 msgid "Bitm_ap Strikes Available..."
 msgstr "可用的點陣圖筆畫(_A)…"
@@ -2669,6 +2705,9 @@ msgstr "藍色："
 
 msgid "BlueValues come in pairs. Select another."
 msgstr "BlueValues 會成對出現。請選取另外一個。"
+
+msgid "Bodo"
+msgstr "博多文"
 
 msgid "Bold"
 msgstr "粗體"
@@ -2765,6 +2804,9 @@ msgstr "括號中的值太大"
 
 msgid "Brahmi"
 msgstr "婆羅米文"
+
+msgid "Brahui"
+msgstr "布拉維文"
 
 msgid "Braille"
 msgstr "盲用點字法"
@@ -3007,6 +3049,9 @@ msgstr "角(_O)"
 msgid "C_ustom"
 msgstr "自訂(_U)"
 
+msgid "Cajun French"
+msgstr "卡真法文"
+
 msgid "Call Script"
 msgstr "呼叫命令稿"
 
@@ -3168,6 +3213,9 @@ msgstr "加泰羅尼亞語"
 msgid "Caucasian Albanian"
 msgstr "高加條阿爾巴尼亞字母"
 
+msgid "Cayuga"
+msgstr "卡尤加文"
+
 msgid "Cebuano"
 msgstr "宿霧語"
 
@@ -3186,6 +3234,9 @@ msgstr "置中"
 msgid "Centered CJK Punctuation"
 msgstr "置中的中日韓標點符號"
 
+msgid "Central Yupik"
+msgstr "中尤皮克文"
+
 msgid "Chaining Positioning"
 msgstr "鏈接定位"
 
@@ -3198,8 +3249,14 @@ msgstr "鏈接位置"
 msgid "Chaining substitution"
 msgstr "鏈接替代"
 
+msgid "Chakma"
+msgstr "查克馬文"
+
 msgid "Cham"
 msgstr "占文"
+
+msgid "Chamorro"
+msgstr "查莫洛文"
 
 msgid "Change"
 msgstr "變更"
@@ -3414,8 +3471,14 @@ msgstr "切羅基文補充"
 msgid "Chess Symbols"
 msgstr "棋類符號"
 
+msgid "Cheyenne"
+msgstr "沙伊安文"
+
 msgid "Chichewa"
 msgstr "契切瓦語"
+
+msgid "Chiga"
+msgstr "奇加文"
 
 msgid "Chinese (Hong Kong)"
 msgstr "中文（香港）"
@@ -3450,6 +3513,9 @@ msgstr "繁體中文（澳門）"
 msgid "Chipewyan"
 msgstr "奇佩維安語"
 
+msgid "Choctaw"
+msgstr "喬克托文"
+
 msgid "Choose a file format..."
 msgstr "選取檔案格式…"
 
@@ -3461,6 +3527,9 @@ msgstr "選擇何項查找要複製"
 
 msgid "Church Slavonic"
 msgstr "教會斯拉夫語"
+
+msgid "Chuukese"
+msgstr "處奇斯文"
 
 msgid "Chuvash"
 msgstr "楚瓦什語"
@@ -3689,6 +3758,9 @@ msgstr "通用印度數字形式"
 
 msgid "Common Number Separator"
 msgstr "共同數字分隔符號"
+
+msgid "Comorian"
+msgstr "葛摩文"
 
 msgid "Compact"
 msgstr "壓縮"
@@ -3930,6 +4002,9 @@ msgstr "校正："
 
 msgid "Corner"
 msgstr "角"
+
+msgid "Cornish"
+msgstr "康瓦耳文"
 
 msgid "Correct Direction"
 msgstr "修正方向"
@@ -5557,6 +5632,12 @@ msgstr "字族"
 msgid "Family Blue Color"
 msgstr "Family Blue 顏色"
 
+msgid "Fang"
+msgstr "芳族文"
+
+msgid "Fanti"
+msgstr "芳蒂文"
+
 msgid "Faroese"
 msgstr "法羅群島語"
 
@@ -5739,6 +5820,9 @@ msgstr "大寫字母上的平面音調記號"
 
 msgid "FlattenedAccentBaseHeight:"
 msgstr "FlattenedAccentBaseHeight："
+
+msgid "Flemish"
+msgstr "法蘭德斯文"
 
 msgid "Flemish (Belgian Dutch)"
 msgstr "佛蘭芒(比利時荷蘭語)"
@@ -6122,8 +6206,14 @@ msgstr "格語"
 msgid "Gaelic (Irish)"
 msgstr "蓋爾語（愛爾蘭）"
 
+msgid "Gagauz"
+msgstr "加告茲文"
+
 msgid "Galician"
 msgstr "加里斯亞語"
+
+msgid "Ganda"
+msgstr "干達文"
 
 msgid "Gasp|Anti-Alias"
 msgstr "消除鋸齒"
@@ -6240,6 +6330,9 @@ msgid ""
 msgstr ""
 "Ghostview (也許是其他解譯器) 會發生問題，\n"
 "當渲調指令存在卻無任何描點依賴於它。"
+
+msgid "Gilaki"
+msgstr "吉拉基文"
 
 msgid "Gl_yph Name:"
 msgstr "字圖名稱(_N)："
@@ -6498,6 +6591,9 @@ msgstr "逐漸/轉變"
 msgid "Gradual/Vertical"
 msgstr "逐漸/垂直"
 
+msgid "Grantha"
+msgstr "格蘭他文字"
+
 msgid "Graphical"
 msgstr "圖形"
 
@@ -6587,6 +6683,9 @@ msgstr "果魯穆其語"
 msgid "Gurmukhi2"
 msgstr "果魯穆其語2"
 
+msgid "Gusii"
+msgstr "古西文"
+
 msgid "HFlex Hint Color"
 msgstr "水平flex渲調顏色"
 
@@ -6617,6 +6716,9 @@ msgstr "水平和垂直群組方塊"
 msgid "H_ints"
 msgstr "渲染調整(_I)"
 
+msgid "Haida"
+msgstr "海達文"
+
 msgid "Haitian"
 msgstr "海地語"
 
@@ -6631,6 +6733,9 @@ msgstr "半寬"
 
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "半寬與全寬形式"
+
+msgid "Halkomelem"
+msgstr "哈爾魁梅林語"
 
 msgid "Hangul"
 msgstr "韓語"
@@ -6658,6 +6763,9 @@ msgstr "哈努諾文"
 
 msgid "Harmonizing..."
 msgstr "正在協調..."
+
+msgid "Haryanvi"
+msgstr "哈里亞納文"
 
 msgid "Has _Vertical Metrics"
 msgstr "有垂直字框(_V)"
@@ -6694,6 +6802,9 @@ msgstr "高度/字距微調資料"
 
 msgid "Height:"
 msgstr "高度："
+
+msgid "Herero"
+msgstr "赫雷羅文"
 
 msgid "Hidden"
 msgstr "隱藏"
@@ -6753,6 +6864,9 @@ msgstr "平假名"
 msgid "Hiragana & Katakana"
 msgstr "平假名 & 片假名"
 
+msgid "Hiri Motu"
+msgstr "西里莫圖土文"
+
 msgid "Histogram Dialog"
 msgstr "長條圖對話框"
 
@@ -6776,6 +6890,9 @@ msgstr "嗯，這個「fvar」表格比我預期有更多的計數/尺寸對"
 
 msgid "Hmm, this 'fvar' table is too short"
 msgstr "嗯，此「fvar」表格太短"
+
+msgid "Hmong"
+msgstr "苗語"
 
 msgid "Hojo (JIS X 0212-1990) Kanji Forms"
 msgstr "Hojo (JIS X 0212-1990) 漢字形式"
@@ -6945,6 +7062,9 @@ msgstr "ISO 8859-8 (希伯來語)"
 msgid "ISO 8859-9  (Latin5)"
 msgstr "ISO 8859-9  (拉丁文5)"
 
+msgid "Iban"
+msgstr "伊班文"
+
 msgid "Ibibio"
 msgstr "伊比比歐"
 
@@ -6974,6 +7094,9 @@ msgstr "表意文字 em-box 底部邊緣基線"
 
 msgid "Ideographic em-box top edge baseline"
 msgstr "表意文字 em-box 頂端邊緣基線"
+
+msgid "Ido"
+msgstr "伊多文"
 
 msgid "If a line has a bump on it then flatten out that bump"
 msgstr "如果線上有凸塊就將該凸塊平面化"
@@ -7326,6 +7449,12 @@ msgstr "指令逾期"
 msgid "Instructions were changed"
 msgstr "指令早已變更"
 
+msgid "Interlingua"
+msgstr "國際文"
+
+msgid "Interlingue"
+msgstr "國際文（E）"
+
 msgid "Intermediate Points:"
 msgstr "中間點："
 
@@ -7573,8 +7702,17 @@ msgstr "KSC 5601-1987 (韓語)"
 msgid "Kabardian"
 msgstr "卡巴爾德語"
 
+msgid "Kabuverdianu"
+msgstr "卡布威爾第文"
+
+msgid "Kabyle"
+msgstr "卡比爾文"
+
 msgid "Kaithi"
 msgstr "凱提體"
+
+msgid "Kalenjin"
+msgstr "卡倫金文"
 
 msgid "Kalmyk"
 msgstr "卡爾梅克語"
@@ -7606,6 +7744,9 @@ msgstr "卡累利阿語"
 msgid "Kashmiri"
 msgstr "喀什米爾語"
 
+msgid "Kashubian"
+msgstr "卡舒布文"
+
 msgid "Katakana"
 msgstr "片假名"
 
@@ -7614,6 +7755,9 @@ msgstr "片假名（& 語音擴展）"
 
 msgid "Katakana Phonetic Extensions"
 msgstr "片假名注音符號擴充"
+
+msgid "Kawi"
+msgstr "卡威文"
 
 msgid "Kayah Li"
 msgstr "克耶李文"
@@ -7723,17 +7867,41 @@ msgstr "高棉語"
 msgid "Khmer Symbols"
 msgstr "高棉語符號"
 
+msgid "Khojki"
+msgstr "克吉奇文字"
+
+msgid "Khowar"
+msgstr "科瓦文"
+
+msgid "Khudawadi"
+msgstr "信德文"
+
 msgid "Khutsuri Georgian"
 msgstr "格魯吉亞文喬治亞語"
 
 msgid "Kikuyu"
 msgstr "基庫尤語"
 
+msgid "Kinyarwanda"
+msgstr "盧安達文"
+
 msgid "Kinyarwanda/Ruanda"
 msgstr "金牙旺達語/盧安達語"
 
 msgid "Kirghiz"
 msgstr "吉爾吉斯語"
+
+msgid "Kirmanjki"
+msgstr "北紮紮其文"
+
+msgid "Komi"
+msgstr "科米文"
+
+msgid "Komi-Permyak"
+msgstr "科米-彼爾米亞克文"
+
+msgid "Kongo"
+msgstr "剛果文"
 
 msgid "Konkani"
 msgstr "貢根語"
@@ -7744,8 +7912,17 @@ msgstr "韓語"
 msgid "Korean Old Hangul"
 msgstr "韓語舊的諺文"
 
+msgid "Kosraean"
+msgstr "科斯雷恩文"
+
 msgid "Kpelle"
 msgstr "克佩勒語"
+
+msgid "Krio"
+msgstr "塞拉利昂克裏奧爾文"
+
+msgid "Kuanyama"
+msgstr "廣亞馬文"
 
 msgid "Kumyk"
 msgstr "庫梅克語"
@@ -7773,6 +7950,12 @@ msgstr "標籤"
 
 msgid "Label Gl_yph By"
 msgstr "字圖加標籤依據(_Y)"
+
+msgid "Ladin"
+msgstr "拉定文"
+
+msgid "Ladino"
+msgstr "拉迪諾文"
 
 msgid "Language"
 msgstr "語言"
@@ -7804,6 +7987,9 @@ msgstr "亞美尼亞語"
 
 msgid "Lang|Avar"
 msgstr "阿瓦爾語"
+
+msgid "Lang|Balinese"
+msgstr "峇里文"
 
 msgid "Lang|Bengali"
 msgstr "孟加拉語"
@@ -7857,6 +8043,9 @@ msgstr "拉丁語"
 msgid "Lang|Limbu"
 msgstr "印度-林布"
 
+msgid "Lang|Makasar"
+msgstr "望加錫文"
+
 msgid "Lang|Malayalam"
 msgstr "馬來亞拉姆語"
 
@@ -7866,11 +8055,23 @@ msgstr "滿洲語"
 msgid "Lang|Mongolian"
 msgstr "蒙古語"
 
+msgid "Lang|Odia"
+msgstr "歐迪亞文"
+
 msgid "Lang|Oriya"
 msgstr "歐利亞語"
 
+msgid "Lang|Persian"
+msgstr "波斯文"
+
+msgid "Lang|Sinhala"
+msgstr "僧伽羅文"
+
 msgid "Lang|Sinhalese"
 msgstr "錫蘭語"
+
+msgid "Lang|Sundanese"
+msgstr "巽他文"
 
 msgid "Lang|Syriac"
 msgstr "敘利亞語"
@@ -7959,6 +8160,9 @@ msgstr "背景"
 
 msgid "Layer|Foreground"
 msgstr "前景"
+
+msgid "Laz"
+msgstr "拉茲文"
 
 msgid "Leading Jamo Forms"
 msgstr "韓文字母前導形式"
@@ -8066,8 +8270,14 @@ msgstr "細體"
 msgid "Light Angle:"
 msgstr "光線角度："
 
+msgid "Ligurian"
+msgstr "利古里亞文"
+
 msgid "Limbu"
 msgstr "印度-林布"
+
+msgid "Limburgish"
+msgstr "林堡文"
 
 msgid ""
 "Limit the font so that only the glyphs referenced in the first 256 encodings\n"
@@ -8178,6 +8388,12 @@ msgstr "邏輯和與選擇"
 
 msgid "Logos"
 msgstr "圖標"
+
+msgid "Lojban"
+msgstr "邏輯文"
+
+msgid "Lombard"
+msgstr "倫巴底文"
 
 msgid "Lombardic Forms"
 msgstr "Lombardic 形式"
@@ -8327,6 +8543,9 @@ msgstr "低"
 msgid "Low Mari"
 msgstr "低馬里語"
 
+msgid "Low Saxon"
+msgstr "低地薩克遜文"
+
 msgid "Low Surrogates"
 msgstr "低段代理區"
 
@@ -8348,6 +8567,12 @@ msgstr "小寫轉為小型的大寫字母"
 msgid "Lowercase to Small Capitals"
 msgstr "小寫轉為小型大寫字母"
 
+msgid "Luba-Katanga"
+msgstr "魯巴加丹加文"
+
+msgid "Luba-Lulua"
+msgstr "魯巴魯魯亞文"
+
 msgid "Lule Sami"
 msgstr "魯爾薩米語"
 
@@ -8356,6 +8581,9 @@ msgstr "盧奧語"
 
 msgid "Luxembourgish"
 msgstr "盧森堡語"
+
+msgid "Luyia"
+msgstr "盧雅文"
 
 msgid "Lycian"
 msgstr "呂基亞文"
@@ -8490,11 +8718,17 @@ msgstr "Macintosh 拉丁語"
 msgid "Mag:"
 msgstr "放大："
 
+msgid "Magahi"
+msgstr "摩揭陀文"
+
 msgid "Magnification:"
 msgstr "放大："
 
 msgid "Magnify (Minify with alt)"
 msgstr "放大 (縮小加上 alt)"
+
+msgid "Mahajani"
+msgstr "印地文"
 
 msgid "Mahjong Tiles"
 msgstr "麻將牌"
@@ -8519,6 +8753,12 @@ msgstr "製作平行(_P)…"
 
 msgid "Make the counters narrower"
 msgstr "將字腔變窄"
+
+msgid "Makhuwa"
+msgstr "馬庫瓦文"
+
+msgid "Makonde"
+msgstr "馬孔德文"
 
 msgid "Malagasy"
 msgstr "馬達加斯加語"
@@ -8550,6 +8790,9 @@ msgstr "馬爾他語"
 msgid "Mandaic"
 msgstr "曼底安語"
 
+msgid "Mandar"
+msgstr "曼達文"
+
 msgid "Manichaean"
 msgstr "摩尼字母"
 
@@ -8558,6 +8801,9 @@ msgstr "曼尼普爾語"
 
 msgid "Manufacturer"
 msgstr "製造商"
+
+msgid "Manx"
+msgstr "曼島文"
 
 msgid "Manx Gaelic"
 msgstr "馬恩語蓋爾語"
@@ -8689,8 +8935,14 @@ msgstr ""
 "在連體字之內的標記應該依照書寫的方向排序。\n"
 "這一個和 %d 都是超出順序。"
 
+msgid "Marshallese"
+msgstr "馬紹爾文"
+
 msgid "Marwari"
 msgstr "馬爾瓦利語"
+
+msgid "Masaram Gondi"
+msgstr "岡德文"
 
 msgid "Mass Glyph Rename"
 msgstr "大量字圖重新命名"
@@ -8773,6 +9025,9 @@ msgstr "最大堆疊深度"
 msgid "Max _Stack Depth:"
 msgstr "最大堆疊深度(_S)："
 
+msgid "Mazanderani"
+msgstr "馬贊德蘭文"
+
 msgid "Measure distance, angle between points"
 msgstr "量測兩點之間的距離、角度"
 
@@ -8799,6 +9054,9 @@ msgstr "中高"
 
 msgid "Medium Low"
 msgstr "中低"
+
+msgid "Medumba"
+msgstr "梅敦巴文"
 
 msgid "Meetei Mayek"
 msgstr "曼尼普爾文"
@@ -8855,6 +9113,9 @@ msgstr "麥羅埃文草書體"
 msgid "Meroitic Hieroglyphs"
 msgstr "麥羅埃文聖書體"
 
+msgid "Meru"
+msgstr "梅魯文"
+
 msgid ""
 "MetaFont (mf) generates lots of verbiage to stdout.\n"
 "Most of the time I find it an annoyance but it is\n"
@@ -8901,11 +9162,17 @@ msgstr "最小字距微調"
 msgid "MinConnectorOverlap:"
 msgstr "MinConnectorOverlap："
 
+msgid "Minangkabau"
+msgstr "米南卡堡文"
+
 msgid "Minor A_xis:"
 msgstr "次要軸線(_X)："
 
 msgid "Minor:"
 msgstr "次級的："
+
+msgid "Mirandese"
+msgstr "米蘭德斯文"
 
 msgid "Misc."
 msgstr "雜項"
@@ -9047,11 +9314,17 @@ msgstr "缺少字尾"
 msgid "Mixed contours and references"
 msgstr "混合的輪廓和參照"
 
+msgid "Mizo"
+msgstr "米佐文"
+
 msgid "Modern"
 msgstr "現代型"
 
 msgid "Modern Serifs"
 msgstr "現代型襯線(MS)"
+
+msgid "Modi"
+msgstr "馬拉地文"
 
 msgid "Modification Date:"
 msgstr "更動日期："
@@ -9095,6 +9368,9 @@ msgstr "混成拼貼"
 msgid "Montages"
 msgstr "混成拼貼"
 
+msgid "Moose Cree"
+msgstr "穆斯克里文"
+
 msgid "More Images Than Selected Glyphs"
 msgstr "比已選字圖更多的圖像"
 
@@ -9108,6 +9384,12 @@ msgstr "比所需還指定更多的移位"
 #, c-format
 msgid "More than 256 entries in subfont %s"
 msgstr "在子字型  %s 中有超過 256 個條目"
+
+msgid "Morisyen"
+msgstr "克里奧文（模里西斯）"
+
+msgid "Mossi"
+msgstr "莫西文"
 
 msgid "Move by Ruler..."
 msgstr "移動依照尺規…"
@@ -9127,6 +9409,9 @@ msgstr "默祿文"
 
 msgid "Mult Subs"
 msgstr "多重替代"
+
+msgid "Multani"
+msgstr "木爾坦文"
 
 msgid "Multi-Master table, obsolete"
 msgstr "多母版表格，已停用"
@@ -9171,6 +9456,9 @@ msgstr "多重密度字型"
 
 msgid "MultipleEncodingIgnored"
 msgstr "多重編碼已忽略"
+
+msgid "Muscogee"
+msgstr "馬斯科吉文"
 
 msgid "Music"
 msgstr "音樂"
@@ -9284,6 +9572,9 @@ msgstr "名稱表列建立失敗"
 msgid "Narrow"
 msgstr "窄"
 
+msgid "Navajo"
+msgstr "納瓦荷文"
+
 msgid "Navigation"
 msgstr "導航"
 
@@ -9295,6 +9586,9 @@ msgstr "恩敦加語"
 
 msgid "Ne_xt Control Point"
 msgstr "下一個控制點(_X)"
+
+msgid "Neapolitan"
+msgstr "拿波里文"
 
 msgid "Near"
 msgstr "接近"
@@ -9410,6 +9704,9 @@ msgstr "新增點陣字視窗(_B)"
 
 msgid "New _Metrics Window"
 msgstr "新增字框視窗(_M)"
+
+msgid "Newa"
+msgstr "Vote 尼瓦爾文"
 
 msgid "Newari"
 msgstr "尼瓦爾語"
@@ -9858,6 +10155,9 @@ msgstr "通常簡化將無法變更點上輪廓的斜率。"
 msgid "Northern Sami"
 msgstr "北部薩摩斯語"
 
+msgid "Northern Sotho"
+msgstr "北索托文"
+
 msgid "Northern Tai"
 msgstr "北泰語"
 
@@ -9872,6 +10172,9 @@ msgstr "挪威語(巴克摩)"
 
 msgid "Norwegian (Nynorsk)"
 msgstr "挪威語(耐諾斯克)"
+
+msgid "Norwegian Nynorsk"
+msgstr "新挪威文"
 
 msgid "Not ASCII"
 msgstr "並非 ASCII"
@@ -9971,6 +10274,9 @@ msgstr "沒有任何東西可追蹤"
 msgid "Nothng found."
 msgstr "找不到任何東西。"
 
+msgid "Novial"
+msgstr "諾維亞文"
+
 msgid "Nukta Forms"
 msgstr "Nukta 形式"
 
@@ -10029,8 +10335,14 @@ msgstr "數字形式"
 msgid "Nushu"
 msgstr "女書"
 
+msgid "Nyamwezi"
+msgstr "尼揚韋齊文"
+
 msgid "Nyanja/Chewa"
 msgstr "尼揚賈語/切瓦語"
+
+msgid "Nyankole"
+msgstr "尼揚科萊文"
 
 msgid "Nyiakeng Puachue Hmong"
 msgstr "創世紀苗文"
@@ -10192,11 +10504,17 @@ msgstr "Ofm 儲存失敗"
 msgid "Ogham"
 msgstr "歐甘文"
 
+msgid "Oji-Cree"
+msgstr "奧吉克里語"
+
 msgid "Ol Chiki"
 msgstr "桑塔利文"
 
 msgid "Old Hungarian"
 msgstr "古匈牙利字母"
+
+msgid "Old Irish"
+msgstr "古愛爾蘭文"
 
 msgid "Old Italic"
 msgstr "古斜體"
@@ -10597,6 +10915,9 @@ msgstr "成對位置"
 msgid "Pairwise Positioning (kerning)"
 msgstr "成對定位 (字距微調)"
 
+msgid "Palauan"
+msgstr "帛琉文"
+
 msgid "Pale_ttes"
 msgstr "調色盤(_T)"
 
@@ -10611,6 +10932,9 @@ msgstr "Palm OS 點陣字"
 
 msgid "Palmyrene"
 msgstr "帕爾邁拉字母"
+
+msgid "Pangasinan"
+msgstr "潘加辛文"
 
 msgid "Panose"
 msgstr "剖析"
@@ -10943,11 +11267,17 @@ msgstr "依胚騰填滿"
 msgid "Patterns"
 msgstr "胚騰"
 
+msgid "Pau Cin Hau"
+msgstr "鮑欽豪文"
+
 msgid "Pen Slanted"
 msgstr "畫筆傾斜"
 
 msgid "Pen _Angle:"
 msgstr "畫筆角度(_A)："
+
+msgid "Pennsylvania German"
+msgstr "賓夕法尼亞德文"
 
 msgid "Per glyph baseline data"
 msgstr "各別字圖基線資料"
@@ -10990,6 +11320,9 @@ msgstr "音標擴充"
 
 msgid "Phonetic Extensions Supplement"
 msgstr "注音符號擴充補充"
+
+msgid "Picard"
+msgstr "庇卡底文"
 
 msgid "Pick a CMap subtable"
 msgstr "挑選一個 CMap 副表格"
@@ -11102,6 +11435,9 @@ msgstr "請指定用於 %.20s-%.20s 的新補充"
 
 msgid "Please specify a script"
 msgstr "請指定文字"
+
+msgid "Pohnpeian"
+msgstr "波那貝文"
 
 msgid "Poin_ts too close"
 msgstr "點與點太靠近(_T)"
@@ -11526,6 +11862,9 @@ msgstr "急速/水平"
 
 msgid "Rapid/Vertical"
 msgstr "急速/垂直"
+
+msgid "Rarotongan"
+msgstr "拉羅通加文"
 
 msgid "Raster"
 msgstr "點陣"
@@ -12054,6 +12393,9 @@ msgstr "從右到左翻轉的形式"
 msgid "Ro_und"
 msgstr "圓角(_U)"
 
+msgid "Rohingya"
+msgstr "羅興亞文"
+
 msgid "Roman Connected"
 msgstr "羅馬體已連結"
 
@@ -12065,6 +12407,9 @@ msgstr "羅馬體追尾"
 
 msgid "Romanian"
 msgstr "羅馬尼亞語"
+
+msgid "Romansh"
+msgstr "羅曼斯文"
 
 msgid "Romany"
 msgstr "羅曼尼語"
@@ -12119,6 +12464,9 @@ msgstr "相對於 X 軸旋轉"
 msgid "Rotation about Y Axis"
 msgstr "相對於 Y 軸旋轉"
 
+msgid "Rotuman"
+msgstr "羅圖馬島文"
+
 msgid "Rough"
 msgstr "粗糙"
 
@@ -12164,6 +12512,9 @@ msgstr "俄語"
 
 msgid "Russian Buriat"
 msgstr "俄語布里亞特語"
+
+msgid "Rusyn"
+msgstr "盧森尼亞文"
 
 msgid "S Brush Joined"
 msgstr "S 筆刷聯結"
@@ -12262,6 +12613,9 @@ msgstr "薩米語(拉普語)"
 msgid "Samoan"
 msgstr "薩摩亞語"
 
+msgid "Samogitian"
+msgstr "薩莫吉希亞文"
+
 msgid "Sample Text"
 msgstr "範例文字"
 
@@ -12303,6 +12657,15 @@ msgstr "梵語"
 
 msgid "Santali"
 msgstr "桑塔利文"
+
+msgid "Sardinian"
+msgstr "撒丁文"
+
+msgid "Sasak"
+msgstr "撒撒克文"
+
+msgid "Saterland Frisian"
+msgstr "沙特菲士蘭文"
 
 msgid "Saturation and Value, and the three colors must be between 0 and 1"
 msgstr "飽和度和數值，而三種顏色必須在 0 和 1 之間"
@@ -12484,6 +12847,9 @@ msgstr "科學"
 
 msgid "Scientific Inferiors"
 msgstr "科學記號"
+
+msgid "Scots"
+msgstr "蘇格蘭文"
 
 msgid "Scottish Gaelic"
 msgstr "蘇格蘭蓋爾語"
@@ -12969,6 +13335,12 @@ msgstr "半窄 (87.5%)"
 msgid "Semi-Expanded (112.5%)"
 msgstr "半寬 (112.5%)"
 
+msgid "Sena"
+msgstr "賽納文"
+
+msgid "Seneca"
+msgstr "塞訥卡文"
+
 msgid "Separate ratios for horizontal and vertical stems"
 msgstr "水平與垂直字幹分開的比率"
 
@@ -13192,6 +13564,9 @@ msgstr "成形填滿"
 msgid "Shapes"
 msgstr "形狀"
 
+msgid "Sharada"
+msgstr "夏拉達文"
+
 msgid "Shavian"
 msgstr "蕭伯納字母"
 
@@ -13203,6 +13578,9 @@ msgstr "按下開啟 Shift"
 
 msgid "Sho_w"
 msgstr "顯示(_W)"
+
+msgid "Shona"
+msgstr "紹納文"
 
 #, c-format
 msgid "Shouldn't be in addinfo \"%s"
@@ -13259,8 +13637,14 @@ msgstr "收縮最大查找"
 msgid "Shrink:"
 msgstr "收縮："
 
+msgid "Sicilian"
+msgstr "西西里文"
+
 msgid "Sidamo"
 msgstr "希達摩語"
+
+msgid "Siddham"
+msgstr "悉曇文字"
 
 msgid "Side Bearing Addition"
 msgstr "側邊留白附加"
@@ -13273,6 +13657,9 @@ msgstr "側邊留白擴張因子"
 
 msgid "Side Bearings:"
 msgstr "側邊留白："
+
+msgid "Silesian"
+msgstr "西利西亞文"
 
 msgid "Simple"
 msgstr "簡單"
@@ -13294,6 +13681,9 @@ msgstr "簡化更多…"
 
 msgid "Simplifying..."
 msgstr "簡化中…"
+
+msgid "Sindhi"
+msgstr "信德文"
 
 msgid "Single Position"
 msgstr "單一位置"
@@ -13428,6 +13818,9 @@ msgstr "小寫形式變體"
 msgid "Snap Outlines to Pi_xel Grid"
 msgstr "貼齊描邊到像素格線(_X)"
 
+msgid "Soga"
+msgstr "索加文"
+
 msgid "Sogdian"
 msgstr "粟特字母"
 
@@ -13445,6 +13838,9 @@ msgstr "有些東西發生了錯誤"
 
 msgid "Soninke"
 msgstr "索寧克語"
+
+msgid "Sora Sompeng"
+msgstr "索朗桑朋文字"
 
 msgid "Sorbian"
 msgstr "文德語"
@@ -13478,6 +13874,12 @@ msgstr "來源是從該項設計被做出的地方"
 
 msgid "Southern Sami"
 msgstr "南部薩摩斯語"
+
+msgid "Southern Sotho"
+msgstr "塞索托文"
+
+msgid "Soyombo"
+msgstr "索永布文字"
 
 msgid "Space Regions"
 msgstr "空間區域"
@@ -13743,6 +14145,9 @@ msgstr "標準"
 msgid "Standard Ligatures"
 msgstr "標準連體字"
 
+msgid "Standard Moroccan Tamazight"
+msgstr "標準摩洛哥塔馬塞特文"
+
 msgid "Standard shift up applied to superscript elements."
 msgstr "套用到上標元件的標準上移。"
 
@@ -13849,6 +14254,9 @@ msgstr "直臂/垂直"
 
 msgid "Straight Arms/Wedge"
 msgstr "直臂/楔形"
+
+msgid "Straits Salish"
+msgstr "海峽薩利希語"
 
 msgid "Stretch:"
 msgstr "延展："
@@ -14055,6 +14463,9 @@ msgstr "子表格延展至 GPOS 表格結束之後"
 msgid "Subtable extends beyond end of GSUB table"
 msgstr "子表格延展至 GSUB 表格結束之後"
 
+msgid "Sukuma"
+msgstr "蘇庫馬文"
+
 msgid "Sum Around:"
 msgstr "周圍總和："
 
@@ -14162,6 +14573,9 @@ msgstr "鉤耳"
 
 msgid "Swash Variance"
 msgstr "鉤耳變體"
+
+msgid "Swati"
+msgstr "斯瓦特文"
 
 msgid "Swedish"
 msgstr "瑞典語"
@@ -14306,6 +14720,9 @@ msgstr "表格「%c%c%c%c」和「%c%c%c%c」重疊"
 msgid "Tabular Numbers"
 msgstr "定格數字"
 
+msgid "Tachelhit"
+msgstr "希爾哈文"
+
 msgid "Tag must be 4 characters long"
 msgstr "標記必須是 4 個字元長"
 
@@ -14341,6 +14758,15 @@ msgstr "塔吉克語"
 
 msgid "Tajiki"
 msgstr "塔吉克語"
+
+msgid "Takri"
+msgstr "塔卡里文字"
+
+msgid "Talysh"
+msgstr "塔里什文"
+
+msgid "Tamashek"
+msgstr "塔馬奇克文"
 
 msgid "Tamazight (Latin)"
 msgstr "塔馬塞特語(拉丁語)"
@@ -14383,6 +14809,9 @@ msgstr "終端形式 #3"
 
 msgid "Tertiary Ideographic Plane"
 msgstr "表意文字第三平面"
+
+msgid "Tetum"
+msgstr "泰頓文"
 
 msgid "Text Field"
 msgstr "文字欄位"
@@ -15774,6 +16203,9 @@ msgstr "突現視窗維持可見的時間 (以毫秒為單位)"
 msgid "Tiny Selection"
 msgstr "微小的選擇"
 
+msgid "Tirhuta"
+msgstr "邁蒂利文"
+
 msgid "Title Background"
 msgstr "標題背景"
 
@@ -15788,6 +16220,12 @@ msgstr "標題文字顏色"
 
 msgid "Titling"
 msgstr "加標題"
+
+msgid "Tiv"
+msgstr "提夫文"
+
+msgid "Tlingit"
+msgstr "特林基特文"
 
 msgid "To P_DF File"
 msgstr "為 P_DF 檔案"
@@ -15812,6 +16250,9 @@ msgstr "到它們本身的名稱"
 
 msgid "To:"
 msgstr "到："
+
+msgid "Tok Pisin"
+msgstr "托比辛文"
 
 msgid "Tonga"
 msgstr "東加語"
@@ -16085,11 +16526,20 @@ msgstr "頌加語"
 msgid "Tswana"
 msgstr "班圖語"
 
+msgid "Tulu"
+msgstr "圖盧文"
+
+msgid "Tumbuka"
+msgstr "圖姆布卡文"
+
 msgid "Turkish"
 msgstr "土耳其語"
 
 msgid "Turkmen"
 msgstr "土庫曼語"
+
+msgid "Tuvalu"
+msgstr "吐瓦魯文"
 
 msgid "Twi"
 msgstr "奇族語(迦那)"
@@ -16169,6 +16619,9 @@ msgstr "超窄 (50%)"
 
 msgid "Ultra-Expanded (200%)"
 msgstr "超寬 (200%)"
+
+msgid "Umbundu"
+msgstr "姆本杜文"
 
 #, c-format
 msgid "Unable to parse the pdf objects that make up %s"
@@ -16596,6 +17049,9 @@ msgstr "使用者利用下列兩欄位控制加粗動作"
 msgid "Using the OFL for your open fonts"
 msgstr "在你的開源字型中使用 OFL"
 
+msgid "Uyghur"
+msgstr "維吾爾文"
+
 msgid "Uzbek"
 msgstr "烏茲別克語"
 
@@ -16707,6 +17163,9 @@ msgstr "供應商 ID："
 
 msgid "Vendor URL"
 msgstr "供應商 URL"
+
+msgid "Venetian"
+msgstr "威尼斯文"
 
 msgid "Version"
 msgstr "版本"
@@ -16845,8 +17304,14 @@ msgstr "檢視點"
 msgid "Vithkuqi"
 msgstr "維斯庫奇文"
 
+msgid "Volapük"
+msgstr "沃拉普克文"
+
 msgid "Vowel Jamo Forms"
 msgstr "韓文字母母音形式"
+
+msgid "Võro"
+msgstr "佛羅文"
 
 msgid "WWS Family"
 msgstr "WWS 字族"
@@ -16859,6 +17324,9 @@ msgstr "空白字圖(_H)"
 
 msgid "W_ithin Rectangle"
 msgstr "在矩形之內(_I)"
+
+msgid "Walloon"
+msgstr "瓦隆文"
 
 msgid "Wancho"
 msgstr "文喬字母"
@@ -16964,6 +17432,9 @@ msgstr "監看的 Cvt 變更"
 msgid "Watched Store Change"
 msgstr "監看的儲存變更"
 
+msgid "Wayuu"
+msgstr "瓦尤文"
+
 msgid "We don't understand this font"
 msgstr "我們無法了解此字型"
 
@@ -16972,6 +17443,9 @@ msgstr "只限字重、寬度、斜率"
 
 msgid "Welsh"
 msgstr "威爾斯語"
+
+msgid "Western Panjabi"
+msgstr "拉亨達文"
 
 msgid "What is the pixel size of the font in this file?"
 msgstr "在這個檔案中的字型像素尺寸是什麼？"
@@ -17251,6 +17725,12 @@ msgstr "Y 接近¹ 標準高度(_S)"
 msgid "Y:"
 msgstr "Y："
 
+msgid "Yao"
+msgstr "瑤文"
+
+msgid "Yapese"
+msgstr "雅浦文"
+
 msgid "Yes"
 msgstr "是"
 
@@ -17502,8 +17982,17 @@ msgstr "您的 freetype 函式庫版本不包含位元碼解譯器。"
 msgid "Z_oom out"
 msgstr "縮小(_O)"
 
+msgid "Zanabazar Square"
+msgstr "札那巴札爾文字"
+
 msgid "Zande"
 msgstr "贊德語"
+
+msgid "Zarma"
+msgstr "扎爾馬文"
+
+msgid "Zhuang"
+msgstr "壯文"
 
 msgid "Zone:"
 msgstr "區域："

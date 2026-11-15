@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Language: el_GR\n"
@@ -39,6 +39,9 @@ msgstr " Αφαίρεση ενός μεγέθος σημαίνει διαγρα�
 msgid "< _Prev"
 msgstr "< _Προηγ"
 
+msgid "Abkhazian"
+msgstr "Αμπχαζικά"
+
 msgid "Above Base Forms"
 msgstr "Μορφές πάνω από τη βάση"
 
@@ -50,6 +53,21 @@ msgstr "Πρόσβαση σε όλα τα εναλλακτικά"
 
 msgid "Additional arguments for autotrace program:"
 msgstr "Επιπλέον ορίσματα προς το πρόγραμμα autotrace:"
+
+msgid "Adlam"
+msgstr "Άντλαμ"
+
+msgid "Adyghe"
+msgstr "Αντιγκέα"
+
+msgid "Afar"
+msgstr "Αφάρ"
+
+msgid "Afrikaans"
+msgstr "Αφρικάανς"
+
+msgid "Akan"
+msgstr "Ακάν"
 
 msgid "Albanian"
 msgstr "Αλβανική"
@@ -84,12 +102,24 @@ msgstr "Αρχαία Ελληνικά μουσικά σύμβολα"
 msgid "Ancient Greek Numbers"
 msgstr "Αρχαία Ελληνικά ψηφία"
 
+msgid "Aragonese"
+msgstr "Αραγονικά"
+
 msgid ""
 "Are you sure you want to replace Å?\n"
 "The ring will not join to the A."
 msgstr ""
 "Είστε σίγουροι ότι θέλετε να αντικαταστήσεται το Å;\n"
 "Το δακτυλίδι δεν θα ενώνεται με το A."
+
+msgid "Aromanian"
+msgstr "Αρομανικά"
+
+msgid "Assamese"
+msgstr "Ασαμικά"
+
+msgid "Asturian"
+msgstr "Αστουριανά"
 
 #, c-format
 msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width."
@@ -109,17 +139,35 @@ msgstr "Αυτόματα"
 msgid "Autotracing..."
 msgstr "Διαδικασία «σκιαγράφισης»..."
 
+msgid "Awadhi"
+msgstr "Αγουαντί"
+
+msgid "Aymara"
+msgstr "Αϊμάρα"
+
+msgid "Azerbaijani"
+msgstr "Αζερμπαϊτζανικά"
+
 msgid "BDF Info..."
 msgstr "Πληφορορίες BDF..."
 
 msgid "Bad Number"
 msgstr "Ακατάλληλος αριθμός"
 
+msgid "Baluchi"
+msgstr "Μπαλούτσι"
+
+msgid "Bambara"
+msgstr "Μπαμπάρα"
+
 msgid "Base Glyph"
 msgstr "Βασικός γλύφος"
 
 msgid "Base Lig"
 msgstr "Βασικό πολλ. στοιχείο"
+
+msgid "Bashkir"
+msgstr "Μπασκίρ"
 
 msgid "Basque"
 msgstr "Βασκική"
@@ -133,17 +181,44 @@ msgstr "Φόρμες κάτω από τη βάση"
 msgid "Below Base Substitutions"
 msgstr "Αντικαταστάσεις κάτω από τη βάση"
 
+msgid "Bemba"
+msgstr "Μπέμπα"
+
+msgid "Bhojpuri"
+msgstr "Μπότζπουρι"
+
 msgid "Bible Cree"
 msgstr "Cree της Βίβλου"
 
+msgid "Bikol"
+msgstr "Μπικόλ"
+
+msgid "Bislama"
+msgstr "Μπισλάμα"
+
 msgid "Blackfoot"
 msgstr "Μαυροπόδαροι"
+
+msgid "Bodo"
+msgstr "Μπόντο"
+
+msgid "Bopomofo"
+msgstr "Μποπομόφο"
+
+msgid "Bosnian"
+msgstr "Βοσνιακά"
+
+msgid "Braille"
+msgstr "Μπράιγ"
 
 msgid "Breton"
 msgstr "Βρετονική"
 
 msgid "Bulgarian"
 msgstr "Βουλγαρική"
+
+msgid "Burmese"
+msgstr "Βιρμανικά"
 
 msgid "Byzantine Music"
 msgstr "Βυζαντινή μουσική"
@@ -153,6 +228,9 @@ msgstr "Ασιατικά Ιδεογράμματα"
 
 msgid "C_hop"
 msgstr "Κα_θαρισμός"
+
+msgid "Cajun French"
+msgstr "Γαλλικά (Λουιζιάνα)"
 
 msgid "Can't Parallel"
 msgstr "Αδύνατος ο παραλληλισμός"
@@ -199,17 +277,50 @@ msgstr "Κεφαλαία σε μικρά κεφαλαία"
 msgid "Capitals to Small Capitals"
 msgstr "Κεφαλαία σε πεζά κεφαλαία"
 
+msgid "Carian"
+msgstr "Καριάν"
+
 msgid "Case-Sensitive Forms"
 msgstr "Μορφές διαχωρισμού κεφαλαίων-πεζών"
 
 msgid "Catalan"
 msgstr "Καταλανική"
 
+msgid "Cayuga"
+msgstr "Καγιούγκα"
+
+msgid "Cebuano"
+msgstr "Σεμπουάνο"
+
+msgid "Chakma"
+msgstr "Τσάκμα"
+
+msgid "Chamorro"
+msgstr "Τσαμόρο"
+
 msgid "Chechen"
 msgstr "Τσετσενική"
 
+msgid "Cheyenne"
+msgstr "Τσεγιέν"
+
+msgid "Chiga"
+msgstr "Τσίγκα"
+
+msgid "Chipewyan"
+msgstr "Τσίπιουαν"
+
+msgid "Choctaw"
+msgstr "Τσόκτο"
+
 msgid "Church Slavonic"
 msgstr "Εκκλησιαστική Σλαβονική"
+
+msgid "Chuukese"
+msgstr "Τσουκίζι"
+
+msgid "Chuvash"
+msgstr "Τσουβασικά"
 
 msgid "Color:"
 msgstr "Χρώμα:"
@@ -219,6 +330,9 @@ msgstr "«Εξ ορισμού»"
 
 msgid "Comment"
 msgstr "Σχόλιο"
+
+msgid "Comorian"
+msgstr "Κομοριανά"
 
 msgid "Component"
 msgstr "Τμήμα                        "
@@ -233,8 +347,14 @@ msgstr "Συντεταγμένη κατά μήκος της οποίας να γ
 msgid "Cor:"
 msgstr "Συντεταγμ:"
 
+msgid "Cornish"
+msgstr "Κορνουαλικά"
+
 msgid "Corrections must be between -128 and 127 (and should be smaller)"
 msgstr "Οι διορθώσεις πρέπει να είναι μεταξύ -128 και 127 (και θα πρέπει να είναι μικρότερες)"
+
+msgid "Corsican"
+msgstr "Κορσικανικά"
 
 #, c-format
 msgid "Could not open output file: %s"
@@ -252,6 +372,12 @@ msgstr "Αδύνατο το άνοιγμα του αρχείου %.200s"
 
 msgid "Counters"
 msgstr "Μετρητές"
+
+msgid "Cree"
+msgstr "Κρι"
+
+msgid "Crimean Tatar"
+msgstr "Τουρκικά Κριμαίας"
 
 msgid "Croatian"
 msgstr "Κροατική"
@@ -274,6 +400,12 @@ msgstr "Τσέχικη"
 msgid "Danish"
 msgstr "Δανέζικη"
 
+msgid "Dargwa"
+msgstr "Ντάργκουα"
+
+msgid "Dari"
+msgstr "Νταρί"
+
 msgid "Default All"
 msgstr "Καθορισμός προεπιλογής σε όλα"
 
@@ -289,8 +421,14 @@ msgstr "Παρανομαστές"
 msgid "Deseret (Mormon)"
 msgstr "Deseret (Μορμονική)"
 
+msgid "Devanagari"
+msgstr "Ντεβαναγκάρι"
+
 msgid "Diagonal Fractions"
 msgstr "Διαγώνια κλασματα"
+
+msgid "Dinka"
+msgstr "Ντίνκα"
 
 msgid "Discretionary Ligatures"
 msgstr "Προαιρετικά πολλαπλά στοχεία"
@@ -307,8 +445,14 @@ msgstr "Εμφανίζει όλους τους επιλεγμένους χαρα
 msgid "Distance"
 msgstr "Απόσταση"
 
+msgid "Divehi"
+msgstr "Ντιβέχι"
+
 msgid "Dutch"
 msgstr "Ολλανδική"
+
+msgid "Dzongkha"
+msgstr "Ντζόνγκχα"
 
 msgid "E_lement"
 msgstr "_Στοιχείο"
@@ -316,14 +460,23 @@ msgstr "_Στοιχείο"
 msgid "Eastern Cree"
 msgstr "Ανατολική Cree"
 
+msgid "Efik"
+msgstr "Εφίκ"
+
 msgid "English"
 msgstr "Αγγλική"
+
+msgid "Erzya"
+msgstr "Έρζια"
 
 msgid "Esperanto"
 msgstr "Εσπεράντο"
 
 msgid "Estonian"
 msgstr "Εσθονική"
+
+msgid "Ewe"
+msgstr "Έουε"
 
 msgid "Expert Forms"
 msgstr "Μορφές Expert"
@@ -338,8 +491,23 @@ msgstr "Αποτυχία ανοίγματος του αρχείου %s για έ
 msgid "Failed to open temporary output file"
 msgstr "Αποτυχία ανοίγματος παρωδικού αρχείου εξόδου"
 
+msgid "Fang"
+msgstr "Φανγκ"
+
+msgid "Fanti"
+msgstr "Φάντι"
+
+msgid "Faroese"
+msgstr "Φεροϊκά"
+
 msgid "Features"
 msgstr "Χαρακτηριστικά"
+
+msgid "Fijian"
+msgstr "Φίτζι"
+
+msgid "Filipino"
+msgstr "Φιλιππινικά"
 
 msgid "Final Glyph On Line"
 msgstr "Τελικός γλύφος σε αράδα"
@@ -368,12 +536,21 @@ msgstr "Ορι_ζόντια περιστροφή"
 msgid "Flip _Vertically"
 msgstr "Κά_θετη περιστροφή"
 
+msgid "Fon"
+msgstr "Φον"
+
 #, c-format
 msgid "Found %1$.4g, expected %2$.4g"
 msgstr "Βρέθηκε %1$.4g, ενώ αναμενόταν %2$.4g"
 
+msgid "French"
+msgstr "Γαλλικά"
+
 msgid "French Antillean"
 msgstr "Γαλλική Αντιλλών"
+
+msgid "Friulian"
+msgstr "Φριουλανικά"
 
 msgid "Full Pa_ge Glyph"
 msgstr "Γλύφος πλήρους σε_λίδας"
@@ -404,6 +581,18 @@ msgstr "100"
 msgid "GGadget|ScaleFactor|100"
 msgstr "200"
 
+msgid "Ga"
+msgstr "Γκα"
+
+msgid "Gagauz"
+msgstr "Γκαγκάουζ"
+
+msgid "Galician"
+msgstr "Γαλικιανά"
+
+msgid "Ganda"
+msgstr "Γκάντα"
+
 msgid "General Punctuation"
 msgstr "Σύμβολα στίξης"
 
@@ -412,6 +601,12 @@ msgstr "Δημιουργία γραμματοσειρά τύπου _macintosh"
 
 msgid "Generating PostScript Font"
 msgstr "Δημιουργία γραμματοσειράς PostScript"
+
+msgid "German"
+msgstr "Γερμανικά"
+
+msgid "Glagolitic"
+msgstr "Γκλαγκολιτικό"
 
 msgid "Glyph Composition/Decomposition"
 msgstr "Σύνθεση/Διάσπαση Γλύφου"
@@ -446,6 +641,12 @@ msgstr "Ο γλύφος “%s” δεν συμπεριλαμβάνεται στ�
 msgid "Glyph “%s” missing from %s at %d@%d\n"
 msgstr "Ο γλύφος “%s” δεν υπάρχει στο %s από %d@%d\n"
 
+msgid "Gondi"
+msgstr "Γκόντι"
+
+msgid "Gothic"
+msgstr "Γοτθικό"
+
 msgid "Greek Extended"
 msgstr "Πολυτονικά Ελληνικά"
 
@@ -454,6 +655,18 @@ msgstr "Ελληνικά κι κοπτικά"
 
 msgid "Greenlandic"
 msgstr "Γροιλανδική"
+
+msgid "Guarani"
+msgstr "Γκουαρανί"
+
+msgid "Gurmukhi"
+msgstr "Γκουρμουκχί"
+
+msgid "Gusii"
+msgstr "Γκούσι"
+
+msgid "Haida"
+msgstr "Χάιντα"
 
 msgid "Haitian"
 msgstr "Αϊτινή"
@@ -467,14 +680,41 @@ msgstr "Μισές μορφές"
 msgid "Half Widths"
 msgstr "Μισά πλάτη"
 
+msgid "Halkomelem"
+msgstr "Χαλκομελέμ"
+
+msgid "Hangul"
+msgstr "Χανγκούλ"
+
+msgid "Haryanvi"
+msgstr "Χαργιάνβι"
+
+msgid "Hausa"
+msgstr "Χάουσα"
+
+msgid "Hawaiian"
+msgstr "Χαβαϊκά"
+
+msgid "Herero"
+msgstr "Χερέρο"
+
+msgid "Hiligaynon"
+msgstr "Χιλιγκαϊνόν"
+
 msgid "Hindi"
 msgstr "Χίντι"
+
+msgid "Hiri Motu"
+msgstr "Χίρι Μότου"
 
 msgid "Historic Ligatures"
 msgstr "Ιστορικά πολλαπλά στοιχεία"
 
 msgid "Historical Forms"
 msgstr "Ιστορικές μορφές"
+
+msgid "Hmong"
+msgstr "Χμονγκ"
 
 msgid "Horizontal Kana Alternatives"
 msgstr "Εναλλακτικά οριζόντια Kana"
@@ -485,8 +725,20 @@ msgstr "Οριζόντια «υποσκαφή»"
 msgid "Hungarian"
 msgstr "Ουγγρική"
 
+msgid "Iban"
+msgstr "Ιμπάν"
+
+msgid "Ibibio"
+msgstr "Ιμπίμπιο"
+
 msgid "Icelandic"
 msgstr "Ισλανδική"
+
+msgid "Ido"
+msgstr "Ίντο"
+
+msgid "Igbo"
+msgstr "Ίγκμπο"
 
 msgid "Ignore Ligatures"
 msgstr "Αγνόησε τα πολλαπλά στοιχεία"
@@ -494,11 +746,32 @@ msgstr "Αγνόησε τα πολλαπλά στοιχεία"
 msgid "Ignore this problem in the future"
 msgstr "Εφεξής αγνόησε αυτό το πρόβλημα"
 
+msgid "Imperial Aramaic"
+msgstr "Αυτοκρατορικό Αραμαϊκό"
+
+msgid "Inari Sami"
+msgstr "Ινάρι Σάμι"
+
 msgid "Indonesian"
 msgstr "Ινδονισιακή"
 
+msgid "Ingush"
+msgstr "Ινγκούς"
+
 msgid "Initial Forms"
 msgstr "Αρχικές μορφές"
+
+msgid "Inscriptional Pahlavi"
+msgstr "Επιγραφικό Παχλάβι"
+
+msgid "Inscriptional Parthian"
+msgstr "Επιγραφικό Παρθιάν"
+
+msgid "Interlingua"
+msgstr "Ιντερλίνγκουα"
+
+msgid "Interlingue"
+msgstr "Ιντερλίνγκουε"
 
 msgid "Inuktitut"
 msgstr "«Εσκιμώικη»"
@@ -536,26 +809,114 @@ msgstr "Μορφές JIS90"
 msgid "Japanese"
 msgstr "Ιαπωνική"
 
+msgid "Kabardian"
+msgstr "Καμπαρντιανά"
+
+msgid "Kabuverdianu"
+msgstr "Γλώσσα του Πράσινου Ακρωτηρίου"
+
+msgid "Kabyle"
+msgstr "Καμπίλε"
+
+msgid "Kaithi"
+msgstr "Καϊθί"
+
+msgid "Kalenjin"
+msgstr "Καλεντζίν"
+
+msgid "Kalmyk"
+msgstr "Καλμίκ"
+
+msgid "Kamba"
+msgstr "Κάμπα"
+
+msgid "Kanuri"
+msgstr "Κανούρι"
+
+msgid "Karelian"
+msgstr "Καρελικά"
+
+msgid "Kashmiri"
+msgstr "Κασμιρικά"
+
+msgid "Kashubian"
+msgstr "Κασούμπιαν"
+
+msgid "Kawi"
+msgstr "Κάουι"
+
+msgid "Kayah Li"
+msgstr "Καγιάχ Λι"
+
 msgid "Kazakh"
 msgstr "Καζάκικη"
+
+msgid "Khasi"
+msgstr "Κάσι"
 
 msgid "Khutsuri Georgian"
 msgstr "Γεωργιανά Khutsuri"
 
+msgid "Kikuyu"
+msgstr "Κικούγιου"
+
+msgid "Kinyarwanda"
+msgstr "Κινιαρουάντα"
+
 msgid "Kirghiz"
 msgstr "Κιργιζική"
+
+msgid "Komi"
+msgstr "Κόμι"
+
+msgid "Komi-Permyak"
+msgstr "Κόμι-Περμιάκ"
+
+msgid "Kongo"
+msgstr "Κονγκό"
+
+msgid "Konkani"
+msgstr "Κονκανικά"
 
 msgid "Korean"
 msgstr "Κορεάτικη"
 
+msgid "Kosraean"
+msgstr "Κοσραενικά"
+
+msgid "Kpelle"
+msgstr "Κπέλε"
+
+msgid "Kuanyama"
+msgstr "Κουανιάμα"
+
+msgid "Kumyk"
+msgstr "Κουμγιούκ"
+
 msgid "Kurdish"
 msgstr "Κουρδική"
+
+msgid "Kurukh"
+msgstr "Κουρούχ"
+
+msgid "Ladino"
+msgstr "Λαδίνο"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Malayalam", ignore "Lang|"
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Amharic", ignore "Lang|"
+msgid "Lang|Amharic"
+msgstr "Αμχαρικά"
 
 msgid "Lang|Arabic"
 msgstr "Αραβική"
 
 msgid "Lang|Armenian"
 msgstr "Αρμένικη"
+
+msgid "Lang|Balinese"
+msgstr "Μπαλινίζ"
 
 msgid "Lang|Berber"
 msgstr "Βερβερική"
@@ -572,8 +933,17 @@ msgstr "Γεωργιανή"
 msgid "Lang|Greek"
 msgstr "Ελληνική"
 
+msgid "Lang|Gujarati"
+msgstr "Γκουτζαρατικά"
+
 msgid "Lang|Hebrew"
 msgstr "Εβραϊκή"
+
+msgid "Lang|Javanese"
+msgstr "Ιαβανικά"
+
+msgid "Lang|Kannada"
+msgstr "Κανάντα"
 
 msgid "Lang|Khmer"
 msgstr "Χμερ"
@@ -584,14 +954,38 @@ msgstr "Λαοτινή"
 msgid "Lang|Latin"
 msgstr "Λατινική"
 
+msgid "Lang|Makasar"
+msgstr "Μακασάρ"
+
+msgid "Lang|Manchu"
+msgstr "Μαντσού"
+
 msgid "Lang|Mongolian"
 msgstr "Μογγολική"
+
+msgid "Lang|Odia"
+msgstr "Όντια"
+
+msgid "Lang|Persian"
+msgstr "Περσικά"
+
+msgid "Lang|Sinhala"
+msgstr "Σινχαλεζικά"
+
+msgid "Lang|Sundanese"
+msgstr "Σουνδανικά"
 
 msgid "Lang|Syriac"
 msgstr "Συριακή"
 
+msgid "Lang|Tagalog"
+msgstr "Τάγκαλογκ"
+
 msgid "Lang|Tamil"
 msgstr "Ταμίλ"
+
+msgid "Lang|Telugu"
+msgstr "Τελούγκου"
 
 msgid "Lang|Thai"
 msgstr "Ταϋλανδική"
@@ -614,11 +1008,20 @@ msgstr "Πολ. Στοιχείο"
 msgid "Ligatures"
 msgstr "Πολ. Στοιχεία"
 
+msgid "Ligurian"
+msgstr "Λιγουριανά"
+
+msgid "Limburgish"
+msgstr "Λιμβουργιανά"
+
 msgid "Linear A"
 msgstr "Γραμμική Α"
 
 msgid "Linear B"
 msgstr "Γραμμική Β"
+
+msgid "Lingala"
+msgstr "Λινγκάλα"
 
 msgid "Lining Figures"
 msgstr "Γραμμικά σχήματα"
@@ -629,11 +1032,47 @@ msgstr "Λιθουανική"
 msgid "Localized Forms"
 msgstr "Τοπικές μορφές"
 
+msgid "Lojban"
+msgstr "Λόζμπαν"
+
+msgid "Lombard"
+msgstr "Λομβαρδικά"
+
+msgid "Low Saxon"
+msgstr "Κάτω Γερμανικά Ολλανδίας"
+
+msgid "Lower Sorbian"
+msgstr "Κάτω Σορβικά"
+
 msgid "Lowercase to Petite Capitals"
 msgstr "Πεζά σε μικρά κεφαλαία"
 
 msgid "Lowercase to Small Capitals"
 msgstr "Πεζά σε πεζά κεφαλαία"
+
+msgid "Luba-Katanga"
+msgstr "Λούμπα-Κατάνγκα"
+
+msgid "Luba-Lulua"
+msgstr "Λούμπα-Λουλούα"
+
+msgid "Lule Sami"
+msgstr "Λούλε Σάμι"
+
+msgid "Luo"
+msgstr "Λούο"
+
+msgid "Luxembourgish"
+msgstr "Λουξεμβουργιανά"
+
+msgid "Luyia"
+msgstr "Λούχια"
+
+msgid "Lycian"
+msgstr "Λυκιανικό"
+
+msgid "Lydian"
+msgstr "Λυδιανικό"
 
 msgid "Macedonian"
 msgstr "Σλαβομακεδονική"
@@ -643,11 +1082,50 @@ msgstr "Σλαβομακεδονική"
 msgid "Mag:"
 msgstr "Μεγέθυνσ.:"
 
+msgid "Magahi"
+msgstr "Μαγκάχι"
+
+msgid "Maithili"
+msgstr "Μαϊτχίλι"
+
+msgid "Makhuwa"
+msgstr "Μακούα"
+
+msgid "Makonde"
+msgstr "Μακόντε"
+
+msgid "Malagasy"
+msgstr "Μαλγασικά"
+
+msgid "Malay"
+msgstr "Μαλαισιανά"
+
 msgid "Maltese"
 msgstr "Μαλτέζικη"
 
+msgid "Mandar"
+msgstr "Μανδάρ"
+
+msgid "Manichaean"
+msgstr "Μανιχαϊκό"
+
+msgid "Manipuri"
+msgstr "Μανιπούρι"
+
+msgid "Manx"
+msgstr "Μανξ"
+
 msgid "Maori"
 msgstr "Μαορί"
+
+msgid "Marathi"
+msgstr "Μαραθικά"
+
+msgid "Marshallese"
+msgstr "Μαρσαλέζικα"
+
+msgid "Marwari"
+msgstr "Μαργουάρι"
 
 msgid "Mathematical Alphanumeric Symbols"
 msgstr "Μαθηματικά αλφαριθμητικά σύμβολα"
@@ -655,23 +1133,62 @@ msgstr "Μαθηματικά αλφαριθμητικά σύμβολα"
 msgid "Mathematical Greek"
 msgstr "Ελληνικά μαθηματικά"
 
+msgid "Mazanderani"
+msgstr "Μαζαντεράνι"
+
 msgid "Medial Forms"
 msgstr "Μεσαίες μορφές"
 
 msgid "Medial Forms 2"
 msgstr "Μέσες μορφές 2"
 
+msgid "Medumba"
+msgstr "Μεντούμπα"
+
+msgid "Mende"
+msgstr "Μέντε"
+
+msgid "Meru"
+msgstr "Μέρου"
+
 msgid "MetaFont exited with an error"
 msgstr "Το MetaFont στάματησε μετά από αναγνώριση λάθους"
+
+msgid "Minangkabau"
+msgstr "Μινανγκαμπάου"
+
+msgid "Mirandese"
+msgstr "Μιραντεζικά"
 
 msgid "Missing Bitmap"
 msgstr "Ελλείπων χαρτογραφικό γραφικό"
 
+msgid "Mizo"
+msgstr "Μίζο"
+
+msgid "Mohawk"
+msgstr "Μοχόκ"
+
+msgid "Moksha"
+msgstr "Μόκσα"
+
 msgid "Moldavian"
 msgstr "Μολδαβική"
 
+msgid "Moose Cree"
+msgstr "Μους Κρι"
+
+msgid "Morisyen"
+msgstr "Μορισιέν"
+
 msgid "Moroccan"
 msgstr "Μαροκινή"
+
+msgid "Mossi"
+msgstr "Μόσι"
+
+msgid "Muscogee"
+msgstr "Κρικ"
 
 msgid "Musical"
 msgstr "Μουσική"
@@ -682,6 +1199,15 @@ msgstr "Μουσικά σύμβολα"
 msgid "Must be a number"
 msgstr "Θα πρέπει να είναι αριθμός"
 
+msgid "Navajo"
+msgstr "Νάβαχο"
+
+msgid "Ndonga"
+msgstr "Ντόνγκα"
+
+msgid "Neapolitan"
+msgstr "Ναπολιτανικά"
+
 msgid "Nepali"
 msgstr "Νεπαλέζικη"
 
@@ -691,14 +1217,23 @@ msgstr "Νέο πολ/πλο στοιχείο"
 msgid "New O_utline Window"
 msgstr "Νέο παράθυρο O_utline"
 
+msgid "New Tai Lue"
+msgstr "Νέο Τάι Λούε"
+
 msgid "New _Bitmap Window"
 msgstr "Νέο παράθυρο _χαρτογραφικών"
 
 msgid "New _Metrics Window"
 msgstr "Νέο παράθυρο μετρικών"
 
+msgid "Newari"
+msgstr "Νεγουάρι"
+
 msgid "Next _Defined Glyph"
 msgstr "Επόμενος _καθορισμένος γλύφος"
+
+msgid "Niuean"
+msgstr "Νιούε"
 
 msgid "No Change"
 msgstr "Καμία αλλαγή"
@@ -713,14 +1248,23 @@ msgstr "Δεν υπάρχουν ζεύγη «υποσκαφής»"
 msgid "No kerning pairs found in %.200s"
 msgstr "Δεν υπάρχουν ζεύγη «υποσκαφής» στο αρχείο %.200s"
 
+msgid "Nogai"
+msgstr "Νογκάι"
+
 msgid "Northern Sami"
 msgstr "Σάμι του Βορρά"
+
+msgid "Northern Sotho"
+msgstr "Βόρεια Σόθο"
 
 msgid "Northern Tai"
 msgstr "Βόρεια Ταϋλανδική"
 
 msgid "Norwegian"
 msgstr "Νορβηγική"
+
+msgid "Norwegian Nynorsk"
+msgstr "Νορβηγικά Νινόρσκ"
 
 msgid "Not ASCII"
 msgstr "Μη ASCII"
@@ -737,6 +1281,30 @@ msgstr "Μορφές Nukta"
 msgid "Numerators"
 msgstr "Αριθμητές"
 
+msgid "Nyamwezi"
+msgstr "Νιαμγουέζι"
+
+msgid "Nyankole"
+msgstr "Νιανκόλε"
+
+msgid "Occitan"
+msgstr "Οξιτανικά"
+
+msgid "Ogham"
+msgstr "Όγκχαμ"
+
+msgid "Oji-Cree"
+msgstr "Ότζι-Κρι"
+
+msgid "Ol Chiki"
+msgstr "Ολ Τσίκι"
+
+msgid "Old Hungarian"
+msgstr "Παλαιό Ουγγρικό"
+
+msgid "Old Irish"
+msgstr "Παλαιά Ιρλανδικά"
+
 msgid "Old Italic (Etruscan, Oscan, etc.)"
 msgstr "Αρχαία ιταλικά (ετρουσκικά κ.λπ.)"
 
@@ -752,17 +1320,41 @@ msgstr "Τακτικά αριθμητικά"
 msgid "Ornaments"
 msgstr "Διακοσμητικά"
 
+msgid "Oromo"
+msgstr "Ορόμο"
+
+msgid "Osmanya"
+msgstr "Οσμάνγια"
+
 msgid "Out of Range"
 msgstr "Εκτός ορίων"
 
 msgid "Page_Size:"
 msgstr "Μέγεθος_σελίδας"
 
+msgid "Pahawh Hmong"
+msgstr "Παχάχ Χμονγκ"
+
+msgid "Palauan"
+msgstr "Παλάουαν"
+
 msgid "Palestinian Aramaic"
 msgstr "Παλαιστινιακά αραμαϊκά"
 
+msgid "Pali"
+msgstr "Πάλι"
+
+msgid "Pangasinan"
+msgstr "Πανγκασινάν"
+
+msgid "Pashto"
+msgstr "Πάστο"
+
 msgid "Pixel Sizes:"
 msgstr "Μεγέθη εικονοστοιχείων:"
+
+msgid "Pohnpeian"
+msgstr "Πομπηικά"
 
 msgid "Point sizes on a 100 dpi screen"
 msgstr "Μεγέθη στιγμών σε οθόνη 100 dpi"
@@ -849,11 +1441,26 @@ msgstr "Αναλογική αριθμοί"
 msgid "Proportional Width"
 msgstr "Αναλογικό πλάτος"
 
+msgid "Psalter Pahlavi"
+msgstr "Ψάλτερ Παχλάβι"
+
+msgid "Punjabi"
+msgstr "Παντζαπικά"
+
 msgid "Quarter Widths"
 msgstr "Τέταρτα πλατών"
 
+msgid "Quechua"
+msgstr "Κέτσουα"
+
+msgid "Rajasthani"
+msgstr "Ραζασθάνι"
+
 msgid "Randomize"
 msgstr "Τυχαιοποίησε"
+
+msgid "Rarotongan"
+msgstr "Ραροτονγκάν"
 
 msgid "Recalculate Bitmaps"
 msgstr "Επαναϋπολογισμός χαρτογραφικών"
@@ -863,6 +1470,9 @@ msgstr "Πρόσφα_τη"
 
 msgid "Refresh File List"
 msgstr "Ανανέωση καταλόγου αρχείων"
+
+msgid "Rejang"
+msgstr "Ρετζάνγκ"
 
 msgid "Remo_ve Undoes"
 msgstr "Αφαί_ρεση επαναφορών"
@@ -888,8 +1498,17 @@ msgstr "Δεξιά προς αριστερά"
 msgid "Right to Left Alternates"
 msgstr "Δεξιές σε αριστερές εναλλακτικές"
 
+msgid "Rohingya"
+msgstr "Ροχίνγκια"
+
 msgid "Romanian"
 msgstr "Ρουμανική"
+
+msgid "Romansh"
+msgstr "Ρομανικά"
+
+msgid "Romany"
+msgstr "Ρομανί"
 
 msgid "Rotate _180°"
 msgstr "Περιστροφή _180°"
@@ -903,6 +1522,9 @@ msgstr "Νέα"
 msgid "Ruby Notational Forms"
 msgstr "Σχηματικές μορφές Ruby"
 
+msgid "Rundi"
+msgstr "Ρούντι"
+
 msgid "Runic"
 msgstr "Ρουνική"
 
@@ -915,14 +1537,35 @@ msgstr "Ρωσσικά Μπουριάτ"
 msgid "S_ave as..."
 msgstr "Αποθήκευση _ως"
 
+msgid "Samoan"
+msgstr "Σαμοανά"
+
+msgid "Sango"
+msgstr "Σάνγκο"
+
 msgid "Sanskrit"
 msgstr "Σανσκριτικά"
+
+msgid "Santali"
+msgstr "Σαντάλι"
+
+msgid "Sardinian"
+msgstr "Σαρδηνιακά"
+
+msgid "Sasak"
+msgstr "Σασάκ"
 
 msgid "Save in _UCS2"
 msgstr "Αποθήκευση σε _UCS2"
 
 msgid "Scaling Bitmaps"
 msgstr "Αλλαγή διαστάσεων χαρτογραφικών γραφικών"
+
+msgid "Scots"
+msgstr "Σκωτικά"
+
+msgid "Scottish Gaelic"
+msgstr "Σκωτικά Κελτικά"
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "Arabic", ignore "Script|"
@@ -935,8 +1578,29 @@ msgstr "Αραμαϊκή"
 msgid "Script|Armenian"
 msgstr "Αρμένική"
 
+msgid "Script|Avestan"
+msgstr "Αβεστάν"
+
+msgid "Script|Balinese"
+msgstr "Μπαλινίζ"
+
+msgid "Script|Batak"
+msgstr "Μπατάκ"
+
+msgid "Script|Buginese"
+msgstr "Μπούγκις"
+
+msgid "Script|Buhid"
+msgstr "Μπουχίντ"
+
+msgid "Script|Cham"
+msgstr "Τσαμ"
+
 msgid "Script|Cherokee"
 msgstr "Τσερόκι"
+
+msgid "Script|Coptic"
+msgstr "Κοπτικό"
 
 msgid "Script|Default"
 msgstr "«Εξ ορισμού»"
@@ -950,8 +1614,17 @@ msgstr "Γεωργιανή"
 msgid "Script|Greek"
 msgstr "Ελληνική"
 
+msgid "Script|Gujarati"
+msgstr "Γκουγιαράτι"
+
 msgid "Script|Hebrew"
 msgstr "Εβραϊκή"
+
+msgid "Script|Javanese"
+msgstr "Ιαβανεζικό"
+
+msgid "Script|Kannada"
+msgstr "Κανάντα"
 
 msgid "Script|Khmer"
 msgstr "Χμερ"
@@ -962,14 +1635,47 @@ msgstr "Λαοτιανή"
 msgid "Script|Latin"
 msgstr "Λατινική"
 
+msgid "Script|Limbu"
+msgstr "Λιμπού"
+
+msgid "Script|Mandaean"
+msgstr "Μανδαϊκό"
+
 msgid "Script|Mongolian"
 msgstr "Μογγολική"
+
+msgid "Script|Myanmar"
+msgstr "Μιανμάρ"
+
+msgid "Script|Old Permic"
+msgstr "Παλαιό Περμικό"
+
+msgid "Script|Phags-pa"
+msgstr "Παγκς-πα"
 
 msgid "Script|Phoenician"
 msgstr "Φοινικική"
 
+msgid "Script|Sinhala"
+msgstr "Σινχάλα"
+
 msgid "Script|Sumero-Akkadian Cuneiform"
 msgstr "Σουμερο-ακαδική σφοινοειδής"
+
+msgid "Script|Sundanese"
+msgstr "Σουνδανικό"
+
+msgid "Script|Syloti Nagri"
+msgstr "Συλότι Νάγκρι"
+
+msgid "Script|Syriac"
+msgstr "Συριακό"
+
+msgid "Script|Tagalog"
+msgstr "Ταγκαλόγκ"
+
+msgid "Script|Tagbanwa"
+msgstr "Ταγκμάνγουα"
 
 msgid "Script|Tamil"
 msgstr "Ταμίλ"
@@ -977,11 +1683,23 @@ msgstr "Ταμίλ"
 msgid "Script|Tamil2"
 msgstr "Ταμίλ2"
 
+msgid "Script|Telugu"
+msgstr "Τελούγκου"
+
 msgid "Script|Thai"
 msgstr "Ταυλανδέζικη"
 
 msgid "Script|Tibetan"
 msgstr "Θιβετιανή"
+
+msgid "Script|Ugaritic"
+msgstr "Ουγκαριτικό"
+
+msgid "Script|Vai"
+msgstr "Βάι"
+
+msgid "Script|Yi"
+msgstr "Γι"
 
 msgid "Select _All"
 msgstr "Επιλο_γή όλων "
@@ -989,8 +1707,20 @@ msgstr "Επιλο_γή όλων "
 msgid "Selected Glyphs"
 msgstr "Επιλεγμένοι γλύφοι"
 
+msgid "Selkup"
+msgstr "Σελκούπ"
+
+msgid "Sena"
+msgstr "Σένα"
+
+msgid "Seneca"
+msgstr "Σένεκα"
+
 msgid "Serbian"
 msgstr "Σερβική"
+
+msgid "Serer"
+msgstr "Σερέρ"
 
 msgid "Set Vertical Width..."
 msgstr "Θέσε το κάθετο πλάτος..."
@@ -1004,14 +1734,35 @@ msgstr "Θέσε το _κάθετο πλάτος"
 msgid "Set _Width..."
 msgstr "Θέσε το _πλάτος"
 
+msgid "Shan"
+msgstr "Σαν"
+
+msgid "Shavian"
+msgstr "Σαβιανό"
+
+msgid "Shona"
+msgstr "Σόνα"
+
 msgid "Show Hidden Files"
 msgstr "Εμφάνιση κρυφών αρχείων"
+
+msgid "Sicilian"
+msgstr "Σικελικά"
+
+msgid "Sidamo"
+msgstr "Σιντάμο"
+
+msgid "Silesian"
+msgstr "Σιλεσικά"
 
 msgid "Simple Substitution"
 msgstr "Απλή αντικατάσταση"
 
 msgid "Simplified Forms"
 msgstr "Απλοποιημένες μορφές"
+
+msgid "Sindhi"
+msgstr "Σίντι"
 
 msgid "Skew"
 msgstr "Στρέβλωση"
@@ -1022,6 +1773,9 @@ msgstr "Λόγος στρέβλωσης"
 msgid "Skew..."
 msgstr "Στρέβλωση..."
 
+msgid "Skolt Sami"
+msgstr "Σκολτ Σάμι"
+
 msgid "Slashed Zero"
 msgstr "Μηδέν με πλάγια"
 
@@ -1031,11 +1785,20 @@ msgstr "Σλοβακική"
 msgid "Slovenian"
 msgstr "Σλοβενική"
 
+msgid "Soga"
+msgstr "Σόγκα"
+
 msgid "Somali"
 msgstr "Σομαλική"
 
+msgid "Soninke"
+msgstr "Σονίνκε"
+
 msgid "Southern Sami"
 msgstr "Νότια Sami"
+
+msgid "Southern Sotho"
+msgstr "Νότια Σόθο"
 
 msgid "Spanish"
 msgstr "Ισπανική"
@@ -1045,6 +1808,12 @@ msgstr "Καθορίστε τα μεγέθη χαρτογραφικών αρχε
 
 msgid "Standard Ligatures"
 msgstr "Κοινά πολλαπλά στοιχεία"
+
+msgid "Standard Moroccan Tamazight"
+msgstr "Τυπικά Ταμαζίτ Μαρόκου"
+
+msgid "Straits Salish"
+msgstr "Στρέιτς Σαλίς"
 
 msgid "Style Set 1"
 msgstr "Στυλιστικό σύνολο 1"
@@ -1067,6 +1836,9 @@ msgstr "Στυλιστικές εναλλακτικές"
 msgid "Subscript"
 msgstr "Δείκτης"
 
+msgid "Sukuma"
+msgstr "Σουκούμα"
+
 msgid "Superscript"
 msgstr "Εκθέτης"
 
@@ -1079,14 +1851,32 @@ msgstr "Σουαχίλι"
 msgid "Swash"
 msgstr "«Καλλιτεχνικά»"
 
+msgid "Swati"
+msgstr "Σουάτι"
+
 msgid "Swedish"
 msgstr "Σουηδική"
+
+msgid "Tachelhit"
+msgstr "Τασελχίτ"
+
+msgid "Tahitian"
+msgstr "Ταϊτιανά"
+
+msgid "Tai Le"
+msgstr "Τάι Λε"
+
+msgid "Tai Viet"
+msgstr "Τάι Βιέτ"
 
 msgid "Tai Xuan Jing Symbols"
 msgstr "Σύμβολα Tai Xuan Jing"
 
 msgid "Tajiki"
 msgstr "Τατζίκικη"
+
+msgid "Tamashek"
+msgstr "Ταμασέκ"
 
 msgid "Tatar"
 msgstr "Ταταρική"
@@ -1099,6 +1889,12 @@ msgstr "Τερματικές μορφές #2"
 
 msgid "Terminal Forms #3"
 msgstr "Τερματικές μορφές #3"
+
+msgid "Tetum"
+msgstr "Τέτουμ"
+
+msgid "Thaana"
+msgstr "Θαανά"
 
 msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr "Το αρχείο AFM περιέχει τις μετρικές των γλύφων τις οποίες πολλοί επεξεργαστές κειμένου θα «διαβάσουν» όταν χρησιμοποιούν μια γραμματοσειρά PostScript®."
@@ -1193,14 +1989,32 @@ msgstr "Η καμπύλη θα έπρεπε να είχε σχεδιασθεί �
 msgid "This path should have been drawn in a counter-clockwise direction"
 msgstr "Αυτή η καμπύλη θα έπρεπε να είχε σχεδιασθεί με φορά αντίθετη προς αυτή των δεικτών του ρολογιού"
 
+msgid "Tigre"
+msgstr "Τίγκρε"
+
+msgid "Tigrinya"
+msgstr "Τιγκρινικά"
+
 msgid "Titling"
 msgstr "Κεφαλαία τίτλων"
+
+msgid "Tiv"
+msgstr "Τιβ"
+
+msgid "Tlingit"
+msgstr "Τλίνγκιτ"
 
 msgid "To P_DF File"
 msgstr "Σε αρχείο P_DF"
 
 msgid "To _File"
 msgstr "Σε _αρχείο"
+
+msgid "Tok Pisin"
+msgstr "Τοκ Πισίν"
+
+msgid "Tongan"
+msgstr "Τονγκανικά"
 
 msgid "Traditional Forms"
 msgstr "Παραδοσιακές μορφές"
@@ -1211,8 +2025,14 @@ msgstr "Παραδοσιακές μορφές ονομάτων"
 msgid "Trailing Jamo Forms"
 msgstr "Ύστερες μορφές Jamo"
 
+msgid "Tsonga"
+msgstr "Τσόνγκα"
+
 msgid "Tswana"
 msgstr "Τσουανά"
+
+msgid "Tumbuka"
+msgstr "Τουμπούκα"
 
 msgid "Turkish"
 msgstr "Τουρκική"
@@ -1220,17 +2040,44 @@ msgstr "Τουρκική"
 msgid "Turkmen"
 msgstr "Τουρκμενική"
 
+msgid "Tuvalu"
+msgstr "Τουβαλού"
+
+msgid "Twi"
+msgstr "Τούι"
+
+msgid "Udmurt"
+msgstr "Ουντμούρτ"
+
 msgid "Ukrainian"
 msgstr "Ουκρανική"
 
+msgid "Umbundu"
+msgstr "Ουμπούντου"
+
+msgid "Upper Sorbian"
+msgstr "Άνω Σορβικά"
+
+msgid "Urdu"
+msgstr "Ούρντου"
+
 msgid "Use FreeType"
 msgstr "Χρησιμοποιείσε τη βιβλιοθήκη FreeType"
+
+msgid "Uyghur"
+msgstr "Ουιγουρικά"
 
 msgid "Uzbek"
 msgstr "Ουζμπέκικη"
 
 msgid "Vattu Variants"
 msgstr "Εναλλακτικές μορφές Vattu"
+
+msgid "Venda"
+msgstr "Βέντα"
+
+msgid "Venetian"
+msgstr "Βενετικά"
 
 msgid "Vertical Fractions"
 msgstr "Κάθετα κλάσματα"
@@ -1244,8 +2091,14 @@ msgstr "Κάθετη «υποσκαφή»"
 msgid "Vietnamese"
 msgstr "Βιετναμέζικη"
 
+msgid "Volapük"
+msgstr "Βολαπιούκ"
+
 msgid "Vowel Jamo Forms"
 msgstr "Μορφές φωνηέντων Jamo"
+
+msgid "Walloon"
+msgstr "Βαλλωνικά"
 
 msgid "Warning: Font contained no glyphs"
 msgstr "Προειδοποίηση: Η γραμματοσειρά δεν περιέχει γλύφους"
@@ -1256,8 +2109,35 @@ msgstr "Προειδοποιήσεις"
 msgid "Welsh"
 msgstr "Ουαλική"
 
+msgid "Western Panjabi"
+msgstr "Λάχδα"
+
+msgid "Wolof"
+msgstr "Γουόλοφ"
+
+msgid "Xhosa"
+msgstr "Κόσα"
+
+msgid "Yao"
+msgstr "Γιάο"
+
+msgid "Yapese"
+msgstr "Γιαπίζ"
+
+msgid "Yiddish"
+msgstr "Γίντις"
+
+msgid "Yoruba"
+msgstr "Γιορούμπα"
+
 msgid "Z_oom out"
 msgstr "_Ξεζουμάρισμα"
+
+msgid "Zarma"
+msgstr "Ζάρμα"
+
+msgid "Zhuang"
+msgstr "Ζουάνγκ"
 
 msgid "Zoom _in"
 msgstr "_Zουμάρισμα"

@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Malayalam\n"
 "Language: ml_IN\n"
@@ -25,6 +25,27 @@ msgstr ""
 "X-Crowdin-Language: ml-IN\n"
 "X-Crowdin-File: FontForge.pot\n"
 "X-Crowdin-File-ID: 2\n"
+
+msgid "Abkhazian"
+msgstr "അബ്‌ഖാസിയൻ"
+
+msgid "Adlam"
+msgstr "അദ്‌ലാം"
+
+msgid "Adyghe"
+msgstr "അഡൈഗേ"
+
+msgid "Afar"
+msgstr "അഫാർ"
+
+msgid "Afrikaans"
+msgstr "ആഫ്രിക്കാൻസ്"
+
+msgid "Akan"
+msgstr "അകാൻ‌"
+
+msgid "Albanian"
+msgstr "അൽബേനിയൻ"
 
 msgid "An outline font editor"
 msgstr "ഒരു പുറംചട്ട തിരുത്തുകരു"
@@ -44,23 +65,149 @@ msgstr "അറബി B-വിപുലീകരണം"
 msgid "Arabic Supplement"
 msgstr "അറബി ചേർപ്പ്"
 
+msgid "Aragonese"
+msgstr "അരഗോണീസ്"
+
 msgid "Armenian"
 msgstr "അർമേനിയൻ"
+
+msgid "Aromanian"
+msgstr "ആരോമാനിയൻ"
+
+msgid "Assamese"
+msgstr "ആസ്സാമീസ്"
+
+msgid "Asturian"
+msgstr "അസ്ട്ടൂരിയൻ"
+
+msgid "Awadhi"
+msgstr "അവാധി"
+
+msgid "Aymara"
+msgstr "അയ്മാറ"
+
+msgid "Azerbaijani"
+msgstr "അസർബൈജാനി"
+
+msgid "Baluchi"
+msgstr "ബലൂചി"
+
+msgid "Bambara"
+msgstr "ബംബാറ"
+
+msgid "Bashkir"
+msgstr "ബഷ്ഖിർ"
 
 msgid "Basic Latin"
 msgstr "ലത്തീൻ അടിത്തറ"
 
+msgid "Basque"
+msgstr "ബാസ്‌ക്"
+
+msgid "Bemba"
+msgstr "ബേംബ"
+
 msgid "Bengali"
 msgstr "ബംഗാളി"
+
+msgid "Bhojpuri"
+msgstr "ഭോജ്‌പുരി"
+
+msgid "Bikol"
+msgstr "ബികോൽ"
+
+msgid "Bislama"
+msgstr "ബിസ്‌ലാമ"
+
+msgid "Bodo"
+msgstr "ബോഡോ"
+
+msgid "Bopomofo"
+msgstr "ബോപ്പോമോഫോ"
+
+msgid "Bosnian"
+msgstr "ബോസ്നിയൻ"
+
+msgid "Braille"
+msgstr "ബ്രെയ്‌ലി"
+
+msgid "Breton"
+msgstr "ബ്രെട്ടൺ"
 
 msgid "Buhid"
 msgstr "ബുഹിദ്"
 
+msgid "Bulgarian"
+msgstr "ബൾഗേറിയൻ"
+
+msgid "Burmese"
+msgstr "ബർമീസ്"
+
 msgid "C_hop"
 msgstr "വൃത്തിയാക്കുക"
 
+msgid "Cajun French"
+msgstr "കേജൺ ഫ്രഞ്ച്"
+
+msgid "Carian"
+msgstr "ചരിയൻ"
+
+msgid "Catalan"
+msgstr "കറ്റാലാൻ"
+
+msgid "Cayuga"
+msgstr "കയൂഗ"
+
+msgid "Cebuano"
+msgstr "സെബുവാനോ"
+
+msgid "Chakma"
+msgstr "ചക്മ"
+
+msgid "Chamorro"
+msgstr "ചമോറോ"
+
+msgid "Chechen"
+msgstr "ചെചൻ"
+
 msgid "Cherokee"
 msgstr "ചെറോക്കേ"
+
+msgid "Cheyenne"
+msgstr "ഷായാൻ"
+
+msgid "Chiga"
+msgstr "ചിഗ"
+
+msgid "Chipewyan"
+msgstr "ചിപേവ്യൻ"
+
+msgid "Choctaw"
+msgstr "ചോക്റ്റാവ്"
+
+msgid "Chuukese"
+msgstr "ചൂകീസ്"
+
+msgid "Chuvash"
+msgstr "ചുവാഷ്"
+
+msgid "Comorian"
+msgstr "കൊമോറിയൻ"
+
+msgid "Cornish"
+msgstr "കോർണിഷ്"
+
+msgid "Corsican"
+msgstr "കോർസിക്കൻ"
+
+msgid "Cree"
+msgstr "ക്രീ"
+
+msgid "Crimean Tatar"
+msgstr "ക്രിമിയൻ ടർക്കിഷ്"
+
+msgid "Croatian"
+msgstr "ക്രൊയേഷ്യൻ"
 
 msgid "Cu_t"
 msgstr "മുറിക്കുക"
@@ -71,14 +218,80 @@ msgstr "സിറിലിക്ക്"
 msgid "Cyrillic Supplement"
 msgstr "സിറിലിക്ക് ചേർപ്പ്"
 
+msgid "Czech"
+msgstr "ചെക്ക്"
+
+msgid "Danish"
+msgstr "ഡാനിഷ്"
+
+msgid "Dargwa"
+msgstr "ഡർഗ്വാ"
+
+msgid "Dari"
+msgstr "ഡാരി"
+
 msgid "Devanagari"
 msgstr "ദേവനാഗരി"
+
+msgid "Dinka"
+msgstr "ദിൻക"
+
+msgid "Divehi"
+msgstr "ദിവെഹി"
+
+msgid "Dutch"
+msgstr "ഡച്ച്"
+
+msgid "Dzongkha"
+msgstr "ദ്‌സോങ്ക"
+
+msgid "Efik"
+msgstr "എഫിക്"
+
+msgid "English"
+msgstr "ഇംഗ്ലീഷ്"
+
+msgid "Erzya"
+msgstr "ഏഴ്സ്യ"
+
+msgid "Esperanto"
+msgstr "എസ്‌പരാന്റോ"
+
+msgid "Estonian"
+msgstr "എസ്റ്റോണിയൻ"
 
 msgid "Ethiopic"
 msgstr "എത്തിയോപ്പിയൻ"
 
 msgid "Ethiopic Supplement"
 msgstr "എത്തിയോപ്പിയൻ ചേർപ്പ്"
+
+msgid "Ewe"
+msgstr "യൂ"
+
+msgid "Fang"
+msgstr "ഫങ്"
+
+msgid "Fanti"
+msgstr "ഫാന്റി"
+
+msgid "Faroese"
+msgstr "ഫാറോസ്"
+
+msgid "Fijian"
+msgstr "ഫിജിയൻ"
+
+msgid "Filipino"
+msgstr "ഫിലിപ്പിനോ"
+
+msgid "Finnish"
+msgstr "ഫിന്നിഷ്"
+
+msgid "Flemish"
+msgstr "ഫ്ലമിഷ്"
+
+msgid "Fon"
+msgstr "ഫോൻ"
 
 msgid "FontForge"
 msgstr "ഫോണ്ട്ഫോർജ്"
@@ -92,6 +305,24 @@ msgstr "പല കമ്പ്യൂട്ടർ പ്രവർത്തന ച
 msgid "Font|_New"
 msgstr "പുതിയതു്"
 
+msgid "French"
+msgstr "ഫ്രഞ്ച്"
+
+msgid "Friulian"
+msgstr "ഫ്രിയുലിയാൻ"
+
+msgid "Ga"
+msgstr "ഗാ"
+
+msgid "Gagauz"
+msgstr "ഗാഗൂസ്"
+
+msgid "Galician"
+msgstr "ഗലീഷ്യൻ"
+
+msgid "Ganda"
+msgstr "ഗാണ്ട"
+
 msgid "Generate Mac _Family..."
 msgstr "മാക്കിനുള്ള ഫോണ്ട് ഉണ്ടാക്കുക"
 
@@ -101,8 +332,23 @@ msgstr "ജോർജിയൻ"
 msgid "Georgian Supplement"
 msgstr "ജോർജിയൻ ചേർപ്പ്"
 
+msgid "German"
+msgstr "ജർമ്മൻ"
+
+msgid "Glagolitic"
+msgstr "ഗ്ലഗോലിറ്റിക്"
+
+msgid "Gondi"
+msgstr "ഗോണ്ഡി"
+
+msgid "Gothic"
+msgstr "ഗോഥിക്"
+
 msgid "Greek and Coptic"
 msgstr "യവനവും കോപ്റ്റിക്കും"
+
+msgid "Guarani"
+msgstr "ഗ്വരനി"
 
 msgid "Gujarati"
 msgstr "ഗുജറാത്തി"
@@ -110,26 +356,291 @@ msgstr "ഗുജറാത്തി"
 msgid "Gurmukhi"
 msgstr "ഗുരുമുഖി"
 
+msgid "Gusii"
+msgstr "ഗുസീ"
+
+msgid "Haida"
+msgstr "ഹൈഡ"
+
+msgid "Halkomelem"
+msgstr "ഹോക്കൊമെലം"
+
+msgid "Hangul"
+msgstr "ഹാംഗുൽ"
+
 msgid "Hangul Jamo"
 msgstr "ഹങ്കുൾ ജാമോ"
 
 msgid "Hanunoo"
 msgstr "ഹനുവോ"
 
+msgid "Haryanvi"
+msgstr "ഹർയാൻവി"
+
+msgid "Hausa"
+msgstr "ഹൗസ"
+
+msgid "Hawaiian"
+msgstr "ഹവായിയൻ"
+
 msgid "Hebrew"
 msgstr "ഹീബ്രു"
+
+msgid "Herero"
+msgstr "ഹെരേരൊ"
 
 msgid "High Private Use Surrogates"
 msgstr "ഉയർന്ന തനതുപയോഗ പകരക്കാർ"
 
+msgid "Hiligaynon"
+msgstr "ഹിലിഗയ്നോൺ"
+
+msgid "Hindi"
+msgstr "ഹിന്ദി"
+
+msgid "Hiri Motu"
+msgstr "ഹിരി മോതു"
+
+msgid "Hmong"
+msgstr "മോങ്"
+
+msgid "Hungarian"
+msgstr "ഹംഗേറിയൻ"
+
 msgid "IPA Extensions"
 msgstr "IPA വിപുലീകരണങ്ങൾ"
+
+msgid "Iban"
+msgstr "ഇബാൻ"
+
+msgid "Ibibio"
+msgstr "ഇബീബിയോ"
+
+msgid "Icelandic"
+msgstr "ഐസ്‌ലാൻഡിക്"
+
+msgid "Ido"
+msgstr "ഇഡോ"
+
+msgid "Igbo"
+msgstr "ഇഗ്ബോ"
+
+msgid "Imperial Aramaic"
+msgstr "അർമി"
+
+msgid "Inari Sami"
+msgstr "ഇനാരി സമി"
+
+msgid "Indonesian"
+msgstr "ഇന്തോനേഷ്യൻ"
+
+msgid "Ingush"
+msgstr "ഇങ്കുഷ്"
+
+msgid "Inscriptional Pahlavi"
+msgstr "എഴുത്തു പഹൽവി"
+
+msgid "Inscriptional Parthian"
+msgstr "പൃതി"
+
+msgid "Interlingua"
+msgstr "ഇന്റർലിംഗ്വ"
+
+msgid "Interlingue"
+msgstr "ഇന്റർലിംഗ്വേ"
+
+msgid "Inuktitut"
+msgstr "ഇനുക്റ്റിറ്റുട്ട്"
+
+msgid "Irish"
+msgstr "ഐറിഷ്"
+
+msgid "Italian"
+msgstr "ഇറ്റാലിയൻ"
+
+msgid "Japanese"
+msgstr "ജാപ്പനീസ്"
+
+msgid "Kabardian"
+msgstr "കബർഡിയാൻ"
+
+msgid "Kabuverdianu"
+msgstr "കബുവെർദിയാനു"
+
+msgid "Kabyle"
+msgstr "കബൈൽ"
+
+msgid "Kaithi"
+msgstr "ക്തി"
+
+msgid "Kalenjin"
+msgstr "കലെഞ്ചിൻ"
+
+msgid "Kalmyk"
+msgstr "കാൽമിക്"
+
+msgid "Kamba"
+msgstr "കംബ"
 
 msgid "Kannada"
 msgstr "കന്നട"
 
+msgid "Kanuri"
+msgstr "കനൂറി"
+
+msgid "Karelian"
+msgstr "കരീലിയൻ"
+
+msgid "Kashmiri"
+msgstr "കശ്‌മീരി"
+
+msgid "Kashubian"
+msgstr "കാഷുബിയാൻ"
+
+msgid "Kawi"
+msgstr "കാവി"
+
+msgid "Kayah Li"
+msgstr "കയാ ലി"
+
+msgid "Kazakh"
+msgstr "കസാഖ്"
+
+msgid "Khasi"
+msgstr "ഖാസി"
+
 msgid "Khmer"
 msgstr "ഖമർ"
+
+msgid "Kikuyu"
+msgstr "കികൂയു"
+
+msgid "Kinyarwanda"
+msgstr "കിന്യാർവാണ്ട"
+
+msgid "Komi"
+msgstr "കോമി"
+
+msgid "Komi-Permyak"
+msgstr "കോമി-പെർമ്യാക്ക്"
+
+msgid "Kongo"
+msgstr "കോംഗോ"
+
+msgid "Konkani"
+msgstr "കൊങ്കണി"
+
+msgid "Korean"
+msgstr "കൊറിയൻ"
+
+msgid "Kosraean"
+msgstr "കൊസറേയൻ"
+
+msgid "Kpelle"
+msgstr "പെൽ"
+
+msgid "Kuanyama"
+msgstr "ക്വാന്യമ"
+
+msgid "Kumyk"
+msgstr "കൂമിക്ക്"
+
+msgid "Kurdish"
+msgstr "സെൻട്രൽ കുർദിഷ്"
+
+msgid "Kurukh"
+msgstr "കുരുഖ്"
+
+msgid "Ladino"
+msgstr "ലഡീനോ"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Malayalam", ignore "Lang|"
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Amharic", ignore "Lang|"
+msgid "Lang|Amharic"
+msgstr "അംഹാരിക്"
+
+msgid "Lang|Arabic"
+msgstr "അറബിക്"
+
+msgid "Lang|Armenian"
+msgstr "അർമേനിയൻ"
+
+msgid "Lang|Balinese"
+msgstr "ബാലിനീസ്"
+
+msgid "Lang|Cherokee"
+msgstr "ഷെരോക്കി"
+
+msgid "Lang|Coptic"
+msgstr "കോപ്റ്റിക്"
+
+msgid "Lang|Georgian"
+msgstr "ജോർജിയൻ"
+
+msgid "Lang|Greek"
+msgstr "ഗ്രീക്ക്"
+
+msgid "Lang|Gujarati"
+msgstr "ഗുജറാത്തി"
+
+msgid "Lang|Hebrew"
+msgstr "ഹീബ്രു"
+
+msgid "Lang|Javanese"
+msgstr "ജാവനീസ്"
+
+msgid "Lang|Kannada"
+msgstr "കന്നഡ"
+
+msgid "Lang|Khmer"
+msgstr "ഖമെർ"
+
+msgid "Lang|Lao"
+msgstr "ലാവോ"
+
+msgid "Lang|Latin"
+msgstr "ലാറ്റിൻ"
+
+msgid "Lang|Makasar"
+msgstr "മകാസർ"
+
+msgid "Lang|Manchu"
+msgstr "മാൻ‌ചു"
+
+msgid "Lang|Mongolian"
+msgstr "മംഗോളിയൻ"
+
+msgid "Lang|Odia"
+msgstr "ഒഡിയ"
+
+msgid "Lang|Persian"
+msgstr "പേർഷ്യൻ"
+
+msgid "Lang|Sinhala"
+msgstr "സിംഹള"
+
+msgid "Lang|Sundanese"
+msgstr "സുണ്ടാനീസ്"
+
+msgid "Lang|Syriac"
+msgstr "സുറിയാനി"
+
+msgid "Lang|Tagalog"
+msgstr "തഗാലോഗ്"
+
+msgid "Lang|Tamil"
+msgstr "തമിഴ്"
+
+msgid "Lang|Telugu"
+msgstr "തെലുങ്ക്"
+
+msgid "Lang|Thai"
+msgstr "തായ്"
+
+msgid "Lang|Tibetan"
+msgstr "ടിബറ്റൻ"
 
 msgid "Lao"
 msgstr "ലാവോ"
@@ -143,17 +654,161 @@ msgstr "ലത്തീൻ B-വിപുലീകരണം"
 msgid "Latin-1 Supplement"
 msgstr "ലത്തീൻ-1 ചേർപ്പ്"
 
+msgid "Latvian"
+msgstr "ലാറ്റ്വിയൻ"
+
+msgid "Ligurian"
+msgstr "ലിഗൂറിയൻ"
+
+msgid "Limburgish"
+msgstr "ലിംബർഗിഷ്"
+
+msgid "Linear A"
+msgstr "സമരേഖയിലുള്ള എ"
+
+msgid "Linear B"
+msgstr "ലീനിയർ ബി"
+
+msgid "Lingala"
+msgstr "ലിംഗാല"
+
+msgid "Lithuanian"
+msgstr "ലിത്വാനിയൻ"
+
+msgid "Lojban"
+msgstr "ലോജ്ബാൻ"
+
+msgid "Lombard"
+msgstr "ലൊംബാർഡ്"
+
+msgid "Low Saxon"
+msgstr "ലോ സാക്സൺ"
+
 msgid "Low Surrogates"
 msgstr "താഴ്ന്ന പകരക്കാർ"
+
+msgid "Lower Sorbian"
+msgstr "ലോവർ സോർബിയൻ"
+
+msgid "Luba-Katanga"
+msgstr "ലുബ-കറ്റംഗ"
+
+msgid "Luba-Lulua"
+msgstr "ലൂബ-ലുലുവ"
+
+msgid "Lule Sami"
+msgstr "ലൂലീ സമി"
+
+msgid "Luo"
+msgstr "ലുവോ"
+
+msgid "Luxembourgish"
+msgstr "ലക്‌സംബർഗിഷ്"
+
+msgid "Luyia"
+msgstr "ലുയിയ"
+
+msgid "Lycian"
+msgstr "ലൈസിൻ"
+
+msgid "Lydian"
+msgstr "ലൈഡിയൻ"
+
+msgid "Macedonian"
+msgstr "മാസിഡോണിയൻ"
+
+msgid "Magahi"
+msgstr "മഗാഹി"
+
+msgid "Maithili"
+msgstr "മൈഥിലി"
+
+msgid "Makhuwa"
+msgstr "മഖുവ"
+
+msgid "Makonde"
+msgstr "മക്കോണ്ടെ"
+
+msgid "Malagasy"
+msgstr "മലഗാസി"
+
+msgid "Malay"
+msgstr "മലെയ്"
 
 msgid "Malayalam"
 msgstr "മലയാളം"
 
+msgid "Maltese"
+msgstr "മാൾട്ടീസ്"
+
 msgid "Mandaic"
 msgstr "മണ്ടായിക്ക്"
 
+msgid "Mandar"
+msgstr "മണ്ഡാർ"
+
+msgid "Manichaean"
+msgstr "മണിചേയൻ"
+
+msgid "Manipuri"
+msgstr "മണിപ്പൂരി"
+
+msgid "Manx"
+msgstr "മാൻസ്"
+
+msgid "Marathi"
+msgstr "മറാത്തി"
+
+msgid "Marshallese"
+msgstr "മാർഷല്ലീസ്"
+
+msgid "Marwari"
+msgstr "മർവാരി"
+
+msgid "Mazanderani"
+msgstr "മസന്ററാനി"
+
+msgid "Medumba"
+msgstr "മെഡുംബ"
+
+msgid "Mende"
+msgstr "മെൻഡെ"
+
+msgid "Meru"
+msgstr "മേരു"
+
+msgid "Minangkabau"
+msgstr "മിനാങ്കബൗ"
+
+msgid "Mirandese"
+msgstr "മിരാൻറസേ"
+
+msgid "Mizo"
+msgstr "മിസോ"
+
+msgid "Mohawk"
+msgstr "മോഹാക്"
+
+msgid "Moksha"
+msgstr "മോക്ഷ"
+
+msgid "Moldavian"
+msgstr "മോൾഡാവിയൻ"
+
 msgid "Mongolian"
 msgstr "മംഗോളിയൻ"
+
+msgid "Moose Cree"
+msgstr "മൂസ് ക്രീ"
+
+msgid "Morisyen"
+msgstr "മൊറിസിൻ"
+
+msgid "Mossi"
+msgstr "മൊസ്സി"
+
+msgid "Muscogee"
+msgstr "ക്രീക്ക്"
 
 msgid "Myanmar"
 msgstr "മ്യാന്മർ"
@@ -161,8 +816,65 @@ msgstr "മ്യാന്മർ"
 msgid "NKo"
 msgstr "ങ്കൊ"
 
+msgid "Navajo"
+msgstr "നവാജോ"
+
+msgid "Ndonga"
+msgstr "ഡോങ്ക"
+
+msgid "Neapolitan"
+msgstr "നെപ്പോളിറ്റാൻ"
+
+msgid "Nepali"
+msgstr "നേപ്പാളി"
+
+msgid "New Tai Lue"
+msgstr "പുതിയ തായ് ല്യൂ"
+
+msgid "Newari"
+msgstr "നേവാരി"
+
+msgid "Niuean"
+msgstr "ന്യുവാൻ"
+
+msgid "Nogai"
+msgstr "നോഗൈ"
+
+msgid "Northern Sami"
+msgstr "വടക്കൻ സമി"
+
+msgid "Northern Sotho"
+msgstr "നോർത്തേൻ സോതോ"
+
+msgid "Norwegian"
+msgstr "നോർവീജിയൻ"
+
+msgid "Norwegian Nynorsk"
+msgstr "നോർവീജിയൻ നൈനോർക്‌സ്"
+
+msgid "Nyamwezi"
+msgstr "ന്യാംവേസി"
+
+msgid "Nyankole"
+msgstr "ന്യാൻകോൾ"
+
+msgid "Occitan"
+msgstr "ഓക്‌സിറ്റൻ"
+
 msgid "Ogham"
 msgstr "ഒഗം"
+
+msgid "Oji-Cree"
+msgstr "ഒജി-ക്രീ"
+
+msgid "Ol Chiki"
+msgstr "ഒൽ ചിക്കി"
+
+msgid "Old Hungarian"
+msgstr "പുരാതന ഹംഗേറിയൻ"
+
+msgid "Old Irish"
+msgstr "പഴയ ഐറിഷ്"
 
 msgid "Old Persian"
 msgstr "പഴയ ഫാർസി"
@@ -170,26 +882,322 @@ msgstr "പഴയ ഫാർസി"
 msgid "Oriya"
 msgstr "ഒറിയ"
 
+msgid "Oromo"
+msgstr "ഒറോമോ"
+
+msgid "Osmanya"
+msgstr "ഒസ്‌മാനിയ"
+
+msgid "Pahawh Hmong"
+msgstr "പഹ്വാ ഹമോംഗ്"
+
+msgid "Palauan"
+msgstr "പലാവുൻ"
+
+msgid "Pali"
+msgstr "പാലി"
+
+msgid "Pangasinan"
+msgstr "പങ്കാസിനൻ"
+
+msgid "Pashto"
+msgstr "പഷ്‌തോ"
+
+msgid "Pohnpeian"
+msgstr "പൊൻപിയൻ"
+
+msgid "Polish"
+msgstr "പോളിഷ്"
+
+msgid "Portuguese"
+msgstr "പോർച്ചുഗീസ്"
+
 msgid "Private Use Area"
 msgstr "തനതുപയോഗ ഇടം"
+
+msgid "Psalter Pahlavi"
+msgstr "സാൾട്ടർ പഹൽവി"
+
+msgid "Punjabi"
+msgstr "പഞ്ചാബി"
+
+msgid "Quechua"
+msgstr "ക്വെച്ചുവ"
+
+msgid "Rajasthani"
+msgstr "രാജസ്ഥാനി"
+
+msgid "Rarotongan"
+msgstr "രാരോടോങ്കൻ"
+
+msgid "Rejang"
+msgstr "റെജാംഗ്"
+
+msgid "Rohingya"
+msgstr "റോഹിംഗാ"
+
+msgid "Romanian"
+msgstr "റൊമാനിയൻ"
+
+msgid "Romansh"
+msgstr "റൊമാഞ്ച്"
+
+msgid "Romany"
+msgstr "റൊമാനി"
+
+msgid "Rundi"
+msgstr "റുണ്ടി"
 
 msgid "Runic"
 msgstr "റൂണിക്ക്"
 
+msgid "Russian"
+msgstr "റഷ്യൻ"
+
 msgid "Samaritan"
 msgstr "സമറിത്തൻ"
+
+msgid "Samoan"
+msgstr "സമോവൻ"
+
+msgid "Sango"
+msgstr "സാംഗോ"
+
+msgid "Sanskrit"
+msgstr "സംസ്‌കൃതം"
+
+msgid "Santali"
+msgstr "സന്താലി"
+
+msgid "Sardinian"
+msgstr "സർഡിനിയാൻ"
+
+msgid "Sasak"
+msgstr "സസാക്"
 
 msgid "Save A_ll"
 msgstr "എല്ലാം സംരക്ഷിക്കുക"
 
+msgid "Scots"
+msgstr "സ്കോട്സ്"
+
+msgid "Scottish Gaelic"
+msgstr "സ്കോട്ടിഷ് ഗൈലിക്"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Arabic", ignore "Script|"
+msgid "Script|Arabic"
+msgstr "അറബിക്"
+
+msgid "Script|Armenian"
+msgstr "അർമേനിയൻ"
+
+msgid "Script|Avestan"
+msgstr "അവെസ്ഥൻ"
+
+msgid "Script|Balinese"
+msgstr "ബാലിനീസ്"
+
+msgid "Script|Batak"
+msgstr "ബട്ടക്"
+
+msgid "Script|Buginese"
+msgstr "ബുഗിനീസ്"
+
+msgid "Script|Buhid"
+msgstr "ബുഹിഡ്"
+
+msgid "Script|Cham"
+msgstr "ഛം"
+
+msgid "Script|Cherokee"
+msgstr "ചെറോക്കി"
+
+msgid "Script|Coptic"
+msgstr "കോപ്റ്റിക്"
+
+msgid "Script|Ethiopic"
+msgstr "എത്യോപിക്"
+
+msgid "Script|Georgian"
+msgstr "ജോർജ്ജിയൻ"
+
+msgid "Script|Greek"
+msgstr "ഗ്രീക്ക്"
+
+msgid "Script|Gujarati"
+msgstr "ഗുജറാത്തി"
+
+msgid "Script|Hebrew"
+msgstr "ഹീബ്രു"
+
+msgid "Script|Javanese"
+msgstr "ജാവനീസ്"
+
+msgid "Script|Kannada"
+msgstr "കന്നഡ"
+
+msgid "Script|Khmer"
+msgstr "ഖമെർ"
+
+msgid "Script|Lao"
+msgstr "ലാവോ"
+
+msgid "Script|Latin"
+msgstr "ലാറ്റിൻ"
+
+msgid "Script|Limbu"
+msgstr "ലിംബു"
+
+msgid "Script|Mandaean"
+msgstr "മൻഡേയൻ"
+
+msgid "Script|Mongolian"
+msgstr "മംഗോളിയൻ"
+
+msgid "Script|Myanmar"
+msgstr "മ്യാൻമാർ"
+
+msgid "Script|Old Permic"
+msgstr "പുരാതന പെർമിക്"
+
+msgid "Script|Phags-pa"
+msgstr "ഫഗസ് പ"
+
+msgid "Script|Phoenician"
+msgstr "ഫിനീഷ്യൻ"
+
+msgid "Script|Sinhala"
+msgstr "സിംഹള"
+
+msgid "Script|Sumero-Akkadian Cuneiform"
+msgstr "സുമേറോ അക്കാഡിയൻ ക്യുണിഫോം"
+
+msgid "Script|Sundanese"
+msgstr "സന്താനീസ്"
+
+msgid "Script|Syloti Nagri"
+msgstr "സൈലോതി നാഗരി"
+
+msgid "Script|Syriac"
+msgstr "സിറിയക്ക്"
+
+msgid "Script|Tagalog"
+msgstr "തഗലോഗ്"
+
+msgid "Script|Tagbanwa"
+msgstr "തഗ്ബൻവാ"
+
+msgid "Script|Tamil"
+msgstr "തമിഴ്"
+
+msgid "Script|Telugu"
+msgstr "തെലുങ്ക്"
+
+msgid "Script|Thai"
+msgstr "തായ്"
+
+msgid "Script|Tibetan"
+msgstr "ടിബറ്റൻ"
+
+msgid "Script|Ugaritic"
+msgstr "ഉഗ്രൈറ്റിക്"
+
+msgid "Script|Vai"
+msgstr "വൈ"
+
+msgid "Script|Yi"
+msgstr "യി"
+
+msgid "Selkup"
+msgstr "സെൽകപ്"
+
+msgid "Sena"
+msgstr "സേന"
+
+msgid "Seneca"
+msgstr "സെനേക"
+
+msgid "Serbian"
+msgstr "സെർബിയൻ"
+
+msgid "Serer"
+msgstr "സെറർ"
+
+msgid "Shan"
+msgstr "ഷാൻ"
+
+msgid "Shavian"
+msgstr "ഷാവിയൻ"
+
+msgid "Shona"
+msgstr "ഷോണ"
+
+msgid "Sicilian"
+msgstr "സിസിലിയൻ"
+
+msgid "Sidamo"
+msgstr "സിഡാമോ"
+
+msgid "Silesian"
+msgstr "സൈലേഷ്യൻ"
+
+msgid "Sindhi"
+msgstr "സിന്ധി"
+
 msgid "Sinhala"
 msgstr "സിംഹള"
+
+msgid "Skolt Sami"
+msgstr "സ്കോൾട്ട് സമി"
+
+msgid "Slovak"
+msgstr "സ്ലോവാക്"
+
+msgid "Slovenian"
+msgstr "സ്ലോവേനിയൻ"
+
+msgid "Soga"
+msgstr "സോഗോ"
+
+msgid "Somali"
+msgstr "സോമാലി"
+
+msgid "Soninke"
+msgstr "സോണിൻകെ"
+
+msgid "Southern Sami"
+msgstr "തെക്കൻ സമി"
+
+msgid "Southern Sotho"
+msgstr "തെക്കൻ സോതോ"
 
 msgid "Spacing Modifier Letters"
 msgstr "ഇടകലംമാറ്റി എഴുത്തുകൾ"
 
+msgid "Spanish"
+msgstr "സ്‌പാനിഷ്"
+
 msgid "Specials"
 msgstr "പ്രത്യേകമുള്ളവ"
+
+msgid "Standard Moroccan Tamazight"
+msgstr "സ്റ്റാൻഡേർഡ് മൊറോക്കൻ റ്റാമസിയറ്റ്"
+
+msgid "Straits Salish"
+msgstr "സ്ട്രെയ്റ്റ്സ് സെയ്‌ലിഷ്"
+
+msgid "Sukuma"
+msgstr "സുകുമ"
+
+msgid "Swahili"
+msgstr "സ്വാഹിലി"
+
+msgid "Swati"
+msgstr "സ്വാറ്റി"
+
+msgid "Swedish"
+msgstr "സ്വീഡിഷ്"
 
 msgid "Syriac"
 msgstr "സുറിയാണി"
@@ -197,17 +1205,38 @@ msgstr "സുറിയാണി"
 msgid "Syriac Supplement"
 msgstr "സുറിയാണി ചേർപ്പ്"
 
+msgid "Tachelhit"
+msgstr "താച്ചലിറ്റ്"
+
 msgid "Tagalog"
 msgstr "തഗലോഗ്"
 
 msgid "Tagbanwa"
 msgstr "തഗ്ബൻവ"
 
+msgid "Tahitian"
+msgstr "താഹിതിയൻ"
+
+msgid "Tai Le"
+msgstr "തായ് ലേ"
+
+msgid "Tai Viet"
+msgstr "ത്വട്"
+
+msgid "Tamashek"
+msgstr "ടമഷേക്"
+
 msgid "Tamil"
 msgstr "തമിഴ്"
 
+msgid "Tatar"
+msgstr "ടാട്ടർ"
+
 msgid "Telugu"
 msgstr "തെലുങ്ക്"
+
+msgid "Tetum"
+msgstr "ടെറ്റും"
 
 msgid "Thaana"
 msgstr "താന"
@@ -218,14 +1247,122 @@ msgstr "തായി"
 msgid "Tibetan"
 msgstr "ടിബറ്റിയൻ"
 
+msgid "Tigre"
+msgstr "ടൈഗ്രി"
+
+msgid "Tigrinya"
+msgstr "ടൈഗ്രിന്യ"
+
+msgid "Tiv"
+msgstr "ടിവ്"
+
+msgid "Tlingit"
+msgstr "ലിംഗ്വിറ്റ്"
+
+msgid "Tok Pisin"
+msgstr "ടോക് പിസിൻ"
+
+msgid "Tongan"
+msgstr "ടോംഗൻ"
+
+msgid "Tsonga"
+msgstr "സോംഗ"
+
+msgid "Tswana"
+msgstr "സ്വാന"
+
+msgid "Tumbuka"
+msgstr "ടുംബുക"
+
+msgid "Turkish"
+msgstr "ടർക്കിഷ്"
+
+msgid "Turkmen"
+msgstr "തുർക്‌മെൻ"
+
+msgid "Tuvalu"
+msgstr "ടുവാലു"
+
+msgid "Twi"
+msgstr "ട്വി"
+
+msgid "Udmurt"
+msgstr "ഉഡ്മുർട്ട്"
+
+msgid "Ukrainian"
+msgstr "ഉക്രേനിയൻ"
+
+msgid "Umbundu"
+msgstr "ഉംബുന്ദു"
+
 msgid "Unified Canadian Aboriginal Syllabics"
 msgstr "ഒത്തിണക്കിയ കനേഡിയൻ ആദിമ സിലബിക്കുകൾ"
+
+msgid "Upper Sorbian"
+msgstr "അപ്പർ സോർബിയൻ"
+
+msgid "Urdu"
+msgstr "ഉറുദു"
+
+msgid "Uyghur"
+msgstr "ഉയ്ഘുർ"
+
+msgid "Uzbek"
+msgstr "ഉസ്‌ബെക്ക്"
 
 msgid "Variation Selectors"
 msgstr "മാറ്റം തിരഞ്ഞെടുക്കുന്നവ"
 
+msgid "Venda"
+msgstr "വെന്ദ"
+
+msgid "Venetian"
+msgstr "വെനീഷ്യൻ"
+
 msgid "Vertical Forms"
 msgstr "നെടുങ്ങനെയുള്ള വടിവുകൾ"
+
+msgid "Vietnamese"
+msgstr "വിയറ്റ്നാമീസ്"
+
+msgid "Volapük"
+msgstr "വോളാപുക്"
+
+msgid "Walloon"
+msgstr "വല്ലൂൺ"
+
+msgid "Welsh"
+msgstr "വെൽഷ്"
+
+msgid "Western Panjabi"
+msgstr "ലഹ്‌ൻഡ"
+
+msgid "Wolof"
+msgstr "വൊളോഫ്"
+
+msgid "Xhosa"
+msgstr "ഖോസ"
+
+msgid "Yao"
+msgstr "യാവോ"
+
+msgid "Yapese"
+msgstr "യെപ്പീസ്"
+
+msgid "Yiddish"
+msgstr "യിദ്ദിഷ്"
+
+msgid "Yoruba"
+msgstr "യൊറൂബാ"
+
+msgid "Zarma"
+msgstr "സാർമ്മ"
+
+msgid "Zhuang"
+msgstr "സ്വാംഗ്"
+
+msgid "Zulu"
+msgstr "സുലു"
 
 msgid "_Close"
 msgstr "അടയ്ക്കുക"

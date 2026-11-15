@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -4186,6 +4186,9 @@ msgstr "Каталонский"
 
 msgid "Caucasian Albanian"
 msgstr "Агванское письмо"
+
+msgid "Cayuga"
+msgstr "кайюга"
 
 msgid "Cebuano"
 msgstr "Себуано"
@@ -9358,6 +9361,9 @@ msgstr "Половинная ширина"
 
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "Формы в половинную и полную ширину"
+
+msgid "Halkomelem"
+msgstr "халкомелем"
 
 msgid "Hammer-Banna"
 msgstr "Хамер-банна"
@@ -18573,6 +18579,9 @@ msgstr "Полуширокий (112.5%)"
 msgid "Sena"
 msgstr "Сена"
 
+msgid "Seneca"
+msgstr "сенека"
+
 msgid "Separate ratios for horizontal and vertical stems"
 msgstr "Раздельные соотношения для горизонтальных и вертикальных штрихов"
 
@@ -20052,6 +20061,9 @@ msgstr "Прямой штрих/вертикальные"
 
 msgid "Straight Arms/Wedge"
 msgstr "Прямой штрих/клинообразные"
+
+msgid "Straits Salish"
+msgstr "стрейтс салиш"
 
 msgid "Stretch:"
 msgstr "Растяжение:"

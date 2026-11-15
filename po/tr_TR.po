@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr_TR\n"
@@ -36,11 +36,41 @@ msgstr ""
 msgid "%s is not in %.100s"
 msgstr "%s, %.100s üzerinde değil."
 
+msgid "Abkhazian"
+msgstr "Abhazca"
+
+msgid "Adyghe"
+msgstr "Adigece"
+
+msgid "Afrikaans"
+msgstr "Afrikaanca"
+
 msgid "Albanian"
 msgstr "Arnavutça"
 
+msgid "Anatolian Hieroglyphs"
+msgstr "Anadolu Hiyeroglifleri"
+
+msgid "Aragonese"
+msgstr "Aragonca"
+
+msgid "Aromanian"
+msgstr "Ulahça"
+
+msgid "Arpitan"
+msgstr "Arpitanca"
+
+msgid "Assamese"
+msgstr "Assamca"
+
+msgid "Asturian"
+msgstr "Asturyasça"
+
 msgid "Azebaijani (roman)"
 msgstr "Azerice (latin alfabesi)"
+
+msgid "Azerbaijani"
+msgstr "Azerbaycan dili"
 
 msgid "Bad Template"
 msgstr "Sorunlu şablon"
@@ -71,6 +101,39 @@ msgstr "Sorunlu şablon, tanınmayan format"
 msgid "Bad xfig file"
 msgstr "Sorunlu xfig dosyası"
 
+msgid "Baluchi"
+msgstr "Beluçça"
+
+msgid "Bashkir"
+msgstr "Başkırtça"
+
+msgid "Basque"
+msgstr "Baskça"
+
+msgid "Bavarian"
+msgstr "Bavyera dili"
+
+msgid "Bhojpuri"
+msgstr "Arayanice"
+
+msgid "Bosnian"
+msgstr "Boşnakça"
+
+msgid "Brahui"
+msgstr "Brohice"
+
+msgid "Breton"
+msgstr "Bretonca"
+
+msgid "Bulgarian"
+msgstr "Bulgarca"
+
+msgid "Burmese"
+msgstr "Birman dili"
+
+msgid "Cajun French"
+msgstr "Cajun Fransızcası"
+
 msgid "Can't create temporary directory"
 msgstr "Geçici klasör oluşturulamadı"
 
@@ -95,6 +158,54 @@ msgstr "%s açılamıyor"
 msgid "Can't run mf"
 msgstr "Mf çalıştırılamadı"
 
+msgid "Carian"
+msgstr "Karya"
+
+msgid "Catalan"
+msgstr "Katalanca"
+
+msgid "Caucasian Albanian"
+msgstr "Kafkas Albanyası"
+
+msgid "Cayuga"
+msgstr "Kayuga dili"
+
+msgid "Cebuano"
+msgstr "Sebuano dili"
+
+msgid "Central Yupik"
+msgstr "Merkezi Yupikçe"
+
+msgid "Chamorro"
+msgstr "Çamorro dili"
+
+msgid "Chechen"
+msgstr "Çeçence"
+
+msgid "Cheyenne"
+msgstr "Şayence"
+
+msgid "Chiga"
+msgstr "Kiga"
+
+msgid "Chipewyan"
+msgstr "Çipevya dili"
+
+msgid "Choctaw"
+msgstr "Çoktav dili"
+
+msgid "Chuvash"
+msgstr "Çuvaşça"
+
+msgid "Comorian"
+msgstr "Komorca"
+
+msgid "Cornish"
+msgstr "Kernevekçe"
+
+msgid "Corsican"
+msgstr "Korsikaca"
+
 msgid "Could not read (or perhaps find) mf output file"
 msgstr "Mf çıktı dosyası okunamadı (veya bulunamadı)"
 
@@ -109,14 +220,29 @@ msgstr "Dosya açılamıyor"
 msgid "Couldn't open file %.200s"
 msgstr "%.200s Dosya açılamıyor"
 
+msgid "Cree"
+msgstr "Krice"
+
+msgid "Crimean Tatar"
+msgstr "Kırım Tatarcası"
+
 msgid "Croatian"
 msgstr "Hırvatça"
+
+msgid "Cyrillic"
+msgstr "Kiril"
 
 msgid "Czech"
 msgstr "Çekçe"
 
 msgid "Danish"
 msgstr "Danca"
+
+msgid "Dargwa"
+msgstr "Dargince"
+
+msgid "Dari"
+msgstr "Darice"
 
 msgid "Default Background"
 msgstr "Varsayılan Arkaplan"
@@ -132,6 +258,12 @@ msgstr "Pencereler için varsayılan önplan rengi"
 
 msgid "Different Fonts"
 msgstr "Farklı Yazı Tipleri"
+
+msgid "Dinka"
+msgstr "Dinka dili"
+
+msgid "Divehi"
+msgstr "Divehi dili"
 
 msgid "Don't Warn Again"
 msgstr "Tekrar Uyarma"
@@ -153,8 +285,14 @@ msgstr "Estonca"
 msgid "Failed to write %s"
 msgstr "%s üzerine yazılamadı"
 
+msgid "Faroese"
+msgstr "Faroe dili"
+
 msgid "Faroese (Icelandic)"
 msgstr "Faroece (İzlanda)"
+
+msgid "Fijian"
+msgstr "Fiji dili"
 
 msgid "File Exists"
 msgstr "Dosya mevcut"
@@ -162,6 +300,9 @@ msgstr "Dosya mevcut"
 #, c-format
 msgid "File, %s, exists. Replace it?"
 msgstr "%s dosyası mevcut. Üzerine yazılsın mı?"
+
+msgid "Filipino"
+msgstr "Filipince"
 
 msgid "Find a cidmap file..."
 msgstr "Cidmap dosyası bul..."
@@ -200,8 +341,20 @@ msgstr "Fontforge düzenlenen bir sembolü gösterirken"
 msgid "French"
 msgstr "Fransızca"
 
+msgid "Friulian"
+msgstr "Friuli dili"
+
 msgid "GDraw"
 msgstr "GDraw"
+
+msgid "Ga"
+msgstr "Ga dili"
+
+msgid "Gagauz"
+msgstr "Gagavuzca"
+
+msgid "Galician"
+msgstr "Galiçyaca"
 
 msgid "Generate Mac _Family..."
 msgstr "Mac _Ailesinden Oluştur..."
@@ -215,11 +368,50 @@ msgstr "TTC Oluştur..."
 msgid "German"
 msgstr "Almanca"
 
+msgid "Gilaki"
+msgstr "Gilanice"
+
+msgid "Glagolitic"
+msgstr "Glagolit"
+
+msgid "Gondi"
+msgstr "Gondi dili"
+
+msgid "Gothic"
+msgstr "Gotik"
+
 msgid "Greek (polytonic)"
 msgstr "Yunanca (politonik)"
 
 msgid "Greenlandic"
 msgstr "Grönlandca"
+
+msgid "Guarani"
+msgstr "Guarani dili"
+
+msgid "Haida"
+msgstr "Haydaca"
+
+msgid "Halkomelem"
+msgstr "Halkomelemce"
+
+msgid "Hangul"
+msgstr "Hangıl"
+
+msgid "Haryanvi"
+msgstr "Haryanvi dili"
+
+msgid "Hausa"
+msgstr "Hausa dili"
+
+msgid "Hawaiian"
+msgstr "Hawaii dili"
+
+msgid "Herero"
+msgstr "Herero dili"
+
+msgid "Hiligaynon"
+msgstr "Hiligaynon dili"
 
 msgid "Hindi"
 msgstr "Hintçe"
@@ -230,11 +422,41 @@ msgstr "Hiragana"
 msgid "Hungarian"
 msgstr "Macarca"
 
+msgid "Ibibio"
+msgstr "İbibio dili"
+
 msgid "Icelandic"
 msgstr "İzlandaca"
 
+msgid "Igbo"
+msgstr "İbo dili"
+
+msgid "Imperial Aramaic"
+msgstr "İmparatorluk Aramicesi"
+
+msgid "Inari Sami"
+msgstr "İnari Laponcası"
+
 msgid "Indonesian"
 msgstr "Endonezce"
+
+msgid "Ingush"
+msgstr "İnguşça"
+
+msgid "Inscriptional Pahlavi"
+msgstr "Pehlevi Kitabe Dili"
+
+msgid "Inscriptional Parthian"
+msgstr "Partça Kitabe Dili"
+
+msgid "Interlingua"
+msgstr "İnterlingua"
+
+msgid "Inuktitut"
+msgstr "İnuktitut dili"
+
+msgid "Irish"
+msgstr "İrlandaca"
 
 msgid "Irish Gaelic"
 msgstr "Galce (İrlanda)"
@@ -248,17 +470,87 @@ msgstr "İtalyanca"
 msgid "Japanese"
 msgstr "Japonca"
 
+msgid "Kabardian"
+msgstr "Kabardeyce"
+
+msgid "Kabyle"
+msgstr "Kabiliyece"
+
+msgid "Kalmyk"
+msgstr "Kalmıkça"
+
+msgid "Kanuri"
+msgstr "Kanuri dili"
+
+msgid "Karelian"
+msgstr "Karelyaca"
+
+msgid "Kashmiri"
+msgstr "Keşmir dili"
+
 msgid "Katakana"
 msgstr "Katakana"
+
+msgid "Kazakh"
+msgstr "Kazakça"
 
 msgid "Kerning direction"
 msgstr "Karakter aralık yönü"
 
+msgid "Khasi"
+msgstr "Khasi dili"
+
+msgid "Khowar"
+msgstr "Çitral Dili"
+
+msgid "Khudawadi"
+msgstr "Khudabadi"
+
+msgid "Kirmanjki"
+msgstr "Kırmançça"
+
+msgid "Kongo"
+msgstr "Kongo dili"
+
+msgid "Konkani"
+msgstr "Konkani dili"
+
 msgid "Korean"
 msgstr "Korece"
 
+msgid "Kpelle"
+msgstr "Kpelle dili"
+
+msgid "Kumyk"
+msgstr "Kumukça"
+
+msgid "Kurdish"
+msgstr "Orta Kürtçe"
+
+msgid "Kurukh"
+msgstr "Kurukh dili"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Malayalam", ignore "Lang|"
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Amharic", ignore "Lang|"
+msgid "Lang|Amharic"
+msgstr "Amharca"
+
 msgid "Lang|Arabic"
 msgstr "Arapça"
+
+msgid "Lang|Armenian"
+msgstr "Ermenice"
+
+msgid "Lang|Balinese"
+msgstr "Bali dili"
+
+msgid "Lang|Cherokee"
+msgstr "Çerokice"
+
+msgid "Lang|Coptic"
+msgstr "Kıptice"
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "Farsi/Persian"), ignore "Lang|"
@@ -267,11 +559,20 @@ msgstr "Arapça"
 msgid "Lang|Farsi/Persian"
 msgstr "Farsça"
 
+msgid "Lang|Georgian"
+msgstr "Gürcüce"
+
 msgid "Lang|Greek"
 msgstr "Yunanca"
 
+msgid "Lang|Gujarati"
+msgstr "Güceratça"
+
 msgid "Lang|Hebrew"
 msgstr "İbranice"
+
+msgid "Lang|Javanese"
+msgstr "Cava dili"
 
 msgid "Lang|Kannada"
 msgstr "Kannadaca"
@@ -279,8 +580,38 @@ msgstr "Kannadaca"
 msgid "Lang|Khmer"
 msgstr "Kmerce"
 
+msgid "Lang|Lao"
+msgstr "Lao dili"
+
+msgid "Lang|Latin"
+msgstr "Latince"
+
+msgid "Lang|Makasar"
+msgstr "Makasar"
+
 msgid "Lang|Malayalam"
 msgstr "Malayca"
+
+msgid "Lang|Manchu"
+msgstr "Mançurya dili"
+
+msgid "Lang|Mongolian"
+msgstr "Moğolca"
+
+msgid "Lang|Odia"
+msgstr "Oriya dili"
+
+msgid "Lang|Persian"
+msgstr "Farsça"
+
+msgid "Lang|Sinhala"
+msgstr "Sinhali dili"
+
+msgid "Lang|Sundanese"
+msgstr "Sunda dili"
+
+msgid "Lang|Syriac"
+msgstr "Süryanice"
 
 msgid "Lang|Tagalog"
 msgstr "Tagalog"
@@ -294,17 +625,68 @@ msgstr "Telugu"
 msgid "Lang|Thai"
 msgstr "Tayca"
 
+msgid "Lang|Tibetan"
+msgstr "Tibetçe"
+
 msgid "Latvian"
 msgstr "Letonca"
+
+msgid "Laz"
+msgstr "Lazca"
 
 msgid "Learning to use FontForge is easy, and there are various tutorials available beginning with the basics up to more advanced features such as making and using scripts."
 msgstr "FontForge'u kullanmayı öğrenmek kolaydır. Ayrıca temel bilgilerden başlayıp betik oluşturma ve kullanma gibi gelişmiş özellikleri anlatan çeşitli öğreticileri bulunmaktadır."
 
+msgid "Ligurian"
+msgstr "Ligurca"
+
+msgid "Limburgish"
+msgstr "Limburgca"
+
+msgid "Linear A"
+msgstr "Lineer A"
+
+msgid "Linear B"
+msgstr "Lineer B"
+
 msgid "Lithuanian"
 msgstr "Litvanca"
 
+msgid "Lombard"
+msgstr "Lombardça"
+
 msgid "Loop Count"
 msgstr "Döngü Adedi"
+
+msgid "Low Saxon"
+msgstr "Aşağı Saksonca"
+
+msgid "Lower Sorbian"
+msgstr "Aşağı Sorbça"
+
+msgid "Lule Sami"
+msgstr "Lule Laponcası"
+
+msgid "Luxembourgish"
+msgstr "Lüksemburgca"
+
+msgid "Lycian"
+msgstr "Likya"
+
+msgid "Lydian"
+msgstr "Lidya"
+
+msgid "Macedonian"
+msgstr "Makedonca"
+
+msgid "Makhuwa"
+msgstr "Makuaca"
+
+msgid "Malagasy"
+msgstr "Malgaşça"
+
+msgid "Malay"
+msgstr "Malayca"
 
 msgid "Malay (arabic)"
 msgstr "Malayca (arap alfabesi)"
@@ -315,14 +697,44 @@ msgstr "Malayca (latin alfabesi)"
 msgid "Maltese"
 msgstr "Maltaca"
 
+msgid "Manichaean"
+msgstr "Maniheist"
+
+msgid "Manipuri"
+msgstr "Manipuri dili"
+
+msgid "Manx"
+msgstr "Man dili"
+
+msgid "Marathi"
+msgstr "Marathi dili"
+
+msgid "Marshallese"
+msgstr "Marshall Adaları dili"
+
+msgid "Marwari"
+msgstr "Marvari"
+
 msgid "Mathematical Alphanumeric Symbols"
 msgstr "Matematiksel Alfanumerik Semboller"
 
 msgid "Mathematical Greek"
 msgstr "Matematiksel Grekçe"
 
+msgid "Mazanderani"
+msgstr "Mazenderanca"
+
+msgid "Mende"
+msgstr "Mende dili"
+
+msgid "Meroitic Cursive"
+msgstr "Meroitik El Yazısı"
+
 msgid "MetaFont exited with an error"
 msgstr "MetaFont bir hata verip kapandı"
+
+msgid "Mirandese"
+msgstr "Miranda dili"
 
 msgid "Missing cidmap file"
 msgstr "Cidmap dosyası kayıp"
@@ -330,8 +742,44 @@ msgstr "Cidmap dosyası kayıp"
 msgid "Missing glyph"
 msgstr "Kayıp sembol"
 
+msgid "Mizo"
+msgstr "Lushai"
+
+msgid "Mohawk"
+msgstr "Mohavk dili"
+
+msgid "Moksha"
+msgstr "Mokşa dili"
+
+msgid "Moldavian"
+msgstr "Moldovaca"
+
+msgid "Moose Cree"
+msgstr "Moose Kricesi"
+
 msgid "More Images Than Selected Glyphs"
 msgstr "Seçilen sembolden fazla resim mevcut"
+
+msgid "Muscogee"
+msgstr "Krikçe"
+
+msgid "Nabataean"
+msgstr "Nebati"
+
+msgid "Navajo"
+msgstr "Navaho dili"
+
+msgid "Neapolitan"
+msgstr "Napolice"
+
+msgid "Nepali"
+msgstr "Nepalce"
+
+msgid "Newari"
+msgstr "Nevari"
+
+msgid "Niuean"
+msgstr "Niue dili"
 
 msgid "No cidmap file..."
 msgstr "Cidmap dosyası yok..."
@@ -340,14 +788,41 @@ msgstr "Cidmap dosyası yok..."
 msgid "No kerning table for %s"
 msgstr "%s için karakter aralık tablosu yok."
 
+msgid "Nogai"
+msgstr "Nogayca"
+
 msgid "Normal Text Color:"
 msgstr "Normal Metin Rengi:"
+
+msgid "Northern Sami"
+msgstr "Kuzey Laponcası"
+
+msgid "Northern Sotho"
+msgstr "Kuzey Sotho dili"
 
 msgid "Norwegian"
 msgstr "Norveççe"
 
+msgid "Norwegian Nynorsk"
+msgstr "Norveççe Nynorsk"
+
 msgid "Nothing Selected"
 msgstr "Hiçbir şey seçilmedi"
+
+msgid "Nyamwezi"
+msgstr "Nyamvezi"
+
+msgid "Occitan"
+msgstr "Oksitan dili"
+
+msgid "Oji-Cree"
+msgstr "Anişininice"
+
+msgid "Old Hungarian"
+msgstr "Eski Macar"
+
+msgid "Old Irish"
+msgstr "Eski İrlandaca"
 
 msgid "Old North Arabian"
 msgstr "Eski Kuzey Arapçası"
@@ -364,8 +839,32 @@ msgstr "Orhun Alfabesi"
 msgid "Old sfd file"
 msgstr "Eski sfd dosyası"
 
+msgid "Oromo"
+msgstr "Oromo dili"
+
 msgid "Out of memory"
 msgstr "Yetersiz bellek"
+
+msgid "Pahawh Hmong"
+msgstr "Pahavh Hmong"
+
+msgid "Palauan"
+msgstr "Palau dili"
+
+msgid "Palmyrene"
+msgstr "Palmira"
+
+msgid "Pangasinan"
+msgstr "Pangasinan dili"
+
+msgid "Pashto"
+msgstr "Peştuca"
+
+msgid "Pennsylvania German"
+msgstr "Pensilvanya Almancası"
+
+msgid "Picard"
+msgstr "Picard Dili"
 
 msgid "Pick a font, any font..."
 msgstr "Bir yazı tipi seçin, herhangi bir yazı tipi..."
@@ -389,6 +888,9 @@ msgstr "Açılır Pencereler"
 msgid "Portuguese"
 msgstr "Portekizce"
 
+msgid "Psalter Pahlavi"
+msgstr "Psalter Pehlevi"
+
 msgid "Punjabi"
 msgstr "Pencapça"
 
@@ -400,6 +902,9 @@ msgstr ""
 "CFF Yazı Tiplerini TTF yerine TTC'ye koy.\n"
 " Bu özellikler Mac ve Linux üzerinde çalışıyor gibi görünüyor\n"
 " ama Windows üzerinde çalışmadığı belgenmiş."
+
+msgid "Quechua"
+msgstr "Keçuva dili"
 
 msgid "Recen_t"
 msgstr "_Son kullanılan"
@@ -423,8 +928,20 @@ msgstr ""
 "Arama listesini orijinal durumuna geri yükler.\n"
 "Fakat alt tablo verisinde yapılan değişiklikler değişmez."
 
+msgid "Rohingya"
+msgstr "Rohingya dili"
+
 msgid "Romanian"
 msgstr "Romence"
+
+msgid "Romansh"
+msgstr "Romanşça"
+
+msgid "Romany"
+msgstr "Romanca"
+
+msgid "Rundi"
+msgstr "Kirundi"
 
 msgid "Runic"
 msgstr "Rünik"
@@ -432,14 +949,29 @@ msgstr "Rünik"
 msgid "Russian"
 msgstr "Rusça"
 
+msgid "Rusyn"
+msgstr "Rusince"
+
 msgid "S_ave as..."
 msgstr "_Farklı kaydet..."
 
 msgid "Sami (Lappish)"
 msgstr "Laponca (Sami)"
 
+msgid "Samoan"
+msgstr "Samoa dili"
+
+msgid "Samogitian"
+msgstr "Samogitçe"
+
 msgid "Sanskrit"
 msgstr "Sanskritçe"
+
+msgid "Sardinian"
+msgstr "Sardunya dili"
+
+msgid "Saterland Frisian"
+msgstr "Saterland Frizcesi"
 
 msgid "Save A_ll"
 msgstr "_Hepsini Kaydet"
@@ -447,8 +979,133 @@ msgstr "_Hepsini Kaydet"
 msgid "Save Failed"
 msgstr "Kaydedilemedi"
 
+msgid "Scots"
+msgstr "İskoçça"
+
+msgid "Scottish Gaelic"
+msgstr "İskoç Gaelcesi"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Arabic", ignore "Script|"
+msgid "Script|Arabic"
+msgstr "Arap"
+
+msgid "Script|Armenian"
+msgstr "Ermeni"
+
+msgid "Script|Avestan"
+msgstr "Avesta"
+
+msgid "Script|Balinese"
+msgstr "Bali Dili"
+
+msgid "Script|Batak"
+msgstr "Batak"
+
+msgid "Script|Buginese"
+msgstr "Bugis"
+
+msgid "Script|Buhid"
+msgstr "Buhid"
+
+msgid "Script|Cherokee"
+msgstr "Çeroki"
+
+msgid "Script|Coptic"
+msgstr "Kıpti"
+
+msgid "Script|Ethiopic"
+msgstr "Etiyopya"
+
+msgid "Script|Georgian"
+msgstr "Gürcü"
+
+msgid "Script|Greek"
+msgstr "Yunan"
+
+msgid "Script|Gujarati"
+msgstr "Gücerat"
+
+msgid "Script|Hebrew"
+msgstr "İbrani"
+
+msgid "Script|Javanese"
+msgstr "Cava Dili"
+
+msgid "Script|Kannada"
+msgstr "Kannada"
+
+msgid "Script|Khmer"
+msgstr "Kmer"
+
+msgid "Script|Lao"
+msgstr "Lao"
+
+msgid "Script|Latin"
+msgstr "Latin"
+
+msgid "Script|Limbu"
+msgstr "Limbu"
+
+msgid "Script|Mandaean"
+msgstr "Manden"
+
 msgid "Script|Mongolian"
 msgstr "Moğolca"
+
+msgid "Script|Myanmar"
+msgstr "Burma"
+
+msgid "Script|Old Permic"
+msgstr "Eski Permik"
+
+msgid "Script|Phags-pa"
+msgstr "Phags-pa"
+
+msgid "Script|Phoenician"
+msgstr "Fenike"
+
+msgid "Script|Sinhala"
+msgstr "Seylan"
+
+msgid "Script|Sumero-Akkadian Cuneiform"
+msgstr "Sümer-Akad Çivi Yazısı"
+
+msgid "Script|Sundanese"
+msgstr "Sunda"
+
+msgid "Script|Syloti Nagri"
+msgstr "Syloti Nagri"
+
+msgid "Script|Syriac"
+msgstr "Süryani"
+
+msgid "Script|Tagalog"
+msgstr "Takalot"
+
+msgid "Script|Tagbanwa"
+msgstr "Tagbanva"
+
+msgid "Script|Tamil"
+msgstr "Tamil"
+
+msgid "Script|Telugu"
+msgstr "Telugu"
+
+msgid "Script|Thai"
+msgstr "Tay"
+
+msgid "Script|Tibetan"
+msgstr "Tibet"
+
+msgid "Script|Ugaritic"
+msgstr "Ugarit Çivi Yazısı"
+
+msgid "Script|Vai"
+msgstr "Vai"
+
+msgid "Script|Yi"
+msgstr "Yi"
 
 #. GT: I'm not happy with this phrase. Suggestions for improvements are welcome
 #. GT:  Here I am generating a list of lookup names representing data that can
@@ -465,21 +1122,99 @@ msgstr "%s sembolden ikincisi"
 msgid "See also:"
 msgstr "Ayrıca bakınız:"
 
+msgid "Selkup"
+msgstr "Selkup dili"
+
+msgid "Seneca"
+msgstr "Seneca dili"
+
 #, c-format
 msgid "Separation marks only meaningful in contextual chaining lookups, starting at: %.20s..."
 msgstr "Ayırma işaretleri, yalnızca bağlamsal zincirleme aramalarda kullanılmalıdır, başlangıç noktası: %.20s..."
 
+msgid "Serbian"
+msgstr "Sırpça"
+
+msgid "Serer"
+msgstr "Serer dili"
+
+msgid "Shan"
+msgstr "Shan dili"
+
+msgid "Shona"
+msgstr "Şona dili"
+
 msgid "Show Hidden Files"
 msgstr "Gizli Dosyaları Göster"
+
+msgid "Sicilian"
+msgstr "Sicilyaca"
+
+msgid "Sidamo"
+msgstr "Sidamo dili"
+
+msgid "Silesian"
+msgstr "Silezyaca"
 
 msgid "Simplified Chinese"
 msgstr "Basitleştirilmiş Çince"
 
+msgid "Sindhi"
+msgstr "Sindhi dili"
+
+msgid "Skolt Sami"
+msgstr "Skolt Laponcası"
+
+msgid "Slovak"
+msgstr "Slovakça"
+
+msgid "Slovenian"
+msgstr "Slovence"
+
+msgid "Somali"
+msgstr "Somalice"
+
+msgid "Southern Sami"
+msgstr "Güney Laponcası"
+
+msgid "Southern Sotho"
+msgstr "Güney Sotho dili"
+
 msgid "Spanish"
 msgstr "İspanyolca"
 
+msgid "Standard Moroccan Tamazight"
+msgstr "Standart Fas Tamazigti"
+
+msgid "Straits Salish"
+msgstr "Boğazlar Saliş dili"
+
+msgid "Sukuma"
+msgstr "Sukuma dili"
+
+msgid "Swahili"
+msgstr "Svahili dili"
+
+msgid "Swati"
+msgstr "Sisvati"
+
 msgid "Swedish"
 msgstr "İsveççe"
+
+msgid "Tachelhit"
+msgstr "Taşelit"
+
+msgid "Tahitian"
+msgstr "Tahiti dili"
+
+msgid "Talysh"
+msgstr "Talışça"
+
+msgid "Tamashek"
+msgstr "Tamaşek"
+
+msgid "Tatar"
+msgstr "Tatarca"
 
 msgid ""
 "The Merge operation cannot be reverted.\n"
@@ -507,6 +1242,15 @@ msgstr "Bu dosya script te isimlenemeyen, belirtilmemiş kodlama içeriyor"
 msgid "This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."
 msgstr "Bu yazı tipi eski bir sfd dosyasından geliyor. Tüm detayları başarıyla çevrilemeyebilir."
 
+msgid "Tigrinya"
+msgstr "Tigrinya dili"
+
+msgid "Tlingit"
+msgstr "Tlingitçe"
+
+msgid "Tongan"
+msgstr "Tonga dili"
+
 msgid "Too Complex or Bad"
 msgstr "Çok karışık veya kötü durumda"
 
@@ -517,8 +1261,29 @@ msgstr "Çok fazla ayrıma işareti var, başlangıç noktası: %.20s..."
 msgid "Traditional Chinese"
 msgstr "Geleneksel Çince"
 
+msgid "Tswana"
+msgstr "Setsvana"
+
+msgid "Tulu"
+msgstr "Tuluca"
+
 msgid "Turkish"
 msgstr "Türkçe"
+
+msgid "Turkmen"
+msgstr "Türkmence"
+
+msgid "Tuvalu"
+msgstr "Tuvalyanca"
+
+msgid "Twi"
+msgstr "Tvi"
+
+msgid "Udmurt"
+msgstr "Udmurtça"
+
+msgid "Ukrainian"
+msgstr "Ukraynaca"
 
 msgid "Unknown Language"
 msgstr "Bilinmeyen Dil"
@@ -526,20 +1291,65 @@ msgstr "Bilinmeyen Dil"
 msgid "Unspecified Language"
 msgstr "Belirsiz Dil"
 
+msgid "Upper Sorbian"
+msgstr "Yukarı Sorbça"
+
 msgid "Urdu"
 msgstr "Urduca"
+
+msgid "Uyghur"
+msgstr "Uygurca"
+
+msgid "Uzbek"
+msgstr "Özbekçe"
+
+msgid "Venda"
+msgstr "Venda dili"
+
+msgid "Venetian"
+msgstr "Venedikçe"
 
 msgid "Vietnamese"
 msgstr "Vietnamca"
 
+msgid "Walloon"
+msgstr "Valonca"
+
+msgid "Wayuu"
+msgstr "Wayuu dili"
+
 msgid "Welsh"
 msgstr "Galce"
+
+msgid "Western Panjabi"
+msgstr "Lahnda"
 
 msgid "What is the pixel size of the font in this file?"
 msgstr "Bu dosyadaki yazı tipinde pixel boyutu nedir?"
 
+msgid "Wolof"
+msgstr "Volofça"
+
+msgid "Xhosa"
+msgstr "Zosa dili"
+
+msgid "Yapese"
+msgstr "Yapça"
+
+msgid "Yiddish"
+msgstr "Yidiş"
+
+msgid "Yoruba"
+msgstr "Yorubaca"
+
 msgid "You must select a glyph before you can import an image into it"
 msgstr "Sembole resim dahil etmeden önce bir sembol seçmelisiniz"
+
+msgid "Zhuang"
+msgstr "Zhuangca"
+
+msgid "Zulu"
+msgstr "Zuluca"
 
 msgid "_Close"
 msgstr "_Kapat"

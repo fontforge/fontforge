@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-29 21:03+0300\n"
-"PO-Revision-Date: 2026-09-28 19:58\n"
+"POT-Creation-Date: 2026-11-13 21:17+0200\n"
+"PO-Revision-Date: 2026-11-13 14:14\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -274,6 +274,9 @@ msgstr "Nomi AMS"
 msgid "A_lign"
 msgstr "A_llinea"
 
+msgid "Abkhazian"
+msgstr "abcaso"
+
 msgid "Above Base Forms"
 msgstr "Sopra le forme di base"
 
@@ -379,14 +382,26 @@ msgstr "Avanzamento mostrato da una linea"
 msgid "Advance Width does not change."
 msgstr "La larghezza dell'avanzamento non cambia."
 
+msgid "Adyghe"
+msgstr "adyghe"
+
 msgid "Aegean Numbers"
 msgstr "Numeri egei"
+
+msgid "Afar"
+msgstr "afar"
+
+msgid "Afrikaans"
+msgstr "afrikaans"
 
 msgid "After rotating or skewing a glyph you should probably apply Element->Add Extrema"
 msgstr "Dopo una rotazione o una trasformazione del carattere, dovresti probabilmente rifare Element->Aggiungi gli estremi"
 
 msgid "Ahom"
 msgstr "Ahom"
+
+msgid "Akan"
+msgstr "akan"
 
 msgid "Albanian"
 msgstr "Albanese"
@@ -594,6 +609,9 @@ msgstr "Forme di presentazione araba-B"
 msgid "Arabic Supplement"
 msgstr "Arabo supplemento"
 
+msgid "Aragonese"
+msgstr "aragonese"
+
 msgid "Archives"
 msgstr "Archivi"
 
@@ -613,6 +631,12 @@ msgstr "Sei sicuro di voler rimuovere questi glifi? L'operazione non può essere
 msgid "Armenian"
 msgstr "Armeno"
 
+msgid "Aromanian"
+msgstr "arumeno"
+
+msgid "Arpitan"
+msgstr "francoprovenzale"
+
 msgid "Arrow Options"
 msgstr "Opzioni frecce"
 
@@ -630,6 +654,12 @@ msgstr "Chiede all'utente i paramenti per 'autotrace' ad ogni utilizzazione"
 
 msgid "Ask the user for mf commands each time mf is invoked"
 msgstr "Chiede all'utente i parametri per 'mf' ad ogni utilizzazione"
+
+msgid "Assamese"
+msgstr "assamese"
+
+msgid "Asturian"
+msgstr "asturiano"
 
 msgid "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
 msgstr "Almeno un'ancora si è persa durante l'inserimento, perché non c'era una classe d'ancore idonea nel font di destiazione."
@@ -708,6 +738,9 @@ msgstr "Autotrace..."
 msgid "Avestan"
 msgstr "Avestico"
 
+msgid "Awadhi"
+msgstr "awadhi"
+
 msgid "Axerbaijani (Arabic)"
 msgstr "Azero (Arabo)"
 
@@ -738,8 +771,14 @@ msgstr "AltezzaAsse:"
 msgid "AxisValue|Default"
 msgstr "Valore asse di default"
 
+msgid "Aymara"
+msgstr "aymara"
+
 msgid "Azebaijani (roman)"
 msgstr "Azero (roman)"
+
+msgid "Azerbaijani"
+msgstr "azerbaigiano"
 
 msgid "Azeri (Latin)"
 msgstr "Azero (Latino)"
@@ -929,8 +968,17 @@ msgstr "Valore unicode errato per unicode alternativo / selettore di variante"
 msgid "Bad xfig file"
 msgstr "File XFIG errato"
 
+msgid "Badaga"
+msgstr "badaga"
+
 msgid "Balinese"
 msgstr "Balinese"
+
+msgid "Baluchi"
+msgstr "beluci"
+
+msgid "Bambara"
+msgstr "bambara"
 
 msgid "Bamum"
 msgstr "Bamum"
@@ -959,6 +1007,9 @@ msgstr "Nuova legatura"
 msgid "Baseline"
 msgstr "Linea di base"
 
+msgid "Bashkir"
+msgstr "baschiro"
+
 msgid "Basic Latin"
 msgstr "Latino di base"
 
@@ -973,6 +1024,12 @@ msgstr "Bassa Vah"
 
 msgid "Batak"
 msgstr "Batak"
+
+msgid "Batak Toba"
+msgstr "batak toba"
+
+msgid "Bavarian"
+msgstr "bavarese"
 
 msgid "Be_vel"
 msgstr "Tagliato(_P)"
@@ -989,6 +1046,9 @@ msgstr "Sotto la marca di base"
 msgid "Below Base Substitutions"
 msgstr "Sostituzioni sotto la base"
 
+msgid "Bemba"
+msgstr "wemba"
+
 msgid "Bengali"
 msgstr "Bengali"
 
@@ -1001,11 +1061,20 @@ msgstr "Beria Erfe"
 msgid "Bhaiksuki"
 msgstr "Bhaiksuki"
 
+msgid "Bhojpuri"
+msgstr "bhojpuri"
+
 msgid "Big5 (Trad. Chinese)"
 msgstr "Big5 (Cinese tradiz.)"
 
 msgid "Big5 HKSCS (Trad. Chinese)"
 msgstr "Big5 HKSCS (Cinese tradiz.)"
+
+msgid "Bikol"
+msgstr "bicol"
+
+msgid "Bislama"
+msgstr "bislama"
 
 msgid "Bitmap Fonts"
 msgstr "Font Bitmap"
@@ -1037,8 +1106,8 @@ msgstr "ValoriBlu"
 msgid "BlueValues come in pairs. Select another."
 msgstr "I ValoriBlu sono coppie. Selezionane un altro."
 
-msgid "Blues"
-msgstr "Blu"
+msgid "Bodo"
+msgstr "bodo"
 
 msgid "Bold"
 msgstr "Nero"
@@ -1067,14 +1136,26 @@ msgstr "Larghezza del bordo"
 msgid "Borders"
 msgstr "Bordi"
 
+msgid "Bosnian"
+msgstr "bosniaco"
+
 msgid "Box Drawing"
 msgstr "Elementi per riquadri"
 
 msgid "Brahmi"
 msgstr "Brahmi"
 
+msgid "Brahui"
+msgstr "brahui"
+
+msgid "Braille"
+msgstr "braille"
+
 msgid "Braille Patterns"
 msgstr "Simboli Braille"
+
+msgid "Breton"
+msgstr "bretone"
 
 msgid "Brighter Border:"
 msgstr "Bordo più luminoso:"
@@ -1105,6 +1186,9 @@ msgstr "Costruzione Pedici/Apici"
 
 msgid "Bulgarian"
 msgstr "Bulgaro"
+
+msgid "Burmese"
+msgstr "birmano"
 
 msgid "By Glyphs"
 msgstr "Per glifi"
@@ -1220,6 +1304,9 @@ msgstr "C_opia il riferimento"
 msgid "C_orner"
 msgstr "Spig_olo"
 
+msgid "Cajun French"
+msgstr "francese cajun"
+
 msgid "Call Script"
 msgstr "Richiama uno script"
 
@@ -1330,17 +1417,29 @@ msgstr "Catalano"
 msgid "Caucasian Albanian"
 msgstr "Albanese caucasico"
 
+msgid "Cayuga"
+msgstr "cayuga"
+
+msgid "Cebuano"
+msgstr "cebuano"
+
 msgid "Center of Selection"
 msgstr "Centro della selezione"
 
 msgid "Centered CJK Punctuation"
 msgstr "Punteggiatura CJK centrata"
 
+msgid "Central Yupik"
+msgstr "yupik centrale"
+
 msgid "Chakma"
 msgstr "Chakma"
 
 msgid "Cham"
 msgstr "Cham"
+
+msgid "Chamorro"
+msgstr "chamorro"
 
 msgid "Change UniqueID?"
 msgstr "Cambia l'UniqueID?"
@@ -1415,6 +1514,9 @@ msgstr "Varianti di caratteri 10"
 msgid "Character Variants 99"
 msgstr "Varianti di caratteri 99"
 
+msgid "Chechen"
+msgstr "ceceno"
+
 msgid "Check Advance:"
 msgstr "Controlla l'avanzamento:"
 
@@ -1445,8 +1547,20 @@ msgstr "Cherokee supplemento"
 msgid "Chess Symbols"
 msgstr "Simboli degli scacchi"
 
+msgid "Cheyenne"
+msgstr "cheyenne"
+
+msgid "Chiga"
+msgstr "chiga"
+
 msgid "Chinese (Taiwan)"
 msgstr "Cinese (Taiwan)"
+
+msgid "Chipewyan"
+msgstr "chipewyan"
+
+msgid "Choctaw"
+msgstr "choctaw"
 
 msgid "Choose a file format..."
 msgstr "Scegli il formato del file..."
@@ -1456,6 +1570,12 @@ msgstr "Scegli quali lookup copiare"
 
 msgid "Chorasmian"
 msgstr "Corasmio"
+
+msgid "Chuukese"
+msgstr "chuukese"
+
+msgid "Chuvash"
+msgstr "ciuvascio"
 
 msgid "Clarendon Serifs"
 msgstr "Serif Clarendon (CS)"
@@ -1558,6 +1678,9 @@ msgstr "Forme numeriche indiche comuni"
 
 msgid "Common Number Separator"
 msgstr "Separatore di numero comune"
+
+msgid "Comorian"
+msgstr "comoriano"
 
 msgid "CompactOnOpen"
 msgstr "Compatta all'apertura"
@@ -1675,6 +1798,9 @@ msgstr "Copia un livello su un altro"
 msgid "Copyright text (in the Names pane) must be entirely ASCII. So, use (c) instead of ©."
 msgstr "Il testo del Copyright (nel pannello dei nomi) dev'essere completamente ASCII. Usa (c) invece di ©."
 
+msgid "Cornish"
+msgstr "cornico"
+
 msgid "Correct References"
 msgstr "Correggi riferimenti"
 
@@ -1683,6 +1809,9 @@ msgstr "Correzione della direzione..."
 
 msgid "Correcting References"
 msgstr "Correzione dei riferimenti"
+
+msgid "Corsican"
+msgstr "corso"
 
 msgid "Cou_nter Clockwise"
 msgstr "Se_nso antiorario"
@@ -1809,6 +1938,12 @@ msgstr "Crea cartella..."
 msgid "Create failed"
 msgstr "Errore nella creazione"
 
+msgid "Cree"
+msgstr "cree"
+
+msgid "Crimean Tatar"
+msgstr "turco crimeo"
+
 msgid "Croatian"
 msgstr "Croato"
 
@@ -1880,6 +2015,12 @@ msgstr "D_efinisci Gruppi..."
 
 msgid "Danish"
 msgstr "Danese"
+
+msgid "Dargwa"
+msgstr "dargwa"
+
+msgid "Dari"
+msgstr "dari"
 
 msgid "Darker Border:"
 msgstr "Bordo più scuro:"
@@ -1998,6 +2139,9 @@ msgstr "Font differenti"
 
 msgid "Dingbats"
 msgstr "Dingbat"
+
+msgid "Dinka"
+msgstr "dinca"
 
 msgid "Direction of gaze:"
 msgstr "Direzione dello sguardo"
@@ -2137,6 +2281,9 @@ msgstr "Duployan"
 msgid "Dutch"
 msgstr "Olandese"
 
+msgid "Dzongkha"
+msgstr "dzongkha"
+
 msgid "EPS Template"
 msgstr "Template EPS"
 
@@ -2187,6 +2334,9 @@ msgstr "Edi"
 
 msgid "Effects"
 msgstr "Effetti"
+
+msgid "Efik"
+msgstr "efik"
 
 msgid "Egyptian Hieroglyph Format Controls"
 msgstr "Controlli di formato per geroglifici egizi"
@@ -2283,6 +2433,12 @@ msgstr "Errore: atteso %s, ricevuto %s"
 msgid "Error: Unexpected %s found"
 msgstr "Errore: trovato %s inaspettato"
 
+msgid "Erzya"
+msgstr "erzya"
+
+msgid "Esperanto"
+msgstr "esperanto"
+
 msgid "Estonian"
 msgstr "Estone"
 
@@ -2309,6 +2465,9 @@ msgstr "Fine del numero europeo"
 
 msgid "Even Width"
 msgstr "Larghezza uniforme"
+
+msgid "Ewe"
+msgstr "ewe"
 
 msgid "Exaggerated"
 msgstr "Esagerato"
@@ -2524,6 +2683,12 @@ msgstr "Errore di scrittura %s"
 msgid "Failure"
 msgstr "Fallimento"
 
+msgid "Fang"
+msgstr "fang"
+
+msgid "Fanti"
+msgstr "fanti"
+
 msgid "Faroese"
 msgstr "Faroese / Faringio"
 
@@ -2538,6 +2703,9 @@ msgstr "Funzioni"
 
 msgid "Fi_ll"
 msgstr "Riempi(_L)"
+
+msgid "Fijian"
+msgstr "figiano"
 
 msgid "File Exists"
 msgstr "Il file esiste già"
@@ -2649,6 +2817,9 @@ msgstr "Riferimento invertito"
 
 msgid "Flipping"
 msgstr "Ribaltamento"
+
+msgid "Fon"
+msgstr "fon"
 
 #, c-format
 msgid ""
@@ -2834,6 +3005,18 @@ msgstr "120"
 msgid "GID out of range."
 msgstr "GID fuori dai limiti"
 
+msgid "Ga"
+msgstr "ga"
+
+msgid "Gagauz"
+msgstr "gagauzo"
+
+msgid "Galician"
+msgstr "galiziano"
+
+msgid "Ganda"
+msgstr "ganda"
+
 msgid "Garay"
 msgstr "Garay"
 
@@ -2906,6 +3089,9 @@ msgid ""
 msgstr ""
 "Ghostview (e forse altri interpreti) ha un problema quando\n"
 "essite un hint che non agisce su nessun punto."
+
+msgid "Gilaki"
+msgstr "gilaki"
 
 msgid "Glagolitic"
 msgstr "Glagolitico"
@@ -3019,6 +3205,9 @@ msgstr "Glifi con solo riferimenti"
 msgid "Glyphs:"
 msgstr "Glifi:"
 
+msgid "Gondi"
+msgstr "gondi"
+
 msgid "Gothic"
 msgstr "Gotico"
 
@@ -3072,6 +3261,9 @@ msgstr "Nome del gruppo:"
 msgid "Groups"
 msgstr "Gruppi"
 
+msgid "Guarani"
+msgstr "guaraní"
+
 msgid "Guess each font's resolution based on its pixel size"
 msgstr "Indovina la dimensione di ogni font secondo la dimensione dei pixel."
 
@@ -3093,11 +3285,17 @@ msgstr "Gurmukhi"
 msgid "Gurung Khema"
 msgstr "Gurung Khema"
 
+msgid "Gusii"
+msgstr "gusii"
+
 msgid "HHead _Line Gap:"
 msgstr "Inte_rlinea:"
 
 msgid "H_ints"
 msgstr "_Hints"
+
+msgid "Haida"
+msgstr "haida"
 
 msgid "Halant Forms"
 msgstr "Forme Halant"
@@ -3110,6 +3308,12 @@ msgstr "Mezze larghezze"
 
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "Forme a larghezza dimezzata e a larghezza intera"
+
+msgid "Halkomelem"
+msgstr "halkomelem"
+
+msgid "Hangul"
+msgstr "hangul"
 
 msgid "Hangul Compatibility Jamo"
 msgstr "Jamo di compatibilità Hangul"
@@ -3132,11 +3336,17 @@ msgstr "Hanifi Rohingya"
 msgid "Hanunoo"
 msgstr "Hanunoo"
 
+msgid "Haryanvi"
+msgstr "haryanvi"
+
 msgid "Has _Vertical Metrics"
 msgstr "Con metrica _verticale"
 
 msgid "Hatran"
 msgstr "Hatraeno"
+
+msgid "Hausa"
+msgstr "hausa"
 
 msgid "Hawaiian"
 msgstr "Hawaiiano"
@@ -3149,6 +3359,9 @@ msgstr "Ebraico"
 
 msgid "Height Adjusts"
 msgstr "Aggiusta altezza"
+
+msgid "Herero"
+msgstr "herero"
 
 msgid "Hidden"
 msgstr "Nascosto"
@@ -3168,6 +3381,12 @@ msgstr "Surrogati alti"
 msgid "High-Density Font"
 msgstr "Font ad alta densità"
 
+msgid "Hiligaynon"
+msgstr "ilongo"
+
+msgid "Hindi"
+msgstr "hindi"
+
 msgid "Hint _Width Near¹"
 msgstr "Larghezza degli hint vicino¹(_W)"
 
@@ -3177,6 +3396,9 @@ msgstr "Colore necessario per gli Hint"
 msgid "Hiragana"
 msgstr "Hiragana"
 
+msgid "Hiri Motu"
+msgstr "hiri motu"
+
 msgid "Histograms"
 msgstr "Istogrammi"
 
@@ -3185,6 +3407,9 @@ msgstr "Ligature storiche"
 
 msgid "Historical Forms"
 msgstr "Forme storiche"
+
+msgid "Hmong"
+msgstr "hmong"
 
 msgid "Horizontal Extension Italic Correction"
 msgstr "Estensione orizzontale correzione Corsivo"
@@ -3228,6 +3453,12 @@ msgstr "ISO 8859-7 (Greco)"
 msgid "ISO 8859-8 (Hebrew)"
 msgstr "ISO 8859-8 (Ebraico)"
 
+msgid "Iban"
+msgstr "iban"
+
+msgid "Ibibio"
+msgstr "ibibio"
+
 msgid "Icelandic"
 msgstr "Islandese"
 
@@ -3242,6 +3473,9 @@ msgstr "Caratteri di descrizione ideografica"
 
 msgid "Ideographic Symbols and Punctuation"
 msgstr "Simboli e punteggiatura ideografica"
+
+msgid "Ido"
+msgstr "ido"
 
 msgid "If one of those glyphs already has a suffix"
 msgstr "Se uno di questi glifi ha già un suffisso"
@@ -3274,6 +3508,9 @@ msgstr ""
 "Se lasci questo campo vuoto FontForge userà uno di default basato sulla\n"
 "stringa di versione sopra, o una nella tabella 'nome'."
 
+msgid "Igbo"
+msgstr "igbo"
+
 msgid "Ignore Base Glyphs"
 msgstr "Ignora glifi base"
 
@@ -3298,6 +3535,9 @@ msgstr "Aramaico imperiale"
 #. GT: Spoof on the bible
 msgid "In the beginning was the letter..."
 msgstr "In principio c'era la Lettera..."
+
+msgid "Inari Sami"
+msgstr "sami di Inari"
 
 #, c-format
 msgid "Include filename too long on line %d of %s"
@@ -3330,6 +3570,9 @@ msgstr "Numeri Siyaq indiani"
 
 msgid "Indonesian"
 msgstr "Indonesiano"
+
+msgid "Ingush"
+msgstr "ingush"
 
 msgid "Inherit"
 msgstr "Eredita"
@@ -3376,6 +3619,12 @@ msgstr "Istantaneo/Verticale"
 msgid "Instructions out of date"
 msgstr "Istruzioni obsolete"
 
+msgid "Interlingua"
+msgstr "interlingua"
+
+msgid "Interlingue"
+msgstr "interlingue"
+
 msgid "Intermediate Points:"
 msgstr "Punti intermedi:"
 
@@ -3404,6 +3653,9 @@ msgstr "Interpretazione:"
 
 msgid "Interpreting Glyphs"
 msgstr "Interpretazione dei glifi"
+
+msgid "Inuktitut"
+msgstr "inuktitut"
 
 #, c-format
 msgid "Invalid CID range in glyph class on line %d of %s"
@@ -3509,11 +3761,29 @@ msgstr "KOI8-R (Cirillico)"
 msgid "KSC 5601-1987 (Korean)"
 msgstr "KSC 5601-1987 (Coreano)"
 
+msgid "Kabardian"
+msgstr "cabardino"
+
+msgid "Kabuverdianu"
+msgstr "capoverdiano"
+
+msgid "Kabyle"
+msgstr "cabilo"
+
 msgid "Kaithi"
 msgstr "Kaithi"
 
 msgid "Kaktovik Numerals"
 msgstr "Numeri Kaktovik"
+
+msgid "Kalenjin"
+msgstr "kalenjin"
+
+msgid "Kalmyk"
+msgstr "kalmyk"
+
+msgid "Kamba"
+msgstr "kamba"
 
 msgid "Kana Extended-A"
 msgstr "Kana esteso-A"
@@ -3532,6 +3802,18 @@ msgstr "Radicali Kangxi"
 
 msgid "Kannada"
 msgstr "Kannada"
+
+msgid "Kanuri"
+msgstr "kanuri"
+
+msgid "Karelian"
+msgstr "careliano"
+
+msgid "Kashmiri"
+msgstr "kashmiri"
+
+msgid "Kashubian"
+msgstr "kashubian"
 
 msgid "Katakana"
 msgstr "Katakana"
@@ -3588,6 +3870,9 @@ msgstr "La crenatura è probabile fallisca su Windows"
 msgid "Kharoshthi"
 msgstr "Kharoshthi"
 
+msgid "Khasi"
+msgstr "khasi"
+
 msgid "Khitan Small Script"
 msgstr "Piccola scrittura Khitan"
 
@@ -3600,8 +3885,17 @@ msgstr "Simboli Khmer"
 msgid "Khojki"
 msgstr "Khojki"
 
+msgid "Khowar"
+msgstr "khowar"
+
 msgid "Khudawadi"
 msgstr "Khudawadi"
+
+msgid "Kikuyu"
+msgstr "kikuyu"
+
+msgid "Kinyarwanda"
+msgstr "kinyarwanda"
 
 msgid "Kirat Rai"
 msgstr "Kirat Rai"
@@ -3609,11 +3903,41 @@ msgstr "Kirat Rai"
 msgid "Kirghiz"
 msgstr "Cirghiso"
 
+msgid "Kirmanjki"
+msgstr "kirmanjki"
+
+msgid "Komi"
+msgstr "komi"
+
+msgid "Komi-Permyak"
+msgstr "permiaco"
+
+msgid "Kongo"
+msgstr "kongo"
+
+msgid "Konkani"
+msgstr "konkani"
+
 msgid "Korean"
 msgstr "Koreano"
 
+msgid "Kosraean"
+msgstr "kosraean"
+
+msgid "Kpelle"
+msgstr "kpelle"
+
+msgid "Kuanyama"
+msgstr "kuanyama"
+
+msgid "Kumyk"
+msgstr "kumyk"
+
 msgid "Kurdish"
 msgstr "Curdo"
+
+msgid "Kurukh"
+msgstr "kurukh"
 
 msgid "LBearing:"
 msgstr "Spalla sinistra:"
@@ -3626,6 +3950,9 @@ msgstr "Classifica Glifo per"
 
 msgid "Ladin"
 msgstr "Ladino"
+
+msgid "Ladino"
+msgstr "giudeo-spagnolo"
 
 msgid "Language info"
 msgstr "Informazioni sulla lingua"
@@ -3649,11 +3976,17 @@ msgstr "Arabo"
 msgid "Lang|Armenian"
 msgstr "Armeno"
 
+msgid "Lang|Balinese"
+msgstr "balinese"
+
 msgid "Lang|Bengali"
 msgstr "Bengalese"
 
 msgid "Lang|Cherokee"
 msgstr "Cherokee"
+
+msgid "Lang|Coptic"
+msgstr "copto"
 
 msgid "Lang|Default"
 msgstr "Default"
@@ -3683,23 +4016,56 @@ msgstr "Ebraico"
 msgid "Lang|Javanese"
 msgstr "Javanese"
 
+msgid "Lang|Kannada"
+msgstr "kannada"
+
 msgid "Lang|Khmer"
 msgstr "Khmer"
+
+msgid "Lang|Lao"
+msgstr "lao"
 
 msgid "Lang|Latin"
 msgstr "Latino"
 
+msgid "Lang|Makasar"
+msgstr "makasar"
+
 msgid "Lang|Malayalam"
 msgstr "Malayālam"
+
+msgid "Lang|Manchu"
+msgstr "manchu"
 
 msgid "Lang|Mongolian"
 msgstr "Mongolo"
 
+msgid "Lang|Odia"
+msgstr "odia"
+
 msgid "Lang|Oriya"
 msgstr "Oriya"
 
+msgid "Lang|Persian"
+msgstr "persiano"
+
+msgid "Lang|Sinhala"
+msgstr "singalese"
+
+msgid "Lang|Sundanese"
+msgstr "sundanese"
+
 msgid "Lang|Syriac"
 msgstr "Siriaco"
+
+msgid "Lang|Tagalog"
+msgstr "tagalog"
+
+msgid "Lang|Tamil"
+msgstr "tamil"
+
+msgid "Lang|Telugu"
+msgstr "telugu"
 
 msgid "Lang|Thai"
 msgstr "Thai"
@@ -3762,6 +4128,9 @@ msgstr "_Informazioni livello..."
 msgid "Layers"
 msgstr "Livelli"
 
+msgid "Laz"
+msgstr "laz"
+
 msgid "Leading Jamo Forms"
 msgstr "Forme Jamo anteriori"
 
@@ -3805,8 +4174,14 @@ msgstr "Sostituzione legatura"
 msgid "Light"
 msgstr "Chiaro"
 
+msgid "Ligurian"
+msgstr "ligure"
+
 msgid "Limbu"
 msgstr "Limbu"
+
+msgid "Limburgish"
+msgstr "limburghese"
 
 msgid "Limits"
 msgstr "Limiti"
@@ -3828,6 +4203,9 @@ msgstr "Ideogrammi lineari B"
 
 msgid "Linear B Syllabary"
 msgstr "Sillabario lineare B"
+
+msgid "Lingala"
+msgstr "lingala"
 
 msgid "Lining Figures"
 msgstr "Cifre di allineamento"
@@ -3866,6 +4244,12 @@ msgstr "Forme localizzate"
 msgid "Logos"
 msgstr "Loghi"
 
+msgid "Lojban"
+msgstr "lojban"
+
+msgid "Lombard"
+msgstr "lombardo"
+
 msgid "LookupType|Unknown"
 msgstr "Sconosciuto"
 
@@ -3883,8 +4267,14 @@ msgstr "I lookup devono essere definiti prima di essere utilizzati alla riga %d 
 msgid "Low"
 msgstr "Basso"
 
+msgid "Low Saxon"
+msgstr "basso tedesco olandese"
+
 msgid "Low Surrogates"
 msgstr "Surrogati bassi"
+
+msgid "Lower Sorbian"
+msgstr "basso sorabo"
 
 msgid "Lowercase to Petite Capitals"
 msgstr "Da minuscolo a maiuscoletto"
@@ -3892,8 +4282,20 @@ msgstr "Da minuscolo a maiuscoletto"
 msgid "Lowercase to Small Capitals"
 msgstr "Da minuscolo a maiuscoletto"
 
+msgid "Luba-Katanga"
+msgstr "luba-katanga"
+
+msgid "Luba-Lulua"
+msgstr "luba-lulua"
+
+msgid "Lule Sami"
+msgstr "sami di Lule"
+
 msgid "Luxembourgish"
 msgstr "Lussemburghese"
+
+msgid "Luyia"
+msgstr "luyia"
 
 msgid "Lycian"
 msgstr "Licio"
@@ -3943,6 +4345,9 @@ msgstr "Nuova impostazione..."
 msgid "Macedonian"
 msgstr "Macedone"
 
+msgid "Magahi"
+msgstr "magahi"
+
 msgid "Magnification:"
 msgstr "Ingrandimento:"
 
@@ -3955,6 +4360,9 @@ msgstr "Mahajani"
 msgid "Mahjong Tiles"
 msgstr "Tessere Mahjong"
 
+msgid "Maithili"
+msgstr "maithili"
+
 msgid "Makasar"
 msgstr "Makasar"
 
@@ -3963,6 +4371,18 @@ msgstr "Crea lista di nomi"
 
 msgid "Make _Parallel..."
 msgstr "Rendi _parallelo..."
+
+msgid "Makhuwa"
+msgstr "macua"
+
+msgid "Makonde"
+msgstr "makonde"
+
+msgid "Malagasy"
+msgstr "malgascio"
+
+msgid "Malay"
+msgstr "malese"
 
 msgid "Malay (Brunei)"
 msgstr "Malese (Brunei)"
@@ -3982,20 +4402,35 @@ msgstr "Malayalam Riformato"
 msgid "Malayalam Traditional"
 msgstr "Malayalam Tradizionale"
 
+msgid "Maltese"
+msgstr "maltese"
+
 msgid "Mandaic"
 msgstr "Mandaico"
+
+msgid "Mandar"
+msgstr "mandar"
 
 msgid "Manichaean"
 msgstr "Manicheo"
 
+msgid "Manipuri"
+msgstr "manipuri"
+
 msgid "Manufacturer"
 msgstr "Fabbricante"
+
+msgid "Manx"
+msgstr "mannese"
 
 msgid "Manx Gaelic"
 msgstr "Manx Gaelico"
 
 msgid "Many Windows"
 msgstr "Molte finestre!"
+
+msgid "Marathi"
+msgstr "marathi"
 
 msgid "Marchen"
 msgstr "Marchen"
@@ -4035,6 +4470,12 @@ msgstr ""
 "Le marche nelle legature devono essere ordinate nel senso della scrittura.\n"
 "Questa e %d non lo sono."
 
+msgid "Marshallese"
+msgstr "marshallese"
+
+msgid "Marwari"
+msgstr "marwari"
+
 msgid "Masaram Gondi"
 msgstr "Masaram Gondi"
 
@@ -4055,6 +4496,9 @@ msgstr "Operatori matematici"
 
 msgid "Mayan Numerals"
 msgstr "Numeri Mayan"
+
+msgid "Mazanderani"
+msgstr "mazandarani"
 
 msgid "Measure distance, angle between points"
 msgstr "Misura la distanza o l'angolo fra due punti"
@@ -4080,11 +4524,17 @@ msgstr "Medio alto"
 msgid "Medium Low"
 msgstr "Medio basso"
 
+msgid "Medumba"
+msgstr "medumba"
+
 msgid "Meetei Mayek"
 msgstr "Meetei Mayek"
 
 msgid "Meetei Mayek Extensions"
 msgstr "Estensioni Meetei Mayek"
+
+msgid "Mende"
+msgstr "mende"
 
 msgid "Mende Kikakui"
 msgstr "Mende Kikakui"
@@ -4113,6 +4563,9 @@ msgstr "Corsivo meroitico"
 msgid "Meroitic Hieroglyphs"
 msgstr "Geroglifici meroitici"
 
+msgid "Meru"
+msgstr "meru"
+
 msgid ""
 "MetaFont (mf) generates lots of verbiage to stdout.\n"
 "Most of the time I find it an annoyance but it is\n"
@@ -4140,8 +4593,14 @@ msgstr "Miao"
 msgid "Min Kern"
 msgstr "Crenatura minima"
 
+msgid "Minangkabau"
+msgstr "menangkabau"
+
 msgid "Minor:"
 msgstr "Minore:"
+
+msgid "Mirandese"
+msgstr "mirandese"
 
 msgid "Miscellaneous Mathematical Symbols-A"
 msgstr "Simboli matematici vari-A"
@@ -4205,6 +4664,9 @@ msgstr "Regole mancanti"
 msgid "Missing suffix"
 msgstr "Suffisso mancante"
 
+msgid "Mizo"
+msgstr "lushai"
+
 msgid "Modern"
 msgstr "Moderno"
 
@@ -4213,6 +4675,12 @@ msgstr "Modi"
 
 msgid "Modifier Tone Letters"
 msgstr "Lettere modificatrici di tono"
+
+msgid "Mohawk"
+msgstr "mohawk"
+
+msgid "Moksha"
+msgstr "moksha"
 
 msgid "Moldavian"
 msgstr "Moldavo"
@@ -4241,12 +4709,21 @@ msgstr "A spaziatura uniforme"
 msgid "Montages"
 msgstr "Montaggi"
 
+msgid "Moose Cree"
+msgstr "cree moose"
+
 msgid "More Images Than Selected Glyphs"
 msgstr "Ci sono più immagini che glifi selezionati"
 
 #, c-format
 msgid "More than 256 entries in subfont %s"
 msgstr "Più di 256 voci nel sottofont %s"
+
+msgid "Morisyen"
+msgstr "creolo mauriziano"
+
+msgid "Mossi"
+msgstr "mossi"
 
 msgid "Move..."
 msgstr "Sposta..."
@@ -4278,6 +4755,9 @@ msgstr "Font a densità multipla"
 
 msgid "MultipleEncodingIgnored"
 msgstr "CodificaMultiplaIgnorata"
+
+msgid "Muscogee"
+msgstr "creek"
 
 msgid "Music"
 msgstr "Musica"
@@ -4372,11 +4852,20 @@ msgstr "Nandinagari"
 msgid "Narrow"
 msgstr "Stretto"
 
+msgid "Navajo"
+msgstr "navajo"
+
 msgid "Navigation"
 msgstr "Navigazione"
 
+msgid "Ndonga"
+msgstr "ndonga"
+
 msgid "Ne_xt Control Point"
 msgstr "Punto di controllo successivo(_X)"
+
+msgid "Neapolitan"
+msgstr "napoletano"
 
 msgid "Near"
 msgstr "Vicino"
@@ -4445,6 +4934,9 @@ msgstr "Nuova misura dell'em:"
 msgid "Newa"
 msgstr "Newa"
 
+msgid "Newari"
+msgstr "newari"
+
 msgid "Next CP X"
 msgstr "CP X successivo"
 
@@ -4459,6 +4951,9 @@ msgstr "Glifo _definito successivo"
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
 msgstr "Ingegnoso, hai una delle vecchie Apple/Apple type1 sfnts qui"
+
+msgid "Niuean"
+msgstr "niue"
 
 #, c-format
 msgid "No (useable) bitmap strikes in this TTF font: %s"
@@ -4575,6 +5070,9 @@ msgstr "Nessuna selezione"
 msgid "No such file"
 msgstr "Questo file non esiste."
 
+msgid "Nogai"
+msgstr "nogai"
+
 msgid "Non-ASCII glyphnames"
 msgstr "Nomi dei glifi non-ASCII"
 
@@ -4645,6 +5143,12 @@ msgstr ""
 "Normalmente semplificare non sopprime i punti alle estremità delle\n"
 "curve(sia PostScript sia TrueType suggeriscono di conservare questi punti)"
 
+msgid "Northern Sami"
+msgstr "sami del nord"
+
+msgid "Northern Sotho"
+msgstr "sotho del nord"
+
 msgid "Norwegian"
 msgstr "Norvegese"
 
@@ -4653,6 +5157,9 @@ msgstr "Norvegese (Bokmal)"
 
 msgid "Norwegian (Nynorsk)"
 msgstr "Norvegese (Nynorsk)"
+
+msgid "Norwegian Nynorsk"
+msgstr "norvegese nynorsk"
 
 msgid "Not Found"
 msgstr "Non trovato"
@@ -4718,6 +5225,9 @@ msgstr "Non è stato selezionato nulla"
 msgid "Nothing to trace"
 msgstr "Non c'è nulla da tracciare"
 
+msgid "Novial"
+msgstr "novial"
+
 msgid "Nukta Forms"
 msgstr "Forme Nukta"
 
@@ -4742,6 +5252,12 @@ msgstr "Numeratori"
 
 msgid "Nushu"
 msgstr "Nushu"
+
+msgid "Nyamwezi"
+msgstr "nyamwezi"
+
+msgid "Nyankole"
+msgstr "nyankole"
 
 msgid "Nyiakeng Puachue Hmong"
 msgstr "Nyiakeng Puachue Hmong"
@@ -4818,6 +5334,9 @@ msgstr "Grazia ottusa"
 msgid "Obtuse Square Cove"
 msgstr "Cavo ottuso-quadrato"
 
+msgid "Occitan"
+msgstr "occitano"
+
 msgid ""
 "Often if a point is slightly off from a hint\n"
 "it is because a stem is made up\n"
@@ -4831,6 +5350,9 @@ msgstr ""
 msgid "Ogham"
 msgstr "Ogham"
 
+msgid "Oji-Cree"
+msgstr "oji-cree"
+
 msgid "Ol Chiki"
 msgstr "Ol Chiki"
 
@@ -4839,6 +5361,9 @@ msgstr "Ol Onal"
 
 msgid "Old Hungarian"
 msgstr "Ungherese antico"
+
+msgid "Old Irish"
+msgstr "irlandese antico"
 
 msgid "Old Italic"
 msgstr "Italico antico"
@@ -4920,6 +5445,9 @@ msgstr "Dingbat ornamentali"
 
 msgid "Ornaments"
 msgstr "Ornamenti"
+
+msgid "Oromo"
+msgstr "oromo"
 
 msgid "Osage"
 msgstr "Osage"
@@ -5011,8 +5539,17 @@ msgstr "Posizione della coppia (crenatura)"
 msgid "Pairwise Positioning (kerning)"
 msgstr "Posizione della coppia di crenatura"
 
+msgid "Palauan"
+msgstr "palau"
+
+msgid "Pali"
+msgstr "pali"
+
 msgid "Palmyrene"
 msgstr "Palmireno"
+
+msgid "Pangasinan"
+msgstr "pangasinan"
 
 msgid "Papiamentu"
 msgstr "Papamiento"
@@ -5027,6 +5564,9 @@ msgstr "ParseGlyphOrderAndAliasDB: Non valido (voce non separata da tabulazione)
 
 msgid "Parts List"
 msgstr "Lista di parti"
+
+msgid "Pashto"
+msgstr "pashto"
 
 msgid "Paste After"
 msgstr "Incolla dopo"
@@ -5046,6 +5586,9 @@ msgstr "Pau Cin Hau"
 msgid "Pen _Angle:"
 msgstr "_Angolo della penna:"
 
+msgid "Pennsylvania German"
+msgstr "tedesco della Pennsylvania"
+
 msgid "Pfm Save Failed"
 msgstr "Errore di salvataggio del file PFM"
 
@@ -5063,6 +5606,9 @@ msgstr "Estensioni fonetiche"
 
 msgid "Phonetic Extensions Supplement"
 msgstr "Estensioni fonetiche supplementari"
+
+msgid "Picard"
+msgstr "piccardo"
 
 msgid "Pick a CMap subtable"
 msgstr "Scegli una sottotabella CMap"
@@ -5120,6 +5666,9 @@ msgstr "Dai un nome a questa codifica"
 
 msgid "Please select a CID ordering"
 msgstr "Per favore, seleziona una tabella CID"
+
+msgid "Pohnpeian"
+msgstr "ponape"
 
 msgid "Poin_ts too close"
 msgstr "Puni_ti troppo vicini"
@@ -5263,8 +5812,14 @@ msgstr "Prossimità:"
 msgid "Psalter Pahlavi"
 msgstr "Pahlavi del Salterio"
 
+msgid "Punjabi"
+msgstr "punjabi"
+
 msgid "Quarter Widths"
 msgstr "Quarti di larghezza"
+
+msgid "Quechua"
+msgstr "quechua"
 
 msgid "RBearing:"
 msgstr "Spalla destra:"
@@ -5277,6 +5832,9 @@ msgstr "Raggio"
 
 msgid "Radius:"
 msgstr "Raggio:"
+
+msgid "Rajasthani"
+msgstr "rajasthani"
 
 msgid "Rakar Forms"
 msgstr "Forme Rakar"
@@ -5295,6 +5853,9 @@ msgstr "Rapido/Orizzontale"
 
 msgid "Rapid/Vertical"
 msgstr "Rapido/Verticale"
+
+msgid "Rarotongan"
+msgstr "rarotonga"
 
 msgid "Rasterize at sizes:"
 msgstr "Rasterizza alle dimensioni:"
@@ -5494,8 +6055,17 @@ msgstr "Forme specchiate da destra a sinistra"
 msgid "Ro_und"
 msgstr "_Arrotondato"
 
+msgid "Rohingya"
+msgstr "rohingya"
+
 msgid "Romanian"
 msgstr "Rumeno"
+
+msgid "Romansh"
+msgstr "romancio"
+
+msgid "Romany"
+msgstr "romani"
 
 msgid "Rotate _180°"
 msgstr "Ruota a _180°"
@@ -5511,6 +6081,9 @@ msgstr "Ruota..."
 
 msgid "Rotating"
 msgstr "Rotazione"
+
+msgid "Rotuman"
+msgstr "rotumano"
 
 msgid "Roun_d"
 msgstr "Arrotonda"
@@ -5540,11 +6113,17 @@ msgstr "Opzioni righello"
 msgid "Rumi Numeral Symbols"
 msgstr "Simboli numerici Rumi"
 
+msgid "Rundi"
+msgstr "rundi"
+
 msgid "Runic"
 msgstr "Runico"
 
 msgid "Russian"
 msgstr "Russo"
+
+msgid "Rusyn"
+msgstr "ruteno"
 
 msgid "S Brush Joined"
 msgstr "S Pennello unito"
@@ -5597,6 +6176,15 @@ msgstr "Samaritano"
 msgid "Sami (Lappish)"
 msgstr "Sami (Lappone)"
 
+msgid "Samoan"
+msgstr "samoano"
+
+msgid "Samogitian"
+msgstr "samogitico"
+
+msgid "Sango"
+msgstr "sango"
+
 msgid "Sans-Serif"
 msgstr "Senza grazie"
 
@@ -5623,6 +6211,18 @@ msgstr "Senza Serif (senza grazie) - SS Typewriter Gothic"
 
 msgid "Sanskrit"
 msgstr "Sanscrito"
+
+msgid "Santali"
+msgstr "santali"
+
+msgid "Sardinian"
+msgstr "sardo"
+
+msgid "Sasak"
+msgstr "sasak"
+
+msgid "Saterland Frisian"
+msgstr "saterfriesisch"
 
 msgid "Saurashtra"
 msgstr "Saurashtra"
@@ -5729,6 +6329,9 @@ msgstr "Scalamento delle Bitmap"
 msgid "Scientific Inferiors"
 msgstr "Pedici scientifici"
 
+msgid "Scots"
+msgstr "scozzese"
+
 msgid "Scottish Gaelic"
 msgstr "Scozzese Gaelico"
 
@@ -5747,6 +6350,11 @@ msgstr "Script"
 msgid "Script(s) & Language(s)"
 msgstr "Script e Lingua/e"
 
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Arabic", ignore "Script|"
+msgid "Script|Arabic"
+msgstr "arabo"
+
 msgid "Script|Armenian"
 msgstr "Armeno"
 
@@ -5764,6 +6372,21 @@ msgstr "Bengalese"
 
 msgid "Script|Bengali2"
 msgstr "Bengalese"
+
+msgid "Script|Buginese"
+msgstr "buginese"
+
+msgid "Script|Buhid"
+msgstr "buhid"
+
+msgid "Script|Cham"
+msgstr "cham"
+
+msgid "Script|Cherokee"
+msgstr "cherokee"
+
+msgid "Script|Coptic"
+msgstr "copto"
 
 #. GT: Don't ask me what RSymbol means, I don't know either. It's in apple's
 #. GT:  docs though
@@ -5803,14 +6426,26 @@ msgstr "Ebraico"
 msgid "Script|Japanese"
 msgstr "Giapponese"
 
+msgid "Script|Javanese"
+msgstr "javanese"
+
+msgid "Script|Kannada"
+msgstr "kannada"
+
 msgid "Script|Khmer"
 msgstr "Khmer"
 
 msgid "Script|Korean"
 msgstr "Koreano"
 
+msgid "Script|Lao"
+msgstr "lao"
+
 msgid "Script|Latin"
 msgstr "Latino"
+
+msgid "Script|Limbu"
+msgstr "limbu"
 
 msgid "Script|Malayālam"
 msgstr "Malayālam"
@@ -5839,6 +6474,9 @@ msgstr "Oriya"
 msgid "Script|Oriya2"
 msgstr "Oriya"
 
+msgid "Script|Phags-pa"
+msgstr "phags-pa"
+
 msgid "Script|Phoenician"
 msgstr "Fenicio"
 
@@ -5850,6 +6488,24 @@ msgstr "Roman"
 
 msgid "Script|Sinhala"
 msgstr "Singalese"
+
+msgid "Script|Sumero-Akkadian Cuneiform"
+msgstr "sumero-accadiano cuneiforme"
+
+msgid "Script|Sundanese"
+msgstr "sundanese"
+
+msgid "Script|Syloti Nagri"
+msgstr "syloti nagri"
+
+msgid "Script|Syriac"
+msgstr "siriaco"
+
+msgid "Script|Tagalog"
+msgstr "tagalog"
+
+msgid "Script|Tagbanwa"
+msgstr "tagbanwa"
 
 msgid "Script|Tamil"
 msgstr "Tamil"
@@ -5871,6 +6527,9 @@ msgstr "Tibetano"
 
 msgid "Script|Traditional Chinese"
 msgstr "Cinese tradizionale"
+
+msgid "Script|Ugaritic"
+msgstr "ugarita"
 
 msgid "Script|Vai"
 msgstr "Vai"
@@ -5958,17 +6617,29 @@ msgstr "Carattere con auto-riferimento"
 msgid "Self-referential glyph"
 msgstr "Glifo con auto-riferimento"
 
+msgid "Selkup"
+msgstr "selkup"
+
 msgid "Semi-Condensed (87.5%)"
 msgstr "Semi-condensato (87.5%)"
 
 msgid "Semi-Expanded (112.5%)"
 msgstr "Semi-allargato (112.5%)"
 
+msgid "Sena"
+msgstr "sena"
+
+msgid "Seneca"
+msgstr "seneca"
+
 msgid "Serbian"
 msgstr "Serbo"
 
 msgid "Serbian (Latin)"
 msgstr "Serbo (Latino)"
+
+msgid "Serer"
+msgstr "serer"
 
 msgid "Serif"
 msgstr "Con grazie"
@@ -6065,6 +6736,9 @@ msgstr "Lunghezza dell'ombra:"
 msgid "Shadowing glyphs"
 msgstr "Crea le ombre dei glifi"
 
+msgid "Shan"
+msgstr "shan"
+
 msgid "Shape Type"
 msgstr "Tipo della forma"
 
@@ -6082,6 +6756,9 @@ msgstr "Sposta l'intera bitmap"
 
 msgid "Sho_w"
 msgstr "Mostra(_W)"
+
+msgid "Shona"
+msgstr "shona"
 
 msgid "Shorthand Format Controls"
 msgstr "Controlli di formato stenografici"
@@ -6104,6 +6781,12 @@ msgstr "Mostra la _griglia"
 msgid "Show _V. Metrics..."
 msgstr "Mostra le metriche _V."
 
+msgid "Sicilian"
+msgstr "siciliano"
+
+msgid "Sidamo"
+msgstr "sidamo"
+
 msgid "Siddham"
 msgstr "Siddham"
 
@@ -6112,6 +6795,9 @@ msgstr "Imposta il colore della spalla laterale"
 
 msgid "Sidetic"
 msgstr "Sidetico"
+
+msgid "Silesian"
+msgstr "slesiano"
 
 msgid "Simple"
 msgstr "Semplice"
@@ -6130,6 +6816,9 @@ msgstr "Semplifica ancora..."
 
 msgid "Simplifying..."
 msgstr "Semplificazione..."
+
+msgid "Sindhi"
+msgstr "sindhi"
 
 msgid "Single Position"
 msgstr "Posizione singola"
@@ -6171,6 +6860,9 @@ msgstr "Inclina la selezione"
 msgid "Skew..."
 msgstr "Inclina..."
 
+msgid "Skolt Sami"
+msgstr "sami skolt"
+
 msgid "Slab Serifs|SS Geometric"
 msgstr "SS Geometrico"
 
@@ -6210,6 +6902,9 @@ msgstr "Varianti di forma piccola"
 msgid "Small Kana Extension"
 msgstr "Kana piccolo enstensione"
 
+msgid "Soga"
+msgstr "soga"
+
 msgid "Sogdian"
 msgstr "Sogdiano"
 
@@ -6218,6 +6913,9 @@ msgstr "Somalo"
 
 msgid "Something went wrong"
 msgstr "Qualcosa è andato storto"
+
+msgid "Soninke"
+msgstr "soninke"
 
 msgid "Sora Sompeng"
 msgstr "Sora Sompeng"
@@ -6236,6 +6934,12 @@ msgstr "Ordine alfabetico"
 
 msgid "Source from which this design is to be taken"
 msgstr "L'origine da cui questo design viene preso"
+
+msgid "Southern Sami"
+msgstr "sami del sud"
+
+msgid "Southern Sotho"
+msgstr "sotho del sud"
 
 msgid "Soyombo"
 msgstr "Soyombo"
@@ -6282,6 +6986,9 @@ msgstr "Stile(_Y)"
 msgid "Standard Ligatures"
 msgstr "Ligature standard"
 
+msgid "Standard Moroccan Tamazight"
+msgstr "tamazight del Marocco standard"
+
 msgid "Star"
 msgstr "Stella"
 
@@ -6312,6 +7019,9 @@ msgstr "Aste dritte/Verticale"
 msgid "Straight Arms/Wedge"
 msgstr "Aste dritte/Cuneo"
 
+msgid "Straits Salish"
+msgstr "salish straits"
+
 msgid "Stroke _Variation"
 msgstr "_Variazione del tratto"
 
@@ -6335,6 +7045,9 @@ msgstr "Pedici/Apici"
 
 msgid "Subtable"
 msgstr "Sottotabella"
+
+msgid "Sukuma"
+msgstr "sukuma"
 
 msgid "Sundanese"
 msgstr "Sudanese"
@@ -6390,8 +7103,14 @@ msgstr "Piano per scopi speciali supplementare"
 msgid "Sutton SignWriting"
 msgstr "SignWriting di Sutton"
 
+msgid "Swahili"
+msgstr "swahili"
+
 msgid "Swahili (Kenyan)"
 msgstr "Swahili (Kenya)"
+
+msgid "Swati"
+msgstr "swati"
 
 msgid "Swedish"
 msgstr "Svedese"
@@ -6445,6 +7164,9 @@ msgstr "La lunghezza della tabella non dovrebbe essere dispari"
 msgid "Tabular Numbers"
 msgstr "Numeri per tavole"
 
+msgid "Tachelhit"
+msgstr "tashelhit"
+
 msgid "Tag must be 4 characters long"
 msgstr "I tag sono limitati a 4 caratteri ASCII"
 
@@ -6456,6 +7178,9 @@ msgstr "Tagbanwa"
 
 msgid "Tags"
 msgstr "Etichette"
+
+msgid "Tahitian"
+msgstr "taitiano"
 
 msgid "Tai Le"
 msgstr "Tai Le"
@@ -6477,6 +7202,12 @@ msgstr "Tagico"
 
 msgid "Takri"
 msgstr "Takri"
+
+msgid "Talysh"
+msgstr "taliscio"
+
+msgid "Tamashek"
+msgstr "tamashek"
 
 msgid "Tamazight (Latin)"
 msgstr "Berbero (Latino)"
@@ -6502,6 +7233,9 @@ msgstr "Componenti Tangut supplemento"
 msgid "Tangut Supplement"
 msgstr "Tangut supplemento"
 
+msgid "Tatar"
+msgstr "tataro"
+
 msgid "Tatar (Tatarstan)"
 msgstr "Tartaro (Tatarstan)"
 
@@ -6522,6 +7256,9 @@ msgstr "Forme terminali #3"
 
 msgid "Tertiary Ideographic Plane"
 msgstr "Piano ideografico terziario"
+
+msgid "Tetum"
+msgstr "tetum"
 
 msgid "Text from script"
 msgstr "Testo dallo script"
@@ -7114,6 +7851,9 @@ msgstr "Tibetano (Repubblica Popolare Cinese)"
 msgid "Tifinagh"
 msgstr "Tifinagh"
 
+msgid "Tigre"
+msgstr "tigre"
+
 msgid "Tigrinya"
 msgstr "Tigrino"
 
@@ -7128,6 +7868,12 @@ msgstr "Tirhuta"
 
 msgid "Titling"
 msgstr "Titolazione"
+
+msgid "Tiv"
+msgstr "tiv"
+
+msgid "Tlingit"
+msgstr "tlingit"
 
 msgid "To _File"
 msgstr "Verso un _file"
@@ -7150,8 +7896,14 @@ msgstr "A:"
 msgid "Todhri"
 msgstr "Todhri"
 
+msgid "Tok Pisin"
+msgstr "tok pisin"
+
 msgid "Tolong Siki"
 msgstr "Tolong Siki"
+
+msgid "Tongan"
+msgstr "tongano"
 
 msgid "Too Big"
 msgstr "Troppo grande"
@@ -7210,14 +7962,32 @@ msgstr "Simboli di trasporto e mappe"
 msgid "Triangle"
 msgstr "Triangolo"
 
+msgid "Tsonga"
+msgstr "tsonga"
+
+msgid "Tswana"
+msgstr "tswana"
+
+msgid "Tulu"
+msgstr "tulu"
+
 msgid "Tulu-Tigalari"
 msgstr "Tulu-Tigalari"
+
+msgid "Tumbuka"
+msgstr "tumbuka"
 
 msgid "Turkish"
 msgstr "Turco"
 
 msgid "Turkmen"
 msgstr "Turkmeno"
+
+msgid "Tuvalu"
+msgstr "tuvalu"
+
+msgid "Twi"
+msgstr "ci"
 
 msgid "Twilight"
 msgstr "Crepuscolo"
@@ -7259,6 +8029,9 @@ msgstr "Tipo3"
 msgid "U_nlink Reference"
 msgstr "Scollega il riferimento"
 
+msgid "Udmurt"
+msgstr "udmurt"
+
 msgid "Ugaritic"
 msgstr "Ugaritico"
 
@@ -7270,6 +8043,9 @@ msgstr "Ultra-condensato (50%)"
 
 msgid "Ultra-Expanded (200%)"
 msgstr "Ultra-allargato (200%)"
+
+msgid "Umbundu"
+msgstr "mbundu"
 
 msgid "Undefined positioning"
 msgstr "Posizione non definita"
@@ -7382,6 +8158,12 @@ msgstr "Il formato di immagine non supportato deve essere bmp o png"
 msgid "UntitledGroup"
 msgstr "Gruppo senza nome"
 
+msgid "Upper Sorbian"
+msgstr "alto sorabo"
+
+msgid "Urdu"
+msgstr "urdu"
+
 msgid "Use CID Map"
 msgstr "Utilizzazione della mappa CID"
 
@@ -7411,6 +8193,9 @@ msgid ""
 msgstr ""
 "Usa questo come base default per il nome del file\n"
 "quando crei un font."
+
+msgid "Uyghur"
+msgstr "uiguro"
 
 msgid "Uzbek"
 msgstr "Uzbeco"
@@ -7460,11 +8245,17 @@ msgstr "Varianti Vattu"
 msgid "Vedic Extensions"
 msgstr "Estensioni vediche"
 
+msgid "Venda"
+msgstr "venda"
+
 msgid "Vendor ID:"
 msgstr "ID del venditore:"
 
 msgid "Vendor URL"
 msgstr "URL del venditore"
+
+msgid "Venetian"
+msgstr "veneto"
 
 msgid "Version, Major:"
 msgstr "_Versione, Maggiore:"
@@ -7520,8 +8311,17 @@ msgstr "Visualizza punto"
 msgid "Vithkuqi"
 msgstr "Vithkuqi"
 
+msgid "Volapük"
+msgstr "volapük"
+
 msgid "Vowel Jamo Forms"
 msgstr "Forme Jamo vocaliche"
+
+msgid "Võro"
+msgstr "võro"
+
+msgid "Walloon"
+msgstr "vallone"
 
 msgid "Wancho"
 msgstr "Wancho"
@@ -7552,8 +8352,14 @@ msgstr "Attenzione: il font non contiene glifi"
 msgid "Warning: FontForge's implementation of include statements in UFO features.fea files was wrong. Please correct your path `%s` as per the specification for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
 msgstr "Attenzione: l'implementazione di FontForge delle istruzioni d'inclusione nei file UFO features.fea era errata. Si prega di correggere il percorso %s come da specifiche per garantire la compatibilità futura. (Vedere il problema GitHub №4629 per maggiori informazioni.)"
 
+msgid "Wayuu"
+msgstr "wayuu"
+
 msgid "Welsh"
 msgstr "Gallese"
+
+msgid "Western Panjabi"
+msgstr "lahnda"
 
 msgid "What is the pixel size of the font in this file?"
 msgstr "Qual è il corpo in pixel del font contenuto in questo file?"
@@ -7635,6 +8441,9 @@ msgstr "Windows rifiuterà font con un numero di versione OS/2 di 0\n"
 msgid "Windows will reject otf (cff) fonts with an OS/2 version number of 1\n"
 msgstr "Windows rifiuterà font otf (cff) con un numero di versione OS/2 di 1\n"
 
+msgid "Wolof"
+msgstr "wolof"
+
 msgid "Write failed"
 msgstr "Errore nella scrittura"
 
@@ -7647,8 +8456,17 @@ msgstr "Bitmap X"
 msgid "X Pixmap"
 msgstr "Pixmap X"
 
+msgid "Xhosa"
+msgstr "xhosa"
+
 msgid "Y near¹ _standard heights"
 msgstr "Y vicino¹ all'altezza _standard"
+
+msgid "Yao"
+msgstr "yao (bantu)"
+
+msgid "Yapese"
+msgstr "yapese"
 
 msgid "Yes"
 msgstr "Sì"
@@ -7671,8 +8489,14 @@ msgstr "Radicali Yi"
 msgid "Yi Syllables"
 msgstr "Sillabe Yi"
 
+msgid "Yiddish"
+msgstr "yiddish"
+
 msgid "Yijing Hexagram Symbols"
 msgstr "Simboli degli esagrammi Yijing"
+
+msgid "Yoruba"
+msgstr "yoruba"
 
 #, c-format
 msgid ""
@@ -7795,11 +8619,20 @@ msgstr "Z_oom indietro"
 msgid "Zanabazar Square"
 msgstr "Zanabazar quadrato"
 
+msgid "Zarma"
+msgstr "zarma"
+
+msgid "Zhuang"
+msgstr "zhuang"
+
 msgid "Znamenny Musical Notation"
 msgstr "Notazione musicale Znamenny"
 
 msgid "Zoom _in"
 msgstr "Zoom avant_i"
+
+msgid "Zulu"
+msgstr "zulu"
 
 msgid "_128 pixel outline"
 msgstr "Contorno da _128 pixel outline"
