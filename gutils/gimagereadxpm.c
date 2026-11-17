@@ -276,7 +276,7 @@ static union hash *parse_colors(FILE *fp,unsigned char *line, int lsiz, int ncol
     return( tab );
 }
 
-GImage *GImageReadXpm(char * filename) {
+GImage *GImageReadXpm(const char * filename) {
 /* Import an *.xpm image, else cleanup and return NULL if error */
 /* TODO: There is an XPM3 library that takes care of all cases. */
    FILE *fp;

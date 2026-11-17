@@ -249,7 +249,7 @@ errorReadRle8Bit:
     return( NULL );
 }
 
-GImage *GImageReadRas(char *filename) {
+GImage *GImageReadRas(const char *filename) {
 /* Import a *.ras image (or *.im{1,8,24,32}), else return NULL if error	*/
     FILE *fp;			/* source file */
     struct _SunRaster header;

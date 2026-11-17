@@ -91,7 +91,7 @@ static void WriteBase(FILE *file, struct _GImage *base, char *stem, int instance
     fprintf(file,"    0x%.8x\n};\n\n",(unsigned int) base->trans&0xffffffff);
 }
 
-int GImageWriteGImage(GImage *gi, char *filename) {
+int GImageWriteGImage(GImage *gi, const char *filename) {
 /* Export a GImage that can be used by FontForge. Return 0 if all done okay */
     FILE *file;
     int i;

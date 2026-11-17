@@ -141,7 +141,7 @@ int GImageWrite_Bmp(GImage *gi, FILE *file) {
 return( !i );
 }
 
-int GImageWriteBmp(GImage *gi, char *filename) {
+int GImageWriteBmp(GImage *gi, const char *filename) {
     FILE *file;
     int ret;
 

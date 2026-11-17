@@ -135,7 +135,7 @@ return( NULL );
 return( ret );
 }
 
-GImage *GImageReadJpeg(char *filename) {
+GImage *GImageReadJpeg(const char *filename) {
 /* Import a jpeg image, else return NULL if error  */
     GImage *ret;
     FILE * infile;		/* source file */

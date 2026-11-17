@@ -209,7 +209,7 @@ GImage *GImageRead_Png(FILE *fp) {
     return GImageReadPngFull(fp, false);
 }
 
-GImage *GImageReadPng(char *filename) {
+GImage *GImageReadPng(const char *filename) {
     GImage *ret=NULL;
     FILE *fp;
 

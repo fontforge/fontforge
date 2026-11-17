@@ -739,7 +739,7 @@ struct gfuncs gradio_funcs = {
     NULL
 };
 
-extern int GImageWriteGImage(GImage *gi, char *filename);
+extern int GImageWriteGImage(GImage *gi, const char *filename);
 static void GRadioInit() {
     if ( !gradio_inited ) {
 	GResEditDoInit(&gradio_ri);
