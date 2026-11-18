@@ -354,7 +354,7 @@ struct smallcaps {
     double stem_factor, v_stem_factor;
     double xheight, scheight, capheight;
     double vscale, hscale;
-    char *extension_for_letters, *extension_for_symbols;
+    const char *extension_for_letters, *extension_for_symbols;
     int dosymbols;
     SplineFont *sf;
     int layer;
@@ -378,7 +378,7 @@ struct genericchange {
     enum glyphchange_type gc;
     uint32_t feature_tag;
     char *glyph_extension;
-    char *extension_for_letters, *extension_for_symbols;
+    const char *extension_for_letters, *extension_for_symbols;
     double stem_height_scale, stem_width_scale;
     double stem_height_add  , stem_width_add  ;
     double stem_threshold;
