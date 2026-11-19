@@ -1760,7 +1760,7 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
 	tot = (max2-min2+1)*(max1-min1+1);
 	for ( i=0; i<tot; ++i ) {
 	    glyph = getformint16(file,format);
-	    if ( glyph!=0xffff && glyph<b->glyphcnt ) {
+	    if ( glyph>=0 && glyph!=0xffff && glyph<b->glyphcnt ) {
 		encs[glyph] = (i/(max2-min2+1) + min2)*256 +
 					(i%(max2-min2+1) + min1);
 	    }
