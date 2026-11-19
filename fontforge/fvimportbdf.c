@@ -1746,8 +1746,12 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
 	for ( i=0; i<cnt; ++i )
 	    offsets[i] = getformint32(file,format);
 	stringsize = getformint32(file,format);
-	string = malloc(stringsize);
-	fread(string,1,stringsize,file);
+	if ( stringsize<0 ) stringsize = 0;
+	string = malloc((size_t)stringsize+1);
+	if ( string!=NULL ) {
+	    fread(string,1,stringsize,file);
+	    string[stringsize] = '\0';
+	}
     }
     if ( pcfSeekToType(file,toc,PCF_BDF_ENCODINGS) &&
 	    ((format = getint32(file))&PCF_FORMAT_MASK)==PCF_DEFAULT_FORMAT ) {
@@ -1769,7 +1773,7 @@ static void PcfReadEncodingsNames(FILE *file,struct toc *toc,SplineFont *sf,
     cnt = b->glyphcnt;
     for ( i=0; i<cnt; ++i ) {
 	const char *name;
-	if ( string!=NULL ) name = string+offsets[i];
+	if ( string!=NULL && offsets[i]>=0 && offsets[i]<stringsize ) name = string+offsets[i];
 	else name = ".notdef";
 	encs[i] = figureProperEncoding(sf,map,b,encs[i],name,-1,-1,encname);
 	if ( encs[i]!=-1 ) {
