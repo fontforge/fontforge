@@ -6777,6 +6777,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 	    if ( i==1 && j==0 && strcmp(tok,"Class0:")==0 )
 		i=0;
 	    getint(sfd,&temp);
+	    if ( temp<0 ) temp = 0;	/* negative length from the file */
 	    (&fpst->nclass)[j][i] = (char *)malloc(temp+1); (&fpst->nclass)[j][i][temp] = '\0';
 	    nlgetc(sfd);	/* skip space */
 	    fread((&fpst->nclass)[j][i],1,temp,sfd);
@@ -6790,6 +6791,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 	    for ( j=0; j<3; ++j ) {
 		getname(sfd,tok);
 		getint(sfd,&temp);
+		if ( temp<0 ) temp = 0;	/* negative length from the file */
 		(&fpst->rules[i].u.glyph.names)[j] = (char *)malloc(temp+1);
 		(&fpst->rules[i].u.glyph.names)[j][temp] = '\0';
 		nlgetc(sfd);	/* skip space */
@@ -6814,6 +6816,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 		for ( k=0; k<(&fpst->rules[i].u.coverage.ncnt)[j]; ++k ) {
 		    getname(sfd,tok);
 		    getint(sfd,&temp);
+		    if ( temp<0 ) temp = 0;	/* negative length from the file */
 		    (&fpst->rules[i].u.coverage.ncovers)[j][k] = (char *)malloc(temp+1);
 		    (&fpst->rules[i].u.coverage.ncovers)[j][k][temp] = '\0';
 		    nlgetc(sfd);	/* skip space */
@@ -6842,6 +6845,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 	  case pst_reversecoverage:
 	    getname(sfd,tok);
 	    getint(sfd,&temp);
+	    if ( temp<0 ) temp = 0;	/* negative length from the file */
 	    fpst->rules[i].u.rcoverage.replacements = (char *)malloc(temp+1);
 	    fpst->rules[i].u.rcoverage.replacements[temp] = '\0';
 	    nlgetc(sfd);	/* skip space */
@@ -6892,6 +6896,7 @@ static void SFDParseStateMachine(FILE *sfd,SplineFont *sf,ASM *sm, char *tok,int
     for ( i=4; i<sm->class_cnt; ++i ) {
 	getname(sfd,tok);
 	getint(sfd,&temp);
+	if ( temp<0 ) temp = 0;	/* negative length from the file */
 	sm->classes[i] = (char *)malloc(temp+1); sm->classes[i][temp] = '\0';
 	nlgetc(sfd);	/* skip space */
 	fread(sm->classes[i],1,temp,sfd);
@@ -6909,6 +6914,7 @@ static void SFDParseStateMachine(FILE *sfd,SplineFont *sf,ASM *sm, char *tok,int
 	    if ( temp==0 )
 		sm->state[i].u.insert.mark_ins = NULL;
 	    else {
+		if ( temp<0 ) temp = 0;	/* negative length from the file */
 		sm->state[i].u.insert.mark_ins = (char *)malloc(temp+1); sm->state[i].u.insert.mark_ins[temp] = '\0';
 		nlgetc(sfd);	/* skip space */
 		fread(sm->state[i].u.insert.mark_ins,1,temp,sfd);
@@ -6917,6 +6923,7 @@ static void SFDParseStateMachine(FILE *sfd,SplineFont *sf,ASM *sm, char *tok,int
 	    if ( temp==0 )
 		sm->state[i].u.insert.cur_ins = NULL;
 	    else {
+		if ( temp<0 ) temp = 0;	/* negative length from the file */
 		sm->state[i].u.insert.cur_ins = (char *)malloc(temp+1); sm->state[i].u.insert.cur_ins[temp] = '\0';
 		nlgetc(sfd);	/* skip space */
 		fread(sm->state[i].u.insert.cur_ins,1,temp,sfd);
@@ -8191,6 +8198,7 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	    while ( (temp=nlgetc(sfd))=='\n' || temp=='\r' ); ungetc(temp,sfd);
 	    sf->mark_class_names[i] = SFDReadUTF7Str(sfd);
 	    getint(sfd,&temp);
+	    if ( temp<0 ) temp = 0;	/* negative length from the file */
 	    sf->mark_classes[i] = (char *)malloc(temp+1); sf->mark_classes[i][temp] = '\0';
 	    nlgetc(sfd);	/* skip space */
 	    fread(sf->mark_classes[i],1,temp,sfd);
@@ -8208,6 +8216,7 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	    while ( (temp=nlgetc(sfd))=='\n' || temp=='\r' ); ungetc(temp,sfd);
 	    sf->mark_set_names[i] = SFDReadUTF7Str(sfd);
 	    getint(sfd,&temp);
+	    if ( temp<0 ) temp = 0;	/* negative length from the file */
 	    sf->mark_sets[i] = (char *)malloc(temp+1); sf->mark_sets[i][temp] = '\0';
 	    nlgetc(sfd);	/* skip space */
 	    fread(sf->mark_sets[i],1,temp,sfd);
@@ -8643,16 +8652,19 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
                 return NULL;
 	    }
 	    getint(sfd,&imax);
+	    if ( imax<0 ) imax = 0;	/* negative length from the file */
 	    ((SplineFont1 *) sf)->sli_cnt = imax;
 	    ((SplineFont1 *) sf)->script_lang = (struct script_record **)malloc((imax+1)*sizeof(struct script_record *));
 	    ((SplineFont1 *) sf)->script_lang[imax] = NULL;
 	    for ( i=0; i<imax; ++i ) {
 		getint(sfd,&jmax);
+		if ( jmax<0 ) jmax = 0;	/* negative length from the file */
 		((SplineFont1 *) sf)->script_lang[i] = (struct script_record *)malloc((jmax+1)*sizeof(struct script_record));
 		((SplineFont1 *) sf)->script_lang[i][jmax].script = 0;
 		for ( j=0; j<jmax; ++j ) {
 		    ((SplineFont1 *) sf)->script_lang[i][j].script = gettag(sfd);
 		    getint(sfd,&kmax);
+		    if ( kmax<0 ) kmax = 0;	/* negative length from the file */
 		    ((SplineFont1 *) sf)->script_lang[i][j].langs = (uint32_t *)malloc((kmax+1)*sizeof(uint32_t));
 		    ((SplineFont1 *) sf)->script_lang[i][j].langs[kmax] = 0;
 		    for ( k=0; k<kmax; ++k ) {
@@ -8775,6 +8787,7 @@ static SplineFont *SFD_GetFont( FILE *sfd,SplineFont *cidmaster,char *tok,
 	    ord = (struct table_ordering *)chunkalloc(sizeof(struct table_ordering));
 	    ord->table_tag = gettag(sfd);
 	    getint(sfd,&temp);
+	    if ( temp<0 ) temp = 0;	/* negative length from the file */
 	    ord->ordered_features = (uint32_t *)malloc((temp+1)*sizeof(uint32_t));
 	    ord->ordered_features[temp] = 0;
 	    for ( i=0; i<temp; ++i ) {
