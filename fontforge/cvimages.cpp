@@ -86,7 +86,7 @@ void SCAppendEntityLayers(SplineChar *sc, Entity *ent, ImportParams *ip) {
 return;
     EntityDefaultStrokeFill(ent);
 
-    sc->layers = realloc(sc->layers,(sc->layer_cnt+cnt)*sizeof(Layer));
+    sc->layers = (Layer *)realloc(sc->layers,(sc->layer_cnt+cnt)*sizeof(Layer));
     for ( pos = sc->layer_cnt, e=ent; e!=NULL ; e=enext, ++pos ) {
 	enext = e->next;
 	LayerDefault(&sc->layers[pos]);
@@ -111,7 +111,7 @@ return;
 		    4*sizeof(real));
 	    sc->layers[pos].splines = e->u.splines.splines;
 	} else if ( e->type == et_image ) {
-	    ImageList *ilist = chunkalloc(sizeof(ImageList));
+	    ImageList *ilist = (ImageList *)chunkalloc(sizeof(ImageList));
 	    struct _GImage *base = e->u.image.image->list_len==0?
 		    e->u.image.image->u.image:e->u.image.image->u.images[0];
 	    sc->layers[pos].images = ilist;
@@ -272,7 +272,7 @@ return;
 return;
 	}
 	if ( cnt>=max )
-	    spiros = realloc(spiros,(max+=30)*sizeof(spiro_cp));
+	    spiros = (spiro_cp *)realloc(spiros,(max+=30)*sizeof(spiro_cp));
 	spiros[cnt].x = spiros[cnt].y = 0;
 	spiros[cnt].ty = ch;
 	if ( ch=='z' ) {
@@ -301,7 +301,7 @@ return;
     if ( cnt!=0 ) {
 	/* This happens when we've got an open contour */
 	if ( cnt>=max )
-	    spiros = realloc(spiros,(max+=30)*sizeof(spiro_cp));
+	    spiros = (spiro_cp *)realloc(spiros,(max+=30)*sizeof(spiro_cp));
 	spiros[cnt].x = spiros[cnt].y = 0;
 	spiros[cnt].ty = 'z';
 	spiros[0].ty = '{';		/* Open contour mark */
@@ -424,7 +424,7 @@ return;
 /**************************** Fig File Import *********************************/
 
 static BasePoint *slurppoints(FILE *fig,SplineFont *sf,int cnt ) {
-    BasePoint *bps = malloc((cnt+1)*sizeof(BasePoint));	/* spline code may want to add another point */
+    BasePoint *bps = (BasePoint *)malloc((cnt+1)*sizeof(BasePoint));	/* spline code may want to add another point */
     int x, y, i, ch;
     real scale = sf->ascent/(8.5*1200.0);
     real ascent = 11*1200*sf->ascent/(sf->ascent+sf->descent);
@@ -495,7 +495,7 @@ static SplineSet * slurparc(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     sa = atan2(sy-cy,sx-cx);
     ea = atan2(ey-cy,ex-cx);
 
-    spl = chunkalloc(sizeof(SplinePointList));
+    spl = (SplinePointList *)chunkalloc(sizeof(SplinePointList));
     spl->next = sofar;
     spl->first = sp = SplinePointCreate(sx,sy);
     spl->last = ep = SplinePointCreate(ex,ey);
@@ -543,7 +543,7 @@ static SplineSet * slurpelipse(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     dcx = cx*scale; dcy = (ascent-cy)*scale;
     drx = rx*scale; dry = ry*scale;
 
-    spl = chunkalloc(sizeof(SplinePointList));
+    spl = (SplinePointList *)chunkalloc(sizeof(SplinePointList));
     spl->next = sofar;
     spl->first = sp = SplinePointCreate(dcx, dcy+dry);
 	sp->nextcp.x = sp->me.x + .552*drx; sp->nextcp.y = sp->me.y;
@@ -590,7 +590,7 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
     else {
 	if ( sub!=1 && bps[cnt-1].x==bps[0].x && bps[cnt-1].y==bps[0].y )
 	    --cnt;
-	spl = chunkalloc(sizeof(SplinePointList));
+	spl = (SplinePointList *)chunkalloc(sizeof(SplinePointList));
 	if ( cnt==4 && sub==4/*arc-box*/ && radius!=0 ) {
 	    SplineFont *sf = sc->parent;
 	    real scale = sf->ascent/(8.5*80.0), r = radius*scale;	/* radii are scaled differently */
@@ -756,7 +756,7 @@ static SplineSet *ApproximateXSpline(struct xspline *xs,int order2) {
     size_t i, j;
     real t;
     FitPoint mids[7];
-    SplineSet *spl = chunkalloc(sizeof(SplineSet));
+    SplineSet *spl = (SplineSet *)chunkalloc(sizeof(SplineSet));
     SplinePoint *sp;
     BasePoint tbp;
 
@@ -802,7 +802,7 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	while ((ch=getc(fig))!='\n' && ch!=EOF);
     xs.n = cnt;
     xs.cp = slurppoints(fig,sc->parent,cnt);
-    xs.s = malloc((cnt+1)*sizeof(real));
+    xs.s = (real *)malloc((cnt+1)*sizeof(real));
     xs.closed = (sub&1);
     for ( i=0; i<cnt; ++i )
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
@@ -915,8 +915,8 @@ GImage *ImageAlterClut(GImage *image) {
     if ( base->image_type!=it_mono ) {
 	/* png b&w images come through as indexed, not mono */
 	if ( base->clut!=NULL && base->clut->clut_len==2 ) {
-	    GImage *new = GImageCreate(it_mono,base->width,base->height);
-	    struct _GImage *nbase = new->u.image;
+	    GImage *new_image = GImageCreate(it_mono,base->width,base->height);
+	    struct _GImage *nbase = new_image->u.image;
 	    int i,j;
 	    memset(nbase->data,0,nbase->height*nbase->bytes_per_line);
 	    for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j )
@@ -926,7 +926,7 @@ GImage *ImageAlterClut(GImage *image) {
 	    base->clut = NULL;
 	    nbase->trans = base->trans;
 	    GImageDestroy(image);
-	    image = new;
+	    image = new_image;
 	    base = nbase;
 	} else
 return( image );
@@ -934,7 +934,7 @@ return( image );
 
     clut = base->clut;
     if ( clut==NULL ) {
-	clut=base->clut = calloc(1,sizeof(GClut));
+	clut=base->clut = (GClut*)calloc(1,sizeof(GClut));
 	clut->clut_len = 2;
 	clut->clut[0] = 0x808080;
 	if ( !no_windowing_ui )
@@ -962,7 +962,7 @@ void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff,
     ImageList *im;
 
     SCPreserveLayer(sc,layer,false);
-    im = malloc(sizeof(ImageList));
+    im = (ImageList *)malloc(sizeof(ImageList));
     im->image = image;
     im->xoff = xoff;
     im->yoff = yoff;
