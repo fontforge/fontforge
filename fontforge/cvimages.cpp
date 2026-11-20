@@ -180,7 +180,7 @@ return;
     SCCharChangedUpdate(sc,layer);
 }
 
-void SCImportPS(SplineChar *sc,int layer,char *path,bool doclear,
+void SCImportPS(SplineChar *sc,int layer,const char *path,bool doclear,
                 ImportParams *ip) {
     FILE *ps = fopen(path,"r");
 
@@ -229,7 +229,7 @@ return;
     SCCharChangedUpdate(sc,layer);
 }
 
-void SCImportPDF(SplineChar *sc,int layer,char *path,bool doclear,
+void SCImportPDF(SplineChar *sc,int layer,const char *path,bool doclear,
                  ImportParams *ip) {
     FILE *pdf = fopen(path,"r");
 
@@ -347,7 +347,7 @@ return;
     SCCharChangedUpdate(sc,layer);
 }
 
-void SCImportSVG(SplineChar *sc,int layer,char *path,char *memory, int memlen,
+void SCImportSVG(SplineChar *sc,int layer,const char *path,char *memory, int memlen,
                  bool doclear, ImportParams *ip) {
     SplinePointList *spl, *espl, **head;
 
@@ -388,7 +388,7 @@ return;
     SCCharChangedUpdate(sc,layer);
 }
 
-void SCImportGlif(SplineChar *sc,int layer,char *path,char *memory, int memlen,
+void SCImportGlif(SplineChar *sc,int layer,const char *path,char *memory, int memlen,
                   bool doclear, ImportParams *UNUSED(ip)) {
     SplinePointList *spl, *espl, **head;
 
@@ -864,7 +864,7 @@ return(sofar);
 return( sofar );
 }
 
-void SCImportFig(SplineChar *sc,int layer,char *path,bool doclear,
+void SCImportFig(SplineChar *sc,int layer,const char *path,bool doclear,
                  ImportParams *ip) {
     FILE *fig;
     char buffer[100];

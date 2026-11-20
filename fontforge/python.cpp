@@ -1091,7 +1091,7 @@ Py_RETURN_NONE;
 struct python_import_export *py_ie;
 static int ie_cnt, ie_max;
 
-void PyFF_SCImport(SplineChar *sc,int ie_index,char *filename,
+void PyFF_SCImport(SplineChar *sc,int ie_index,const char *filename,
 	int layer, int clear) {
     int toback = layer!=ly_fore;
     PyObject *arglist, *result, *glyph = PySC_From_SC(sc);
@@ -1121,7 +1121,7 @@ return;
 	PyErr_Print();
 }
 
-void PyFF_SCExport(SplineChar *sc,int ie_index,char *filename,int layer) {
+void PyFF_SCExport(SplineChar *sc,int ie_index,const char *filename,int layer) {
     PyObject *arglist, *result, *glyph = PySC_From_SC(sc);
 
     if ( ie_index>=ie_cnt )

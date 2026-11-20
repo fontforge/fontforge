@@ -2548,7 +2548,7 @@ static void UFOLoadGuidelines(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 	}
 }
 
-static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, char* glyphname, SplineChar* existingglyph, int layerdest) {
+static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, const char *glifname, char* glyphname, SplineChar* existingglyph, int layerdest) {
     xmlNodePtr glyph, kids, contour, points;
     SplineChar *sc;
     xmlChar *format, *width, *height, *u;
@@ -4398,7 +4398,7 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
 return( sf );
 }
 
-SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memory, int memlen,
+SplineSet *SplinePointListInterpretGlif(SplineFont *sf,const char *filename,char *memory, int memlen,
 	int em_size,int ascent,int is_stroked) {
     xmlDocPtr doc;
     SplineChar *sc;

@@ -3749,7 +3749,7 @@ return( NULL );
 return( ret );
 }
 
-Entity *EntityInterpretSVG(char *filename, char *memory, int memlen,
+Entity *EntityInterpretSVG(const char *filename, char *memory, int memlen,
                            int em_size, int ascent, bool scale) {
     xmlDocPtr doc;
     xmlNodePtr top;
@@ -3790,7 +3790,7 @@ return( NULL );
 return( ret );
 }
 
-SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen,int em_size,int ascent,int is_stroked, ImportParams *ip) {
+SplineSet *SplinePointListInterpretSVG(const char *filename,char *memory, int memlen,int em_size,int ascent,int is_stroked, ImportParams *ip) {
     bigreal tmpjl = ip->default_joinlimit;
     if ( tmpjl==JLIMIT_INHERITED )
 	ip->default_joinlimit = 4.0; // SVG default
