@@ -1297,7 +1297,7 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
     if ( rx!=0 && ry!=0 ) {
 	/* Page 647 in the SVG 1.1 spec describes how to do this */
 	/* This is Appendix F (Implementation notes) section 6.5 */
-	ang = (BasePoint) { cos(axisrot), sin(axisrot) };
+	ang = BasePoint{ (real) cos(axisrot), (real) sin(axisrot) };
 	x1p = ang.x*(current->x-x)/2 + ang.y*(current->y-y)/2;
 	y1p =-ang.y*(current->x-x)/2 + ang.x*(current->y-y)/2;
 	/* Correct for bad radii */
@@ -1321,8 +1321,8 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	    cxp = factor*(rx*y1p)/ry;
 	    cyp =-factor*(ry*x1p)/rx;
 	}
-	c = (BasePoint) { ang.x*cxp - ang.y*cyp + (current->x+x)/2,
-	                  ang.y*cxp + ang.x*cyp + (current->y+y)/2 };
+	c = BasePoint{ (real) (ang.x*cxp - ang.y*cyp + (current->x+x)/2),
+	               (real) (ang.y*cxp + ang.x*cyp + (current->y+y)/2) };
 	// SSAppendArc is parameterized by start and end tangent angle
 	// To convert start and end points to tangent angles it is easiest
 	// to average the angles from the foci to the point. That average
@@ -1339,7 +1339,7 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	tmp = *current;
 	ut_fm = BP90CW(NormVec(BPAdd(NormVec(BPSub(tmp, foc1)),
 	                             NormVec(BPSub(tmp, foc2)))));
-	tmp = (BasePoint) { x, y };
+	tmp = BasePoint{ (real) x, (real) y };
 	ut_to = BP90CW(NormVec(BPAdd(NormVec(BPSub(tmp, foc1)),
 	                             NormVec(BPSub(tmp, foc2)))));
 	SSAppendArc(cur, rx, ry, ang, ut_fm, ut_to, sweep, false);
