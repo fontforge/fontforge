@@ -692,9 +692,17 @@ typedef struct splinechar {
     unichar_t* user_decomp;  // User decomposition for building this character
 } SplineChar;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Returns NULL if the name is valid, or error message. If the function returned
    error message and set `questionable` to true, the name should be accepted,
    but discouraged. The error message should not be freed. */
 const char* SCNameCheck(const unichar_t* name, bool* questionable);
 const char* SCGetName(const SplineChar* sc);
 void SCGetEncoding(const SplineChar* sc, int* p_unicodeenc, int* p_ttf_glyph);
+
+#ifdef __cplusplus
+}
+#endif

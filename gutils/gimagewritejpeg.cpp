@@ -171,7 +171,7 @@ return 0;
 return( 1 );
 }
 
-int GImageWriteJpeg(GImage *gi, char *filename, int quality, int progressive) {
+int GImageWriteJpeg(GImage *gi, const char *filename, int quality, int progressive) {
     FILE * outfile;		/* target file */
     int ret;
 

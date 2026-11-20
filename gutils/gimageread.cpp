@@ -33,7 +33,7 @@
 
 #include "gfile.h"
 
-GImage *GImageRead(char * filename) {
+GImage *GImageRead(const char * filename) {
 /* Go read an input image file. Return NULL if cannot guess file type */
 /* First try filename dot3 extension then try sniffing if can't guess */
     char *mime;

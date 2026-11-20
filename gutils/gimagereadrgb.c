@@ -180,7 +180,7 @@ static void freeptrtab(unsigned char **ptrtab,long tot) {
 	    }
 }
 
-GImage *GImageReadRgb(char *filename) {
+GImage *GImageReadRgb(const char *filename) {
     FILE *fp;			/* source file */
     struct sgiheader header;
     int i,j,k;

@@ -532,7 +532,7 @@ return(0);
 return( ret );
 }
 
-int ExportImage(char* filename, SplineChar* sc, int layer, int format,
+int ExportImage(const char* filename, SplineChar* sc, int layer, int format,
                 int pixelsize, int bitsperpixel) {
     /* 0=*.xbm, 1=*.bmp, 2=*.png, 3=*.xpm, 4=*.c(fontforge-internal) */
     struct _GImage base;

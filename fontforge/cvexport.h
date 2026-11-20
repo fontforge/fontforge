@@ -13,7 +13,7 @@ extern int ExportEPS(char *filename, SplineChar *sc, int layer);
 extern int _ExportEPS(FILE *eps, SplineChar *sc, int layer, int preview);
 extern int ExportFig(char *filename, SplineChar *sc, int layer);
 extern int ExportGlif(char *filename, SplineChar *sc, int layer, int version);
-extern int ExportImage(char *filename, SplineChar *sc, int layer, int format, int pixelsize, int bitsperpixel);
+extern int ExportImage(const char *filename, SplineChar *sc, int layer, int format, int pixelsize, int bitsperpixel);
 extern int ExportPDF(char *filename, SplineChar *sc, int layer);
 extern int _ExportPDF(FILE *pdf, SplineChar *sc, int layer);
 extern int ExportPlate(char *filename, SplineChar *sc, int layer);

@@ -1667,7 +1667,7 @@ extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
 
 
 
-extern SplineSet *SplinePointListInterpretGlif(SplineFont *sf,char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
+extern SplineSet *SplinePointListInterpretGlif(SplineFont *sf,const char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
 #define UNDEFINED_WIDTH	-999999
 struct pscontext {
     int is_type2;

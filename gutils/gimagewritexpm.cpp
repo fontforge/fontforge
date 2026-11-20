@@ -46,12 +46,13 @@ return( two );
     }
 }
 
-int GImageWriteXpm(GImage *gi, char *filename) {
+int GImageWriteXpm(GImage *gi, const char *filename) {
 /* Export an *.xpm image. Return 0 if all done okay */
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     FILE *file;
     char stem[256];
-    char *pt; const char *color_type; uint8_t *scanline;
+    const char *pt; const char *color_type; uint8_t *scanline;
+    char *pt2;
     int i,j;
 
     /* This routine only exports mono or color-indexed type images */
@@ -75,8 +76,8 @@ int GImageWriteXpm(GImage *gi, char *filename) {
     else
 	pt=filename;
     strncpy(stem,pt,sizeof(stem)); stem[255]='\0';
-    if ( (pt=strrchr(stem,'.'))!=NULL && pt!=stem )
-	*pt = '\0';
+    if ( (pt2=strrchr(stem,'.'))!=NULL && pt2!=stem )
+	*pt2 = '\0';
 
     if ( (file=fopen(filename,"w"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);

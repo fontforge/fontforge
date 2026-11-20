@@ -46,6 +46,15 @@ enum fvtrans_flags { fvt_alllayers=1, fvt_round_to_int=2,
 	fvt_justapply=0x100, fvt_revert=0x200, fvt_nopreserve=0x400,
 	fvt_noupdate=0x800 };
 
+#ifdef __cplusplus
+extern "C++" {
+inline enum fvtrans_flags operator|(enum fvtrans_flags lhs, enum fvtrans_flags rhs) {
+    return static_cast<enum fvtrans_flags>(static_cast<int>(lhs) |
+                                           static_cast<int>(rhs));
+}
+}
+#endif
+
 typedef struct drect {
     real x, y;
     real width, height;
@@ -345,7 +354,7 @@ struct smallcaps {
     double stem_factor, v_stem_factor;
     double xheight, scheight, capheight;
     double vscale, hscale;
-    char *extension_for_letters, *extension_for_symbols;
+    const char *extension_for_letters, *extension_for_symbols;
     int dosymbols;
     SplineFont *sf;
     int layer;
@@ -369,7 +378,7 @@ struct genericchange {
     enum glyphchange_type gc;
     uint32_t feature_tag;
     char *glyph_extension;
-    char *extension_for_letters, *extension_for_symbols;
+    const char *extension_for_letters, *extension_for_symbols;
     double stem_height_scale, stem_width_scale;
     double stem_height_add  , stem_width_add  ;
     double stem_threshold;
@@ -437,9 +446,9 @@ extern struct python_import_export {
     char *extension;
     char *all_extensions;
 } *py_ie;
-extern void PyFF_SCExport(SplineChar *sc,int ie_index,char *filename,
+extern void PyFF_SCExport(SplineChar *sc,int ie_index,const char *filename,
 	int layer);
-extern void PyFF_SCImport(SplineChar *sc,int ie_index,char *filename,
+extern void PyFF_SCImport(SplineChar *sc,int ie_index,const char *filename,
 	int layer, int clear);
 extern void PyFF_InitFontHook(FontViewBase *fv);
 

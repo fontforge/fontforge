@@ -447,7 +447,7 @@ errorGImageMemBmp:
     return( NULL );
 }
 
-GImage *GImageReadBmp(char *filename) {
+GImage *GImageReadBmp(const char *filename) {
 /* Import a BMP image, else cleanup and return NULL if error found */
     FILE *file;			/* source file */
     GImage *ret;

@@ -150,7 +150,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
     return( ret );
 }
 
-GImage *GImageReadGif(char *filename) {
+GImage *GImageReadGif(const char *filename) {
 /* Import a gif image (or gif animation), else return NULL if error  */
     GImage *ret, **images;
     GifFileType *gif;

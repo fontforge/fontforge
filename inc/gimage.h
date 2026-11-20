@@ -155,31 +155,31 @@ extern Color _GImage_ColourFName(char *name);
 extern Color GDrawColorDarken(Color col, int by);
 extern Color GDrawColorBrighten(Color col, int by);
 
-extern int GImageWriteGImage(GImage *gi, char *filename);
+extern int GImageWriteGImage(GImage *gi, const char *filename);
 extern int GImageWrite_Bmp(GImage *gi, FILE *fp);
-extern int GImageWriteBmp(GImage *gi, char *filename);
+extern int GImageWriteBmp(GImage *gi, const char *filename);
 extern GImage *GImageRead_Bmp(FILE *file);
-extern GImage *GImageReadBmp(char *filename);
-extern int GImageWriteXbm(GImage *gi, char *filename);
-extern GImage *GImageReadXbm(char *filename);
-extern int GImageWriteXpm(GImage *gi, char *filename);
-extern GImage *GImageReadXpm(char *filename);
-extern GImage *GImageReadTiff(char *filename);
-extern GImage *GImageReadJpeg(char *filename);
+extern GImage *GImageReadBmp(const char *filename);
+extern int GImageWriteXbm(GImage *gi, const char *filename);
+extern GImage *GImageReadXbm(const char *filename);
+extern int GImageWriteXpm(GImage *gi, const char *filename);
+extern GImage *GImageReadXpm(const char *filename);
+extern GImage *GImageReadTiff(const char *filename);
+extern GImage *GImageReadJpeg(const char *filename);
 extern GImage *GImageRead_Jpeg(FILE *fp);
 extern int GImageWrite_Jpeg(GImage *gi, FILE *outfile, int quality, int progressive);
-extern int GImageWriteJpeg(GImage *gi, char *filename, int quality, int progressive);
+extern int GImageWriteJpeg(GImage *gi, const char *filename, int quality, int progressive);
 extern GImage *GImageRead_Png(FILE *fp);
-extern GImage *GImageReadPng(char *filename);
+extern GImage *GImageReadPng(const char *filename);
 extern GImage *GImageReadPngBuf(char* buf, size_t sz);
 extern int GImageWrite_Png(GImage *gi, FILE *fp, int progressive);
-extern int GImageWritePng(GImage *gi, char *filename, int progressive);
+extern int GImageWritePng(GImage *gi, const char *filename, int progressive);
 extern int GImageWritePngBuf(GImage *gi, char** buf, size_t* sz, int compression_level, int progressive);
-extern GImage *GImageReadGif(char *filename);
-extern int GImageWriteGif(GImage *gi,char *filename,int progressive);
-extern GImage *GImageReadRas(char *filename);		/* Sun Raster */
-extern GImage *GImageReadRgb(char *filename);		/* SGI */
-extern GImage *GImageRead(char *filename);
+extern GImage *GImageReadGif(const char *filename);
+extern int GImageWriteGif(GImage *gi,const char *filename,int progressive);
+extern GImage *GImageReadRas(const char *filename);		/* Sun Raster */
+extern GImage *GImageReadRgb(const char *filename);		/* SGI */
+extern GImage *GImageRead(const char *filename);
 
 extern void GImageDrawRect(GImage *img,GRect *r,Color col);
 extern void GImageDrawImage(GImage *dest,GImage *src,GRect *junk,int x, int y);

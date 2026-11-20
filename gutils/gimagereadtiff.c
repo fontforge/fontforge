@@ -38,7 +38,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 
 #include "gimage.h"
 
-GImage *GImageReadTiff(char *filename) {
+GImage *GImageReadTiff(const char *filename) {
 /* Import a TIF image, else return NULL if error  */
     TIFF* tif;
     uint32_t w,h,i,j;

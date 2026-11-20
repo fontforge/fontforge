@@ -258,7 +258,7 @@ int GImageWrite_Png(GImage *gi, FILE *fp, int progressive) {
     return GImageWritePngFull(gi, fp, false, -1, progressive);
 }
 
-int GImageWritePng(GImage *gi, char *filename, int progressive) {
+int GImageWritePng(GImage *gi, const char *filename, int progressive) {
     FILE *fp;
     int ret;
 

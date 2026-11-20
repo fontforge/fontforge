@@ -133,7 +133,7 @@ add_library(fontforge
   clipnoui.c
   crctab.cpp
   cvexport.c
-  cvimages.c
+  cvimages.cpp
   cvundoes.c
   dumpbdf.c
   dumppfa.c
@@ -204,7 +204,7 @@ add_library(fontforge
   start.c
   stemdb.c
   std_maps.cpp
-  svg.c
+  svg.cpp
   tottf.c
   tottfaat.c
   tottfgpos.c

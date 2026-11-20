@@ -39,7 +39,7 @@ static int ConvertXbmByte(int pixels) {
     return( val^0xff );	/* I default black the other way */
 }
 
-GImage *GImageReadXbm(char * filename) {
+GImage *GImageReadXbm(const char * filename) {
 /* Import an *.xbm image, else return NULL if error */
     FILE *file;
     int width, height;
