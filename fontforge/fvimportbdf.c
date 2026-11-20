@@ -1495,11 +1495,11 @@ return(-2);
 	    dummy->props[i].u.str = copy(props[i].value);
 	    dummy->props[i].type  = prt_string | prt_property;
 	    if ( strcmp(props[i].name,"FAMILY_NAME")==0 )
-		strcpy(family,props[i].value);
+		{ strncpy(family,props[i].value,99); family[99]='\0'; }
 	    else if ( strcmp(props[i].name,"WEIGHT_NAME")==0 )
 		strncpy(weight,props[i].value,sizeof(weight)-1);
 	    else if ( strcmp(props[i].name,"FULL_NAME")==0 )
-		strcpy(full,props[i].value);
+		{ strncpy(full,props[i].value,299); full[299]='\0'; }
 	    else if ( strcmp(props[i].name,"SLANT")==0 )
 		strncpy(italic,props[i].value,sizeof(italic)-1);
 	    else if ( strcmp(props[i].name,"CHARSET_REGISTRY")==0 )
@@ -1508,7 +1508,7 @@ return(-2);
 		enc = strtol(props[i].value,NULL,10);
 	    else if ( strcmp(props[i].name,"FONT")==0 ) {
 		dummy->props[i].type = prt_atom;
-		if ( sscanf(props[i].value,"-%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-",
+		if ( sscanf(props[i].value,"-%*[^-]-%99[^-]-%100[^-]-%100[^-]-%*[^-]-",
 			family, weight, italic )!=0 ) {
 		    for ( pt = props[i].value, dash_cnt=0; *pt && dash_cnt<7; ++pt )
 			if ( *pt=='-' ) ++dash_cnt;
@@ -1555,10 +1555,10 @@ return(-2);
 	strcpy(italic,"Oblique");
     else if ( strmatch(italic,"R")==0 )
 	strcpy(italic,"");		/* Ignore roman */
-    sprintf(mods,"%s%s", weight, italic );
+    snprintf(mods,200,"%s%s", weight, italic );
     if ( full[0]=='\0' ) {
 	if ( *mods )
-	    sprintf(full,"%s-%s", family, mods );
+	    snprintf(full,300,"%s-%s", family, mods );
 	else
 	    strcpy(full,family);
     }
