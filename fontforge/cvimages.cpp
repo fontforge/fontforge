@@ -353,8 +353,8 @@ return;
 static std::unique_ptr<std::istream> make_stream(const char* path, char* memory,
                                                  int memlen, void* p_stream) {
     if (p_stream != NULL)
-        return std::unique_ptr<std::istream>(
-            static_cast<std::istream*>(p_stream));
+        return std::move(
+            *static_cast<std::unique_ptr<std::istream>*>(p_stream));
     else if (memory != NULL)
         return std::make_unique<std::istringstream>(
             std::string(memory, memlen));

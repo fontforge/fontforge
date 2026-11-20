@@ -29,12 +29,24 @@ def glyph_points(glyph):
         for point in contour
     )
 
+def test_import_svg(glyph, expected_points):
+    if len(glyph.foreground) != 1:
+        raise ValueError("Expected exactly one contour in glyph {}, got {}".format(
+            glyph.glyphname, len(glyph.foreground)))
+
+    if glyph_points(glyph) != sorted(expected_points):
+        raise ValueError("Imported glyph {} points {} differ from expected {}".format(
+            glyph.glyphname, glyph_points(glyph), sorted(expected_points)))
+
 
 glyph_a = font.createChar(ord("A"), "A")
 glyph_a.width = 600
 
 glyph_b = font.createChar(ord("B"), "B")
 glyph_b.width = 600
+
+glyph_c = font.createChar(ord("C"), "C")
+glyph_c.width = 600
 
 with tempfile.TemporaryDirectory() as temp_dir:
     svg_path = os.path.join(temp_dir, "glyph-A.svg")
@@ -44,23 +56,14 @@ with tempfile.TemporaryDirectory() as temp_dir:
     # Import the SVG file into glyph A
     glyph_a.importOutlines(svg_path)
 
-    # Import the SVG text as a blob into glyph B (not supported yet)
+    # Import the SVG text as a bytearray blob into glyph B
     glyph_b.importOutlines(bytearray(svg_text, "utf-8"), type="svg")
 
-if len(glyph_a.foreground) != 1:
-    raise ValueError("Expected exactly one contour in glyph A, got {}".format(
-        len(glyph_a.foreground)))
+    # Import the SVG text as a bytes blob into glyph C
+    glyph_c.importOutlines(bytes(svg_text, "utf-8"), type="svg")
 
-if glyph_points(glyph_a) != sorted(expected):
-    raise ValueError("Imported glyph A points {} differ from expected {}".format(
-        glyph_points(glyph_a), sorted(expected)))
-
-# if len(glyph_b.foreground) != 1:
-#     raise ValueError("Expected exactly one contour in glyph B, got {}".format(
-#         len(glyph_b.foreground)))
-#
-# if glyph_points(glyph_b) != sorted(expected):
-#     raise ValueError("Imported glyph B points {} differ from expected {}".format(
-#         glyph_points(glyph_b), sorted(expected)))
+test_import_svg(glyph_a, expected)
+test_import_svg(glyph_b, expected)
+test_import_svg(glyph_c, expected)
 
 font.close()
