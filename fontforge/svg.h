@@ -5,7 +5,7 @@
 #include "splinefont.h"
 
 #ifdef __cplusplus
-#include <istream>
+#include <iosfwd>
 
 extern Entity* EntityInterpretSVG(std::istream& svg, int em_size, int ascent,
                                   bool scale);

@@ -29,6 +29,14 @@
 #include <fontforge-config.h>
 #include <fontforge-version-extras.h>
 
+#include <algorithm>
+/* Must precede utype.h, which defines toupper() and breaks libc++ stream headers. */
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <vector>
+#include <memory>
+
 #ifndef _NO_PYTHON
 
 #include "autohint.h"
@@ -97,13 +105,6 @@
 #include <sys/types.h>
 #include "ffunistd.h"
 #include <wchar.h>
-
-#include <algorithm>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <memory>
 
 #ifdef __cplusplus
 extern "C" {
