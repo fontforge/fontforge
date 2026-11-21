@@ -64,6 +64,13 @@
 #include <time.h>
 #include "ffunistd.h"
 
+#ifdef _MSC_VER
+/* ffunistd.h maps read to _read; undo it so std::istream::read works. */
+#ifdef read
+#undef read
+#endif
+#endif
+
 /* ************************************************************************** */
 /* ****************************    SVG Output    **************************** */
 /* ************************************************************************** */
