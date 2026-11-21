@@ -840,9 +840,9 @@ static void bisupper(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = isupper(ch);
+	c->return_val.u.ival = ff_unicode_isupper(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = isupper(c->a.vals[1].u.ival);
+	c->return_val.u.ival = ff_unicode_isupper(c->a.vals[1].u.ival);
     else
 	c->error = ce_badargtype;
 }
@@ -855,9 +855,9 @@ static void bislower(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = islower(ch);
+	c->return_val.u.ival = ff_unicode_islower(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = islower(c->a.vals[1].u.ival);
+	c->return_val.u.ival = ff_unicode_islower(c->a.vals[1].u.ival);
     else
 	c->error = ce_badargtype;
 }
@@ -870,9 +870,9 @@ static void bisdigit(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = isdigit(ch);
+	c->return_val.u.ival = ff_unicode_isdigit(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = isdigit(c->a.vals[1].u.ival);
+	c->return_val.u.ival = ff_unicode_isdigit(c->a.vals[1].u.ival);
     else
 	c->error = ce_badargtype;
 }
@@ -885,7 +885,7 @@ static void bishexdigit(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ishexdigit(ch);
+c->return_val.u.ival = ishexdigit(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = ishexdigit(c->a.vals[1].u.ival);
     else
@@ -900,9 +900,9 @@ static void bisalpha(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = isalpha(ch);
+	c->return_val.u.ival = ff_unicode_isalpha(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = isalpha(c->a.vals[1].u.ival);
+	c->return_val.u.ival = ff_unicode_isalpha(c->a.vals[1].u.ival);
     else
 	c->error = ce_badargtype;
 }
@@ -915,9 +915,9 @@ static void bisalnum(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = isalnum(ch);
+	c->return_val.u.ival = ff_unicode_isalnum(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = isalnum(c->a.vals[1].u.ival);
+	c->return_val.u.ival = ff_unicode_isalnum(c->a.vals[1].u.ival);
     else
 	c->error = ce_badargtype;
 }
@@ -930,9 +930,9 @@ static void bisspace(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = isspace(ch);
+	c->return_val.u.ival = ff_unicode_isspace(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = isspace(c->a.vals[1].u.ival);
+	c->return_val.u.ival = ff_unicode_isspace(c->a.vals[1].u.ival);
     else
 	c->error = ce_badargtype;
 }
@@ -948,13 +948,13 @@ static void btoupper(Context *c) {
 	    ch = utf8_ildb(&ipt);
 	    if ( ch==-1 )
 	break;
-	    ch = toupper(ch);
+	    ch = ff_unicode_toupper(ch);
 	    pt = utf8_idpb(pt,ch,UTF8IDPB_NOZERO);
 	}
 	*pt = '\0';
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {
 	c->return_val.type = v_int;
-	c->return_val.u.ival = toupper(c->a.vals[1].u.ival);
+	c->return_val.u.ival = ff_unicode_toupper(c->a.vals[1].u.ival);
     } else
 	c->error = ce_badargtype;
 }
@@ -970,13 +970,13 @@ static void btolower(Context *c) {
 	    ch = utf8_ildb(&ipt);
 	    if ( ch==-1 )
 	break;
-	    ch = tolower(ch);
+	    ch = ff_unicode_tolower(ch);
 	    pt = utf8_idpb(pt,ch,UTF8IDPB_NOZERO);
 	}
 	*pt = '\0';
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {
 	c->return_val.type = v_int;
-	c->return_val.u.ival = tolower(c->a.vals[1].u.ival);
+	c->return_val.u.ival = ff_unicode_tolower(c->a.vals[1].u.ival);
     } else
 	c->error = ce_badargtype;
 }
@@ -5702,7 +5702,7 @@ static void bDefaultUseMyMetrics(Context *c) {
 		if ( match==NULL ) match = r;
 		/* I shan't bother checking for multiple matches */
 		/* I think the transform check is strict enough. */
-		if ( isalpha(r->unicode_enc) ) {
+		if ( ff_unicode_isalpha(r->unicode_enc) ) {
 		    if ( goodmatch==NULL ) {
 			goodmatch = r;
 	break;
@@ -8824,7 +8824,7 @@ return( c->tok );
     do {
 	ch = cgetc(c);
 	nch = cgetc(c); cungetc(nch,c);
-	if ( isalpha(ch) || ch=='$' || ch=='_' || (ch=='.' && !isdigit(nch)) || ch=='@' ) {
+	if ( ff_unicode_isalpha(ch) || ch=='$' || ch=='_' || (ch=='.' && !isdigit(nch)) || ch=='@' ) {
 	    char *pt = c->tok_text, *end = c->tok_text+TOK_MAX;
 	    int toolong = false;
 	    while ( (isalnum(ch) || ch=='$' || ch=='_' || ch=='.' || ch=='@' ) && pt<end ) {

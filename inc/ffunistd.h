@@ -70,8 +70,11 @@
 #define dup _dup
 #define dup2 _dup2
 #define close _close
+#ifndef __cplusplus
+/* Keep these as macros in C, but avoid breaking C++ member names like istream::read. */
 #define read _read
 #define write _write
+#endif
 #define lseek _lseek
 #define isatty _isatty
 
