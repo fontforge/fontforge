@@ -8915,7 +8915,8 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 	if ( psflags & 2 )
 	    ip.correct_direction = true;
     }
-    prepare_input(filename_or_blob, type, locfilename, file, stream);
+    if (!prepare_input(filename_or_blob, type, locfilename, file, stream))
+        return NULL;
 
     if ( use_system || ask_system ) {
 	ipp = ImportParamsState();
