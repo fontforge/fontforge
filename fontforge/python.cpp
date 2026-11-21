@@ -8860,7 +8860,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,ipp);
     }
     else if ( strcasecmp(pt,".svg")==0 ) {
-	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false,ipp);
+	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,NULL,false,ipp);
     }
     else if ( strcasecmp(pt,".glif")==0 ) {
 	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false,ipp);

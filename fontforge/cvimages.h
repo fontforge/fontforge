@@ -34,7 +34,7 @@ extern void SCImportPlateFile(SplineChar *sc, int layer, FILE *plate,
 extern void SCImportPSFile(SplineChar *sc, int layer, FILE *ps, bool doclear,
                            ImportParams *ip);
 extern void SCImportSVG(SplineChar *sc, int layer, const char *path, char *memory,
-                        int memlen, bool doclear, ImportParams *ip);
+                        int memlen, void* p_stream, bool doclear, ImportParams *ip);
 extern void SCInsertImage(SplineChar *sc, GImage *image, real scale, real yoff, real xoff, int layer);
 
 #ifdef __cplusplus

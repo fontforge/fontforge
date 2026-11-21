@@ -2810,14 +2810,26 @@ void SCDimensionFromSVG(xmlNodePtr svg, SplineChar *sc, bool vert) {
     return;
 }
 
-void SCDimensionFromSVGFile(const char *path, SplineChar *sc, bool vert) {
-    xmlDocPtr doc;
-    xmlNodePtr svg = NULL;
-    doc = xmlParseFile(path);
-    if (doc != NULL)
-	svg = xmlDocGetRootElement(doc);
-    if (svg != NULL)
-	SCDimensionFromSVG(svg, sc, vert);
+static int readFromStream(void* context, char* buffer, int len) {
+    auto& in = *static_cast<std::istream*>(context);
+    in.read(buffer, len);
+    const auto count = in.gcount();
+
+    if (count == 0 && in.bad()) return -1;  // I/O error
+
+    return static_cast<int>(count);  // 0 means EOF
+}
+
+static xmlDocPtr xmlDocFromStream(std::istream& svg) {
+    return xmlReadIO(readFromStream, nullptr, &svg, nullptr, nullptr,
+                     XML_PARSE_NONET);
+}
+
+void SCDimensionFromSVGFile(std::istream& svg, SplineChar* sc, bool vert) {
+    xmlNodePtr svg_root = NULL;
+    xmlDocPtr doc = xmlDocFromStream(svg);
+    if (doc != NULL) svg_root = xmlDocGetRootElement(doc);
+    if (svg_root != NULL) SCDimensionFromSVG(svg_root, sc, vert);
     return;
 }
 
@@ -3749,18 +3761,14 @@ return( NULL );
 return( ret );
 }
 
-Entity *EntityInterpretSVG(const char *filename, char *memory, int memlen,
+Entity *EntityInterpretSVG(std::istream& svg,
                            int em_size, int ascent, bool scale) {
-    xmlDocPtr doc;
     xmlNodePtr top;
     char oldloc[25];
     Entity *ret;
     int order2;
+    xmlDocPtr doc = xmlDocFromStream(svg);
 
-    if ( filename!=NULL )
-	doc = xmlParseFile(filename);
-    else
-	doc = xmlParseMemory(memory,memlen);
     if ( doc==NULL ) {
 	/* Can I get an error message from libxml???? */
 return( NULL );
@@ -3768,7 +3776,7 @@ return( NULL );
 
     top = xmlDocGetRootElement(doc);
     if ( xmlStrcmp(top->name,(xmlChar *) "svg")!=0 ) {
-	LogError( _("%s does not contain an <svg> element at the top"), filename);
+	LogError( _("The provided stream does not contain an <svg> element at the top"));
 	xmlFreeDoc(doc);
 return( NULL );
     }
@@ -3790,12 +3798,11 @@ return( NULL );
 return( ret );
 }
 
-SplineSet *SplinePointListInterpretSVG(const char *filename,char *memory, int memlen,int em_size,int ascent,int is_stroked, ImportParams *ip) {
+SplineSet *SplinePointListInterpretSVG(std::istream& svg,int em_size,int ascent,int is_stroked, ImportParams *ip) {
     bigreal tmpjl = ip->default_joinlimit;
     if ( tmpjl==JLIMIT_INHERITED )
 	ip->default_joinlimit = 4.0; // SVG default
-    Entity *ret = EntityInterpretSVG(filename, memory, memlen, em_size, ascent,
-                                     ip->scale);
+    Entity *ret = EntityInterpretSVG(svg, em_size, ascent, ip->scale);
     SplineSet *r = SplinesFromEntities(ret, ip, is_stroked);
     ip->default_joinlimit = tmpjl;
     return r;
