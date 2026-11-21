@@ -27,6 +27,9 @@
 
 #include <fontforge-config.h>
 
+/* Must precede utype.h, which defines toupper() and breaks libc++ stream headers. */
+#include <istream>
+
 #include "svg.h"
 
 #include "autohint.h"

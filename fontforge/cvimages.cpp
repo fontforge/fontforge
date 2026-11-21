@@ -27,6 +27,11 @@
 
 #include <fontforge-config.h>
 
+/* Must precede utype.h, which defines toupper() and breaks libc++ stream headers. */
+#include <fstream>
+#include <memory>
+#include <sstream>
+
 #include "cvimages.h"
 
 #include "cvundoes.h"
@@ -48,9 +53,6 @@
 #include "ffdir.h"
 #include <math.h>
 #include <sys/types.h>
-#include <fstream>
-#include <memory>
-#include <sstream>
 
 void InitImportParams(ImportParams *ip) {
     assert( ip!=NULL );
