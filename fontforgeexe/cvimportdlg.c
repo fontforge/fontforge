@@ -74,7 +74,7 @@ return;
 }
 
 static void ImportSVG(CharView *cv,char *path,ImportParams *ip) {
-    SCImportSVG(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false,ip);
+    SCImportSVG(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,NULL,false,ip);
 }
 
 static void ImportGlif(CharView *cv,char *path,ImportParams *ip) {

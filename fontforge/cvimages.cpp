@@ -27,6 +27,11 @@
 
 #include <fontforge-config.h>
 
+/* Must precede utype.h, which defines toupper() and breaks libc++ stream headers. */
+#include <fstream>
+#include <memory>
+#include <sstream>
+
 #include "cvimages.h"
 
 #include "cvundoes.h"
@@ -347,19 +352,33 @@ return;
     SCCharChangedUpdate(sc,layer);
 }
 
+static std::unique_ptr<std::istream> make_stream(const char* path, char* memory,
+                                                 int memlen, void* p_stream) {
+    if (p_stream != NULL)
+        return std::move(
+            *static_cast<std::unique_ptr<std::istream>*>(p_stream));
+    else if (memory != NULL)
+        return std::make_unique<std::istringstream>(
+            std::string(memory, memlen));
+    else if (path != NULL)
+        return std::make_unique<std::ifstream>(path);
+    return nullptr;
+}
+
 void SCImportSVG(SplineChar *sc,int layer,const char *path,char *memory, int memlen,
-                 bool doclear, ImportParams *ip) {
+                 void* p_stream, bool doclear, ImportParams *ip) {
     SplinePointList *spl, *espl, **head;
 
+    std::unique_ptr<std::istream> svg = make_stream(path,memory,memlen,p_stream);
     if (ip->dimensions)
-	SCDimensionFromSVGFile(path, sc, false);
+	SCDimensionFromSVGFile(*svg, sc, false);
     if ( sc->parent->multilayer && layer>ly_back ) {
 	SCAppendEntityLayers(sc,
-	       EntityInterpretSVG(path,memory,memlen,
+	       EntityInterpretSVG(*svg,
 	                          sc->parent->ascent+sc->parent->descent,
 	                          sc->parent->ascent,ip->scale), ip);
     } else {
-	spl = SplinePointListInterpretSVG(path,memory,memlen,
+	spl = SplinePointListInterpretSVG(*svg,
 	                                  sc->parent->ascent+sc->parent->descent,
 	                                  sc->parent->ascent,
 	                                  sc->parent->strokedfont, ip);
@@ -1011,7 +1030,7 @@ return(false);
 	    ++tot;
 	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore, ip);
 	} else if ( format==fv_svg ) {
-	    SCImportSVG(sc,toback?ly_back:fv->active_layer,image_path,NULL,0,preclear,ip);
+	    SCImportSVG(sc,toback?ly_back:fv->active_layer,image_path,NULL,0,NULL,preclear,ip);
 	    ++tot;
 	} else if ( format==fv_glif ) {
 	    SCImportGlif(sc,toback?ly_back:fv->active_layer,image_path,NULL,0,preclear,ip);
@@ -1122,7 +1141,7 @@ return( false );
 	    ++tot;
 	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore,ip);
 	} else if ( format==fv_svgtemplate ) {
-	    SCImportSVG(sc,toback?ly_back:fv->active_layer,start,NULL,0,preclear,ip);
+	    SCImportSVG(sc,toback?ly_back:fv->active_layer,start,NULL,0,NULL,preclear,ip);
 	    ++tot;
 	} else if ( format==fv_gliftemplate ) {
 	    SCImportGlif(sc,toback?ly_back:fv->active_layer,start,NULL,0,preclear,ip);
