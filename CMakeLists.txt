@@ -35,11 +35,11 @@ endif()
 list(INSERT CMAKE_MODULE_PATH 0 ${PROJECT_SOURCE_DIR}/cmake ${PROJECT_SOURCE_DIR}/cmake/packages)
 
 # Include any required modules
+include(GNUInstallDirs)
 include(BuildUtils)
 include(CheckIncludeFile)
 include(CPackSetup)
 include(CTest)
-include(GNUInstallDirs)
 include(PackageUtils)
 include(TargetUtils)
 
