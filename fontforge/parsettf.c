@@ -2742,6 +2742,14 @@ return( NULL );
 		++i;
 	    }
 	    --i;
+	} else if ( (offsets[i+1]-offsets[i])==UINT32_MAX ) {
+		LogError(_("CFF name %u too large\n"), i );
+		if ( info!=NULL ) info->bad_cff = true;
+	    while ( i<count ) {
+		names[i] = copy("");
+		++i;
+	    }
+	    --i;
 	} else {
 	    uint32_t len = offsets[i+1]-offsets[i];
 	    /* offsets are uint32_t, so a negative difference wraps to a huge
@@ -3954,6 +3962,9 @@ return( 0 );
     if ( hdrsize!=4 )
 	fseek(ttf,info->cff_start+hdrsize,SEEK_SET);
     fontnames = readcfffontnames(ttf,NULL,info);
+	if ( fontnames==NULL ) {
+return( 0 );
+	}
     which = 0;
     if ( fontnames[1]!=NULL ) {		/* More than one? Can that even happen in OpenType? */
 	which = PickCFFFont(fontnames);
