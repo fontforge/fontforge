@@ -153,7 +153,7 @@ extern const unichar_t* ff_unicode_unialt(unichar_t ch);
 #define pose(ch)                     ff_unicode_pose((ch))
 #define combiningclass(ch)           ff_unicode_combiningclass((ch))
 #ifndef __cplusplus
-/* C++ uses ff_unicode_toupper/tolower directly to avoid collisions with std headers. */
+/* C++ uses ff_unicode_* directly to avoid collisions with std headers. */
 #define isalpha(ch)                  ff_unicode_isalpha((ch))
 #define islower(ch)                  ff_unicode_islower((ch))
 #define isupper(ch)                  ff_unicode_isupper((ch))
