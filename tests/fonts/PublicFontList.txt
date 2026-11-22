@@ -102,8 +102,6 @@ https://gitlab.com/arabeyes-art/khotot/-/raw/master/decorative/ae_Shado.sfd
 https://gitlab.com/arabeyes-art/khotot/-/raw/master/decorative/ae_Metal.sfd
 https://gitlab.com/arabeyes-art/khotot/-/raw/master/decorative/ae_Khalid.sfd
 https://gitlab.com/arabeyes-art/khotot/-/raw/master/decorative/ae_Kayrawan.sfd
-https://gitlab.com/ameliedumont/fonts/-/raw/master/MetaAccanthis/MetaAccanthis_regular_alt.sfd
-https://gitlab.com/ameliedumont/fonts/-/raw/master/MetaAccanthis/MetaAccanthis_regular.sfd
 https://gitlab.com/ameliedumont/fonts/-/raw/master/Fablab/Fablab.sfd
 https://gitlab.com/ameliedumont/fonts/-/raw/master/Chemins/source/sfd/Chemins_serif.sfd
 https://gitlab.com/ameliedumont/fonts/-/raw/master/Chemins/source/sfd/Chemins_narrow.sfd
@@ -187,3 +185,5 @@ https://github.com/slavonic/Triodion/raw/main/sources/Triodion.sfd
 https://github.com/slavonic/Shafarik/raw/main/sources/Shafarik-Regular.sfd
 https://github.com/slavonic/FiraSlav/raw/master/sources/FiraSlav-Regular.sfd
 https://github.com/slavonic/FiraSlav/raw/master/sources/FiraSlav-Bold.sfd
+https://github.com/the-moonwitch/Cozette/raw/main/Cozette/variants/CozetteCrossedSeven.sfd
+https://github.com/the-moonwitch/Cozette/raw/main/Cozette/Cozette.sfd

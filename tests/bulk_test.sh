@@ -7,6 +7,7 @@
 FONT_LIST=fonts/PublicFontList.txt
 FF_BIN_SYSTEM=/usr/local/bin/fontforge
 FF_BIN_PROJECT=../build/bin/fontforge
+SLEEP_DURATION=0
 
 # Python commands to be executed for each tested SFD file.
 # Arguments:
@@ -39,12 +40,34 @@ FF_OUTPUT_FILE="Output.sfd"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 FF_BIN_PROJECT=$SCRIPT_DIR/$FF_BIN_PROJECT
 
+FETCH_FONT_CACHE=
+
+# Populate the cache for the given URL if needed. Returns non-zero on download failure.
+fetch_font() {
+    local url=$1
+    local cache_root=${FONT_CACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/fontforge_bulk_test}
+    local dir=$cache_root/`echo -n "$url" | md5sum | cut -d' ' -f1`
+    mkdir -p "$cache_root"
+
+    FETCH_FONT_CACHE=$dir
+    if [ -n "$(ls -A "$dir" 2>/dev/null)" ]; then
+        return 0
+    fi
+    sleep $SLEEP_DURATION
+    mkdir -p "$dir"
+    if (cd "$dir" && wget -q --timeout=60 "$url") && [ -n "$(ls -A "$dir")" ]; then
+        return 0
+    fi
+    rm -rf "$dir"
+    return 1
+}
+
 cat $FONT_LIST |
 while read font_url; do
     failure=0
     TMP_DIR_SYS=`mktemp -d`
     pushd $TMP_DIR_SYS > /dev/null
-    if (wget -q --timeout=60 $font_url); then
+    if fetch_font "$font_url" < /dev/null && cp "$FETCH_FONT_CACHE"/* .; then
         SFD_FILE=`ls`
         TMP_DIR_PROJ=`mktemp -d`
         cp $SFD_FILE $TMP_DIR_PROJ
