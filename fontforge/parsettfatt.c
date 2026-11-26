@@ -867,7 +867,8 @@ static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
 	AnchorClass **classes) {
     int basecnt,compcnt, i, j, k, kbase;
     uint16_t *loffsets, *aoffsets;
-    SplineChar *sc;
+	SplineChar *sc;
+	AnchorPoint **tail, *ap;
 
     fseek(ttf,baseoffset,SEEK_SET);
     basecnt = getushort(ttf);
@@ -880,9 +881,14 @@ return;
     for ( i=0; i<basecnt; ++i )
 	loffsets[i] = getushort(ttf);
     for ( i=0; i<basecnt; ++i ) {
-	sc = info->chars[baseglyphs[i]];
-	if ( baseglyphs[i]>=info->glyph_cnt || sc==NULL )
+		if ( baseglyphs[i]>=info->glyph_cnt )
     continue;
+		sc = info->chars[baseglyphs[i]];
+		if ( sc==NULL )
+    continue;
+		tail = &sc->anchor;
+		while ( *tail!=NULL )
+	    tail = &(*tail)->next;
 	fseek(ttf,baseoffset+loffsets[i],SEEK_SET);
 	compcnt = getushort(ttf);
 	if ( feof(ttf)) {
@@ -895,9 +901,11 @@ return;
 	    aoffsets[k] = getushort(ttf);
 	for ( k=kbase=0; k<compcnt; ++k, kbase+=classcnt ) {
 	    for ( j=0; j<classcnt; ++j ) if ( aoffsets[kbase+j]!=0 ) {
-		sc->anchor = readAnchorPoint(ttf,baseoffset+loffsets[i]+aoffsets[kbase+j],
-			classes[j], at_baselig,sc->anchor,info);
-		sc->anchor->lig_index = k;
+		ap = readAnchorPoint(ttf,baseoffset+loffsets[i]+aoffsets[kbase+j],
+			classes[j], at_baselig,NULL,info);
+		ap->lig_index = k;
+		*tail = ap;
+		tail = &ap->next;
 	    }
 	}
 	free(aoffsets);
