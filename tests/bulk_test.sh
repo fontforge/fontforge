@@ -7,7 +7,7 @@
 FONT_LIST=fonts/PublicFontList.txt
 FF_BIN_SYSTEM=/usr/local/bin/fontforge
 FF_BIN_PROJECT=../build/bin/fontforge
-SLEEP_DURATION=0
+SLEEP_DURATION=${SLEEP_DURATION:-0}
 
 # Python commands to be executed for each tested SFD file.
 # Arguments:
@@ -54,11 +54,12 @@ fetch_font() {
         return 0
     fi
     sleep $SLEEP_DURATION
-    mkdir -p "$dir"
-    if (cd "$dir" && wget -q --timeout=60 "$url") && [ -n "$(ls -A "$dir")" ]; then
+    # Download into a temp dir so an interrupted run never leaves a partial cache entry.
+    local tmp=$(mktemp -d "$cache_root/.tmp.XXXXXX")
+    if (cd "$tmp" && wget -q --timeout=60 "$url") && [ -n "$(ls -A "$tmp")" ] && mv "$tmp" "$dir"; then
         return 0
     fi
-    rm -rf "$dir"
+    rm -rf "$tmp"
     return 1
 }
 
