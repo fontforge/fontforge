@@ -2170,7 +2170,7 @@ return;
 	if ( type==4 || type==5 ) {	/* eps/ps */
 	    SCImportPSFile(sc,layer,temp,doclear,ImportParamsState());
 	} else if ( type<=3 ) {
-	    SCImportSVG(sc,layer,NULL,paste,len,doclear,ImportParamsState());
+	    SCImportSVG(sc,layer,NULL,paste,len,NULL,doclear,ImportParamsState());
 	} else {
 #ifndef _NO_LIBPNG
 	    if ( type==6 )

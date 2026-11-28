@@ -99,8 +99,11 @@
 #include <wchar.h>
 
 #include <algorithm>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
+#include <memory>
 
 #ifdef __cplusplus
 extern "C" {
@@ -8792,9 +8795,82 @@ return(NULL);
 Py_RETURN( self );
 }
 
+static bool prepare_input(PyObject* filename_or_blob, const char*& type,
+                          std::string& filename, FILE*& file,
+                          std::unique_ptr<std::istream>& stream) {
+    if (PyBytes_Check(filename_or_blob)) {
+        if (type == NULL) {
+            PyErr_Format(PyExc_TypeError,
+                         "Type must be specified when importing from bytes");
+            return false;
+        } else if (strcasecmp(type, "svg") != 0) {
+            PyErr_Format(
+                PyExc_TypeError,
+                "Only 'svg' type is supported when importing from bytes");
+            return false;
+        } else {
+            stream = std::make_unique<std::istringstream>(
+                PyBytes_AsString(filename_or_blob));
+        }
+    } else if (PyByteArray_Check(filename_or_blob)) {
+        if (type == NULL) {
+            PyErr_Format(
+                PyExc_TypeError,
+                "Type must be specified when importing from bytearray");
+            return false;
+        } else if (strcasecmp(type, "svg") != 0) {
+            PyErr_Format(
+                PyExc_TypeError,
+                "Only 'svg' type is supported when importing from bytearray");
+            return false;
+        } else {
+            stream = std::make_unique<std::istringstream>(
+                PyByteArray_AsString(filename_or_blob));
+        }
+    } else if (PyUnicode_Check(filename_or_blob)) {
+        if (type != NULL) {
+            PyErr_Format(PyExc_TypeError,
+                         "The type is derived from extension when exporting to "
+                         "file, it should not be specified");
+            return false;
+        }
+        char* tmp = utf82def_copy(PyUnicode_AsUTF8(filename_or_blob));
+        filename = tmp;
+        free(tmp);
+
+        /* Check if the file exists and is readable */
+        if (ff_access(filename.c_str(), R_OK) != 0) {
+            PyErr_SetFromErrnoWithFilename(PyExc_IOError, filename.c_str());
+            return false;
+        }
+
+        size_t dot_pos = filename.rfind('.');
+        if (dot_pos != std::string::npos)
+            type = filename.c_str() + dot_pos + 1;
+        else
+            type = filename.c_str();
+    }
+
+    bool is_svg = (strcasecmp(type, "svg") == 0);
+    bool is_plate = (strcasecmp(type, "plate") == 0);
+    if (is_svg) {
+        if (!stream)
+            stream =
+                std::make_unique<std::ifstream>(filename, std::ios::binary);
+    } else if (is_plate)
+        file = fopen(filename.c_str(), "wb");
+
+    if (is_svg && stream->fail() || is_plate && file == NULL) {
+        PyErr_SetFromErrnoWithFilename(PyExc_IOError, filename.c_str());
+        return false;
+    }
+
+    return true;
+}
+
 static const char *glyph_import_keywords[] = { "filename", "correctdir",
     "simplify", "handle_clip", "handle_eraser", "scale", "accuracy",
-    "default_joinlimit", "usesystem", "asksystem", "dimensions", NULL };
+    "default_joinlimit", "usesystem", "asksystem", "dimensions", "type", NULL };
 
 /* Legacy PostScript importing flags */
 static struct flaglist import_ps_flags[] = {
@@ -8808,9 +8884,11 @@ static struct flaglist import_ps_flags[] = {
 static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
                                   PyObject *keywds) {
     ImportParams ip, *ipp;
-    char *filename;
-    char *locfilename = NULL, *pt;
-    PyObject *flags=NULL;
+    std::string locfilename;
+    const char *type=NULL;
+    FILE *file=NULL;
+    PyObject *filename_or_blob=NULL, *flags=NULL;
+    std::unique_ptr<std::istream> stream;
     int psflags, use_system = false, ask_system = false;
     bigreal jl_tmp = -1;
     SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
@@ -8821,12 +8899,12 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     InitImportParams(&ip);
 
     if ( !PyArg_ParseTupleAndKeywords(args, keywds,
-                "s|$pppppddppp", (char**)glyph_import_keywords, &filename,
+                "O|$pppppddppps", (char**)glyph_import_keywords, &filename_or_blob,
                 &ip.correct_direction, &ip.simplify, &ip.clip, &ip.erasers,
                 &ip.scale, &ip.accuracy_target, &jl_tmp, &use_system,
-		&ask_system, &ip.dimensions) ) {
+		&ask_system, &ip.dimensions, &type) ) {
 	PyErr_Clear();
-	if ( !PyArg_ParseTuple(args,"s|O",&filename, &flags) )
+	if ( !PyArg_ParseTuple(args,"O|O",&filename_or_blob, &flags) )
 	    return NULL;
 	psflags = FlagsFromTuple(flags, import_ps_flags,
 	                         "PostScript import flag");
@@ -8837,14 +8915,8 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 	if ( psflags & 2 )
 	    ip.correct_direction = true;
     }
-    locfilename = utf82def_copy(filename);
-
-    /* Check if the file exists and is readable */
-    if ( ff_access(locfilename,R_OK)!=0 ) {
-	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
-	free(locfilename);
-	return NULL;
-    }
+    if (!prepare_input(filename_or_blob, type, locfilename, file, stream))
+        return NULL;
 
     if ( use_system || ask_system ) {
 	ipp = ImportParamsState();
@@ -8853,43 +8925,35 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     } else
 	ipp = &ip;
 
-    pt = strrchr(locfilename,'.');
-    if ( pt==NULL ) pt=locfilename;
-
-    if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 ) {
-	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,ipp);
+    if ( strcasecmp(type,"eps")==0 || strcasecmp(type,"ps")==0 || strcasecmp(type,"art")==0 ) {
+	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename.c_str(),false,ipp);
     }
-    else if ( strcasecmp(pt,".svg")==0 ) {
-	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false,ipp);
+    else if ( strcasecmp(type,"svg")==0 ) {
+	SCImportSVG(sc,((PyFF_Glyph *) self)->layer,NULL,NULL,0,&stream,false,ipp);
     }
-    else if ( strcasecmp(pt,".glif")==0 ) {
-	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false,ipp);
+    else if ( strcasecmp(type,"glif")==0 ) {
+	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename.c_str(),NULL,0,false,ipp);
     }
-    else if ( strcasecmp(pt,".plate")==0 ) {
-	FILE *plate = fopen(locfilename,"r");
-	if ( plate==NULL ) {
-	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
-	    free(locfilename);
+    else if ( strcasecmp(type,"plate")==0 ) {
+	if ( file==NULL ) {
 return( NULL );
 	}
 	else {
-	    SCImportPlateFile(sc,((PyFF_Glyph *) self)->layer,plate,false,ipp);
-	    fclose(plate);
+	    SCImportPlateFile(sc,((PyFF_Glyph *) self)->layer,file,false,ipp);
+	    fclose(file);
 	}
     } /* else if ( strcasecmp(pt,".fig")==0 )*/
     else {
-	GImage *image = GImageRead(locfilename);
+	GImage *image = GImageRead(locfilename.c_str());
 	int ly = ((PyFF_Glyph *) self)->layer;
 	if ( image==NULL ) {
-	    PyErr_Format(PyExc_EnvironmentError, "Could not load image file \"%s\"", locfilename );
-	    free(locfilename);
+	    PyErr_Format(PyExc_EnvironmentError, "Could not load image file \"%s\"", locfilename.c_str() );
 return(NULL);
 	}
 	if ( !sc->layers[ly].background )
 	    ly = ly_back;
 	SCAddScaleImage(sc,image,false,ly,ipp);
     }
-    free( locfilename );
 Py_RETURN( self );
 }
 

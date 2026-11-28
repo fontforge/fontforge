@@ -2362,10 +2362,19 @@ must be created through the font.
    of a ligature component glyph.
 
 .. method:: glyph.importOutlines(filename, [KEYWORD])
+            glyph.importOutlines(buffer, type=<string>, [KEYWORD])
 
-   Uses the file's extension to determine behavior. Imports outline descriptions
-   (eps, svg, glif files) into the foreground layer. Imports image descriptions
-   (bmp, png, xbm, etc.) into the background layer. The following optional keywords modify the import process for various formats:
+   Imports image from a file or a memory buffer (``bytes`` or ``bytearray``).
+   Uses the file's extension or the ``type`` keyword to determine behavior.
+   Imports outline descriptions (eps, svg, glif files) into the foreground
+   layer. Imports image descriptions (bmp, png, xbm, etc.) into the background
+   layer. The following optional keywords modify the import process for various
+   formats:
+
+   .. object:: type (string, default=None)
+
+      Buffer contents type, currently only ``svg`` is supported. Type shall not
+      be specified when importing from file.
 
    .. object:: scale (boolean, default=True)
 
